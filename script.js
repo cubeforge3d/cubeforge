@@ -109,34 +109,119 @@ let ALL_PRODUCTS = [];
 let CATALOG_ITEMS = [];
 
 /**
- * Mapeamento e auxílio de categorias e ícones
+ * ============================================================================
+ * SISTEMA DINÂMICO DE CATEGORIAS E SINCRONIZAÇÃO COM PAGES CMS
+ * ============================================================================
  */
-function getCategoryLabel(category) {
-  const map = {
-    colecionaveis: "Colecionáveis",
-    decoracao: "Decoração",
-    setup: "Setup & Suportes",
-    personalizados: "Presentes"
-  };
-  return map[category] || "Geral";
+const DEFAULT_CATEGORY_METADATA = {
+  colecionaveis: { name: "Colecionáveis", emoji: "🐉", icon: "fa-solid fa-dragon" },
+  decoracao: { name: "Decoração", emoji: "🌿", icon: "fa-solid fa-seedling" },
+  setup: { name: "Setup & Suportes", emoji: "🎧", icon: "fa-solid fa-headphones" },
+  personalizados: { name: "Presentes", emoji: "🎁", icon: "fa-solid fa-gift" },
+  geek: { name: "Geek & Games", emoji: "🎮", icon: "fa-solid fa-gamepad" },
+  iluminacao: { name: "Iluminação & Litofanias", emoji: "💡", icon: "fa-solid fa-lightbulb" },
+  utilidades: { name: "Utilidades & Casa", emoji: "🛠️", icon: "fa-solid fa-wrench" },
+  cosplay: { name: "Cosplay & Acessórios", emoji: "🎭", icon: "fa-solid fa-mask" },
+  miniaturas: { name: "Miniaturas & RPG", emoji: "🎲", icon: "fa-solid fa-dice-d20" }
+};
+
+/**
+ * Converte qualquer texto de categoria em um identificador slug seguro
+ */
+function slugifyCategory(str) {
+  if (!str) return "outros";
+  return str
+    .toString()
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
-function getCategoryIcon(category) {
-  const map = {
-    colecionaveis: "fa-solid fa-dragon",
-    decoracao: "fa-solid fa-seedling",
-    setup: "fa-solid fa-headphones",
-    personalizados: "fa-solid fa-gift"
-  };
-  return map[category] || "fa-solid fa-cube";
+/**
+ * Determina o nome legível de exibição da categoria
+ */
+function getCategoryLabel(category) {
+  if (DEFAULT_CATEGORY_METADATA[category]?.name) {
+    return DEFAULT_CATEGORY_METADATA[category].name;
+  }
+  const clean = category.replace(/-/g, " ");
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+}
+
+/**
+ * Determina o emoji adequado para a categoria (seja pré-definida ou nova criada no CMS)
+ */
+function getCategoryEmoji(category, categoryName = "") {
+  if (DEFAULT_CATEGORY_METADATA[category]?.emoji) {
+    return DEFAULT_CATEGORY_METADATA[category].emoji;
+  }
+  const text = (category + " " + categoryName).toLowerCase();
+  if (text.includes("drag") || text.includes("figure") || text.includes("colecion")) return "🐉";
+  if (text.includes("decor") || text.includes("vaso") || text.includes("plant")) return "🌿";
+  if (text.includes("setup") || text.includes("headset") || text.includes("suporte") || text.includes("fone")) return "🎧";
+  if (text.includes("present") || text.includes("chaveir") || text.includes("brinde")) return "🎁";
+  if (text.includes("game") || text.includes("geek") || text.includes("jog") || text.includes("nerd") || text.includes("control")) return "🎮";
+  if (text.includes("luz") || text.includes("litofan") || text.includes("lamp") || text.includes("ilumin")) return "💡";
+  if (text.includes("util") || text.includes("ferrament") || text.includes("casa")) return "🛠️";
+  if (text.includes("cosplay") || text.includes("mascar") || text.includes("fantasia")) return "🎭";
+  if (text.includes("miniat") || text.includes("rpg") || text.includes("dnd")) return "🎲";
+  if (text.includes("trofeu") || text.includes("premio") || text.includes("medal")) return "🏆";
+  if (text.includes("caneca") || text.includes("copo") || text.includes("cafe")) return "☕";
+  if (text.includes("joia") || text.includes("anel") || text.includes("brinco")) return "💎";
+  if (text.includes("carro") || text.includes("auto") || text.includes("moto")) return "🚗";
+  if (text.includes("pet") || text.includes("cachorro") || text.includes("gato")) return "🐾";
+  return "✨";
+}
+
+/**
+ * Determina o ícone FontAwesome correspondente à categoria
+ */
+function getCategoryIcon(category, categoryName = "") {
+  if (DEFAULT_CATEGORY_METADATA[category]?.icon) {
+    return DEFAULT_CATEGORY_METADATA[category].icon;
+  }
+  const text = (category + " " + categoryName).toLowerCase();
+  if (text.includes("drag") || text.includes("figure") || text.includes("colecion")) return "fa-solid fa-dragon";
+  if (text.includes("decor") || text.includes("vaso") || text.includes("plant")) return "fa-solid fa-seedling";
+  if (text.includes("setup") || text.includes("headset") || text.includes("suporte") || text.includes("fone")) return "fa-solid fa-headphones";
+  if (text.includes("present") || text.includes("chaveir") || text.includes("brinde")) return "fa-solid fa-gift";
+  if (text.includes("game") || text.includes("geek") || text.includes("jog") || text.includes("nerd") || text.includes("control")) return "fa-solid fa-gamepad";
+  if (text.includes("luz") || text.includes("litofan") || text.includes("lamp") || text.includes("ilumin")) return "fa-solid fa-lightbulb";
+  if (text.includes("util") || text.includes("ferrament") || text.includes("casa")) return "fa-solid fa-wrench";
+  if (text.includes("cosplay") || text.includes("mascar") || text.includes("fantasia")) return "fa-solid fa-mask";
+  if (text.includes("miniat") || text.includes("rpg") || text.includes("dnd")) return "fa-solid fa-dice-d20";
+  return "fa-solid fa-cube";
 }
 
 /**
  * Normaliza os dados vindos de produtos.json ou Pages CMS garantindo
- * compatibilidade total tanto com campos em português quanto em inglês.
+ * compatibilidade total com seleção no dropdown E criação de novas categorias.
  */
 function normalizeProduct(raw, index) {
-  const category = (raw.categoria || raw.category || "outros").toLowerCase();
+  const customCat = (raw.nova_categoria || raw.categoria_personalizada || "").toString().trim();
+  const rawCat = (raw.categoria || raw.category || "").toString().trim();
+
+  let categorySlug = "outros";
+  let categoryLabel = "";
+
+  // Prioriza nova categoria se tiver sido digitada no CMS
+  if (customCat && (rawCat === "nova" || rawCat === "outros" || !rawCat)) {
+    categorySlug = slugifyCategory(customCat);
+    categoryLabel = customCat;
+  } else if (rawCat && rawCat !== "nova") {
+    categorySlug = slugifyCategory(rawCat);
+    categoryLabel = raw.categoriaNome || raw.categoryName || getCategoryLabel(categorySlug);
+  } else if (customCat) {
+    categorySlug = slugifyCategory(customCat);
+    categoryLabel = customCat;
+  } else {
+    categorySlug = "outros";
+    categoryLabel = raw.categoriaNome || raw.categoryName || "Geral";
+  }
+
   const title = raw.nome || raw.title || "Peça 3D";
   const price = raw.preco || raw.price || "Consulte";
   const desc = raw.descricao || raw.desc || "";
@@ -152,6 +237,12 @@ function normalizeProduct(raw, index) {
   const id = raw.id !== undefined && raw.id !== null ? Number(raw.id) : (index + 1);
   const isAvailable = raw.disponivel !== undefined ? Boolean(raw.disponivel) : (raw.available !== undefined ? Boolean(raw.available) : true);
 
+  // Ícone/Emoji customizado ou inteligente
+  let icon = raw.categoria_icone || raw.icon || "";
+  if (!icon) {
+    icon = getCategoryIcon(categorySlug, categoryLabel);
+  }
+
   return {
     id,
     nome: title,
@@ -159,15 +250,17 @@ function normalizeProduct(raw, index) {
     preco: price,
     price,
     numericPrice: parseItemPrice(price),
-    categoria: category,
-    category,
-    categoriaNome: raw.categoriaNome || raw.categoryName || getCategoryLabel(category),
-    categoryName: raw.categoriaNome || raw.categoryName || getCategoryLabel(category),
+    categoria: categorySlug,
+    category: categorySlug,
+    categoriaNome: categoryLabel,
+    categoryName: categoryLabel,
     descricao: desc,
     desc,
     imagem: image,
     image,
-    icon: raw.icon || getCategoryIcon(category),
+    icon: icon,
+    categoria_icone: raw.categoria_icone || "",
+    nova_categoria: raw.nova_categoria || "",
     disponivel: isAvailable
   };
 }
@@ -175,6 +268,71 @@ function normalizeProduct(raw, index) {
 // Inicializa previamente com fallback para evitar qualquer tela vazia antes do fetch
 ALL_PRODUCTS = FALLBACK_CATALOG_ITEMS.map((item, idx) => normalizeProduct(item, idx));
 CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel);
+
+/**
+ * Renderiza dinamicamente as abas de filtro a partir das categorias reais dos produtos
+ */
+function renderFilterTabs(preferredCategory = null) {
+  const container = document.getElementById("filter-tabs-container");
+  if (!container) return;
+
+  // Categoria ativa atual
+  let activeCategory = preferredCategory;
+  if (!activeCategory) {
+    const currentActiveBtn = container.querySelector(".filter-btn.active");
+    activeCategory = currentActiveBtn ? currentActiveBtn.getAttribute("data-category") : "all";
+  }
+
+  // Agrupa categorias únicas a partir dos produtos disponíveis
+  const categoryMap = new Map();
+
+  CATALOG_ITEMS.forEach(item => {
+    const slug = item.categoria || item.category;
+    if (!slug) return;
+    if (!categoryMap.has(slug)) {
+      const meta = DEFAULT_CATEGORY_METADATA[slug] || {};
+      let emoji = "";
+      if (item.categoria_icone && item.categoria_icone.length <= 4 && !item.categoria_icone.includes("fa-")) {
+        emoji = item.categoria_icone;
+      } else {
+        emoji = meta.emoji || getCategoryEmoji(slug, item.categoryName);
+      }
+
+      categoryMap.set(slug, {
+        slug: slug,
+        name: item.categoriaNome || item.categoryName || meta.name || slug,
+        emoji: emoji,
+        icon: item.icon || meta.icon || "fa-solid fa-cube"
+      });
+    }
+  });
+
+  // Se a categoria selecionada não existir mais, volta para "all"
+  if (activeCategory !== "all" && !categoryMap.has(activeCategory)) {
+    activeCategory = "all";
+  }
+
+  // Gera o HTML das abas dinâmicas
+  let html = `
+    <button class="filter-btn ${activeCategory === 'all' ? 'active' : ''}" data-category="all">
+      ✨ Todos
+    </button>
+  `;
+
+  categoryMap.forEach(cat => {
+    const isActive = activeCategory === cat.slug;
+    html += `
+      <button class="filter-btn ${isActive ? 'active' : ''}" data-category="${cat.slug}">
+        ${cat.emoji} ${cat.name}
+      </button>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  // Reconecta os eventos de clique e scroll nas abas dinâmicas
+  setupFilterButtons();
+}
 
 /**
  * Busca produtos.json dinamicamente via fetch e atualiza a interface
@@ -198,9 +356,11 @@ async function loadProductsData() {
     }
   }
 
-  // Renderiza vitrine e showroom com os produtos carregados e disponíveis
-  const activeBtn = document.querySelector(".filter-btn.active");
-  const currentCategory = activeBtn ? activeBtn.getAttribute("data-category") : "all";
+  // Sincroniza abas de filtro dinâmicas com as categorias presentes nos produtos
+  const currentActiveBtn = document.querySelector(".filter-btn.active");
+  const currentCategory = currentActiveBtn ? currentActiveBtn.getAttribute("data-category") : "all";
+
+  renderFilterTabs(currentCategory);
   renderCatalog(currentCategory || "all");
   setupHeroSlider();
 }
@@ -210,8 +370,8 @@ async function loadProductsData() {
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
   setupBrandInfo();
+  renderFilterTabs("all");
   renderCatalog("all");
-  setupFilterButtons();
   setupModal();
   setupSmoothScroll();
   setupHeroSlider();

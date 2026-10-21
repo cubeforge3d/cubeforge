@@ -24,14 +24,36 @@ content:
         label: Categoria
         type: select
         options:
-          - label: Colecionáveis
-            value: colecionaveis
-          - label: Decoração
-            value: decoracao
-          - label: Setup & Suportes
-            value: setup
-          - label: Presentes
-            value: personalizados
+          placeholder: "Selecione uma categoria..."
+          values:
+            - name: colecionaveis
+              label: "🐉 Colecionáveis"
+            - name: decoracao
+              label: "🌿 Decoração"
+            - name: setup
+              label: "🎧 Setup & Suportes"
+            - name: personalizados
+              label: "🎁 Presentes"
+            - name: geek
+              label: "🎮 Geek & Games"
+            - name: iluminacao
+              label: "💡 Iluminação & Litofanias"
+            - name: utilidades
+              label: "🛠️ Utilidades & Casa"
+            - name: cosplay
+              label: "🎭 Cosplay & Acessórios"
+            - name: miniaturas
+              label: "🎲 Miniaturas & RPG"
+            - name: nova
+              label: "✨ Criar Nova Categoria (digitar abaixo)"
+      - name: nova_categoria
+        label: Criar Nova Categoria (Nome)
+        type: string
+        description: "Selecione 'Criar Nova Categoria' acima e digite o nome aqui (ex: Canecas, Vasos, Chaveiros). Ela aparecerá automaticamente nos filtros do site!"
+      - name: categoria_icone
+        label: Emoji da Categoria (Opcional)
+        type: string
+        description: "Emoji para o botão de filtro (ex: 🏆, ☕, 💎, 🐉). Se vazio, o site escolhe um ícone inteligente."
       - name: descricao
         label: Descrição
         type: text
