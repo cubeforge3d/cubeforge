@@ -46,7 +46,8 @@ const FALLBACK_CATALOG_ITEMS = [
     descricao: "Seus personagens favoritos de animes, games e filmes impressos com riqueza de detalhes.",
     imagem: "./assets/img/produtos/item1.jpg",
     icon: "fa-solid fa-dragon",
-    disponivel: true
+    disponivel: true,
+    estoque: 2
   },
   {
     id: 2,
@@ -57,7 +58,8 @@ const FALLBACK_CATALOG_ITEMS = [
     descricao: "Design geométrico moderno e elegante para dar vida à sua mesa, sala ou escritório.",
     imagem: "./assets/img/produtos/item2.jpg",
     icon: "fa-solid fa-seedling",
-    disponivel: true
+    disponivel: true,
+    estoque: 0
   },
   {
     id: 3,
@@ -68,7 +70,8 @@ const FALLBACK_CATALOG_ITEMS = [
     descricao: "Organize seus fones e smartphone com uma base firme, moderna e ergonômica.",
     imagem: "./assets/img/produtos/item3.jpg",
     icon: "fa-solid fa-headphones",
-    disponivel: true
+    disponivel: true,
+    estoque: 1
   },
   {
     id: 4,
@@ -79,7 +82,8 @@ const FALLBACK_CATALOG_ITEMS = [
     descricao: "Sua foto de família, pet ou casal esculpida em relevo 3D. A imagem aparece ao acender a luz!",
     imagem: "./assets/img/produtos/item4.jpg",
     icon: "fa-solid fa-lightbulb",
-    disponivel: true
+    disponivel: true,
+    estoque: 0
   },
   {
     id: 5,
@@ -90,7 +94,8 @@ const FALLBACK_CATALOG_ITEMS = [
     descricao: "Personalize com seu nome, apelido, logotipo ou símbolos de jogos para você ou para presentear.",
     imagem: "./assets/img/produtos/item5.jpg",
     icon: "fa-solid fa-key",
-    disponivel: true
+    disponivel: true,
+    estoque: 4
   },
   {
     id: 6,
@@ -101,7 +106,8 @@ const FALLBACK_CATALOG_ITEMS = [
     descricao: "Base temática estilosa para deixar seus controles de PS5, Xbox ou Switch sempre organizados.",
     imagem: "./assets/img/produtos/item6.jpg",
     icon: "fa-solid fa-gamepad",
-    disponivel: true
+    disponivel: true,
+    estoque: 0
   }
 ];
 
@@ -236,6 +242,7 @@ function normalizeProduct(raw, index) {
 
   const id = raw.id !== undefined && raw.id !== null ? Number(raw.id) : (index + 1);
   const isAvailable = raw.disponivel !== undefined ? Boolean(raw.disponivel) : (raw.available !== undefined ? Boolean(raw.available) : true);
+  const stock = Math.max(0, parseInt(raw.estoque ?? raw.stock ?? raw.estoque_pronta_entrega ?? 0, 10) || 0);
 
   // Ícone/Emoji customizado ou inteligente
   let icon = raw.categoria_icone || raw.icon || "";
@@ -261,7 +268,9 @@ function normalizeProduct(raw, index) {
     icon: icon,
     categoria_icone: raw.categoria_icone || "",
     nova_categoria: raw.nova_categoria || "",
-    disponivel: isAvailable
+    disponivel: isAvailable,
+    estoque: stock,
+    prontaEntrega: stock > 0
   };
 }
 
@@ -285,6 +294,7 @@ function renderFilterTabs(preferredCategory = null) {
 
   // Agrupa categorias únicas a partir dos produtos disponíveis
   const categoryMap = new Map();
+  const hasReadyStock = CATALOG_ITEMS.some(item => item.estoque > 0);
 
   CATALOG_ITEMS.forEach(item => {
     const slug = item.categoria || item.category;
@@ -308,16 +318,28 @@ function renderFilterTabs(preferredCategory = null) {
   });
 
   // Se a categoria selecionada não existir mais, volta para "all"
-  if (activeCategory !== "all" && !categoryMap.has(activeCategory)) {
+  if (activeCategory !== "all" && activeCategory !== "pronta-entrega" && !categoryMap.has(activeCategory)) {
+    activeCategory = "all";
+  }
+  if (activeCategory === "pronta-entrega" && !hasReadyStock) {
     activeCategory = "all";
   }
 
-  // Gera o HTML das abas dinâmicas
+  // Gera o HTML das abas dinâmicas com destaque de Pronta Entrega
   let html = `
     <button class="filter-btn ${activeCategory === 'all' ? 'active' : ''}" data-category="all">
       ✨ Todos
     </button>
   `;
+
+  if (hasReadyStock) {
+    const isReadyActive = activeCategory === "pronta-entrega";
+    html += `
+      <button class="filter-btn filter-btn-ready ${isReadyActive ? 'active' : ''}" data-category="pronta-entrega" title="Filtrar apenas peças com envio imediato">
+        <span class="stock-pulse-dot"></span> ⚡ Pronta Entrega
+      </button>
+    `;
+  }
 
   categoryMap.forEach(cat => {
     const isActive = activeCategory === cat.slug;
@@ -490,9 +512,14 @@ function renderCatalog(filterCategory = "all") {
   const grid = document.getElementById("portfolio-grid");
   if (!grid) return;
 
-  const filteredItems = filterCategory === "all" 
-    ? CATALOG_ITEMS 
-    : CATALOG_ITEMS.filter(item => item.category === filterCategory);
+  let filteredItems = [];
+  if (filterCategory === "all") {
+    filteredItems = CATALOG_ITEMS;
+  } else if (filterCategory === "pronta-entrega") {
+    filteredItems = CATALOG_ITEMS.filter(item => item.estoque > 0);
+  } else {
+    filteredItems = CATALOG_ITEMS.filter(item => item.category === filterCategory);
+  }
 
   grid.innerHTML = "";
 
@@ -509,9 +536,31 @@ function renderCatalog(filterCategory = "all") {
           <span>${item.categoryName}</span>
          </div>`;
 
+    // Selo de Pronta Entrega / Urgência
+    const isReady = item.estoque > 0;
+    const stockPill = isReady
+      ? `<span class="stock-pill in-stock" title="Temos ${item.estoque} unidade(s) pronta(s) para envio imediato!">
+           <span class="stock-pulse-dot"></span>
+           ⚡ ${item.estoque === 1 ? 'Última pronta!' : item.estoque + ' prontas'}
+         </span>`
+      : `<span class="stock-pill on-demand" title="Feito sob encomenda na cor que você preferir">
+           🛠️ Sob Encomenda
+         </span>`;
+
+    const stockBar = isReady
+      ? `<div class="product-stock-bar in-stock">
+           <i class="fa-solid fa-bolt"></i>
+           <span><strong>Pronta Entrega:</strong> ${item.estoque === 1 ? 'Apenas 1 unidade' : item.estoque + ' unidades disponíveis'}</span>
+         </div>`
+      : `<div class="product-stock-bar on-demand">
+           <i class="fa-solid fa-wand-magic-sparkles"></i>
+           <span><strong>Sob Encomenda:</strong> Feito na sua cor</span>
+         </div>`;
+
     card.innerHTML = `
       <div class="product-img-box" onclick="openProductModal(${item.id})" style="cursor: pointer;" title="Clique para ver detalhes de ${item.title}">
         <span class="product-category-tag">${item.categoryName}</span>
+        ${stockPill}
         ${imageContent}
       </div>
       <div class="product-info">
@@ -520,6 +569,7 @@ function renderCatalog(filterCategory = "all") {
           <span class="product-price-badge">${item.price}</span>
         </div>
         <p class="product-desc">${item.desc}</p>
+        ${stockBar}
         <div class="product-actions-group">
           <button class="btn-card-cart" onclick="addToCart(${item.id}, 1, this)" aria-label="Adicionar ${item.title} ao carrinho">
             <i class="fa-solid fa-cart-plus"></i> + Carrinho
@@ -647,6 +697,27 @@ window.openProductModal = function(productId) {
         <span>${item.categoryName}</span>
        </div>`;
 
+  const isReady = item.estoque > 0;
+  const stockAlert = isReady
+    ? `<div class="modal-stock-alert in-stock">
+        <div class="stock-alert-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+        <div>
+          <strong>⚡ Peça com Pronta Entrega!</strong>
+          <div style="font-size: 0.78rem; opacity: 0.95; margin-top: 2px;">
+            Temos <strong>${item.estoque} ${item.estoque === 1 ? 'peça já impressa' : 'peças já impressas'}</strong> pronta(s) para envio ou retirada rápida. Aproveite antes que acabe!
+          </div>
+        </div>
+       </div>`
+    : `<div class="modal-stock-alert on-demand">
+        <div class="stock-alert-icon"><i class="fa-solid fa-hammer"></i></div>
+        <div>
+          <strong>🛠️ Produção Sob Encomenda</strong>
+          <div style="font-size: 0.78rem; opacity: 0.95; margin-top: 2px;">
+            Impressão 3D de alta resolução fabricada especialmente para você na cor e tamanho que preferir.
+          </div>
+        </div>
+       </div>`;
+
   modalBody.innerHTML = `
     <div class="modal-image-area">
       ${modalImageContent}
@@ -658,6 +729,8 @@ window.openProductModal = function(productId) {
       </div>
       <p class="modal-desc">${item.desc}</p>
       
+      ${stockAlert}
+
       <div class="modal-note-box">
         <i class="fa-solid fa-palette"></i>
         <span>Peça personalizada sob demanda na cor que você preferir!</span>
@@ -715,11 +788,18 @@ function setupHeroSlider() {
   if (!track || !CATALOG_ITEMS || CATALOG_ITEMS.length === 0) return;
 
   // Renderiza todos os cards em formato 3:4
-  track.innerHTML = CATALOG_ITEMS.map((item) => `
+  track.innerHTML = CATALOG_ITEMS.map((item) => {
+    const isReady = item.estoque > 0;
+    const stockPill = isReady
+      ? `<span class="stock-pill in-stock" title="Temos ${item.estoque} unidade(s) pronta(s) para envio imediato!"><span class="stock-pulse-dot"></span> ⚡ ${item.estoque === 1 ? '1 pronta' : item.estoque + ' prontas'}</span>`
+      : `<span class="stock-pill on-demand">🛠️ Sob Encomenda</span>`;
+
+    return `
     <div class="showroom-product-card" data-id="${item.id}">
       <div class="showroom-card-media" onclick="openProductModal(${item.id})" title="Clique para ver detalhes de ${item.title}">
         <img src="${item.image}" alt="${item.title}" loading="lazy">
         <span class="card-category-pill"><i class="${item.icon}"></i> ${item.categoryName}</span>
+        ${stockPill}
         <span class="card-price-pill">${item.price}</span>
       </div>
       <div class="showroom-card-info">
@@ -735,7 +815,8 @@ function setupHeroSlider() {
         </div>
       </div>
     </div>
-  `).join("");
+  `;
+  }).join("");
 
   window.orderDirectFromCard = function(itemId) {
     const item = CATALOG_ITEMS.find((p) => p.id === itemId) || ALL_PRODUCTS.find(p => p.id === itemId);
@@ -919,6 +1000,7 @@ window.addToCart = function(productId, quantity = 1, triggerBtn = null) {
   const existing = cart.find(item => item.id === productId);
   if (existing) {
     existing.quantity += quantity;
+    existing.estoque = product.estoque || 0;
   } else {
     cart.push({
       id: product.id,
@@ -928,6 +1010,7 @@ window.addToCart = function(productId, quantity = 1, triggerBtn = null) {
       image: product.image,
       icon: product.icon,
       categoryName: product.categoryName,
+      estoque: product.estoque || 0,
       quantity: quantity
     });
   }
@@ -1048,6 +1131,7 @@ function updateCartUI() {
           <div class="cart-item-details">
             <h4 class="cart-item-title">${item.title}</h4>
             <div class="cart-item-unit-price">${item.price} cada</div>
+            ${item.estoque > 0 ? `<span class="cart-item-stock-tag">⚡ Pronta Entrega (${item.estoque} disp.)</span>` : ''}
             <div class="cart-item-actions-row">
               <div class="qty-control-box">
                 <button class="qty-btn" onclick="updateCartQuantity(${item.id}, -1)" aria-label="Diminuir quantidade">
@@ -1101,7 +1185,8 @@ function checkoutCartWhatsApp() {
 
   cart.forEach(item => {
     const subtotal = formatBRL(item.numericPrice * item.quantity);
-    message += `• *${item.quantity}x* ${item.title} (${item.price} cada) = ${subtotal}\n`;
+    const stockTag = item.estoque > 0 ? " [⚡ Pronta Entrega]" : " [🛠️ Sob Encomenda]";
+    message += `• *${item.quantity}x* ${item.title} (${item.price} cada) = ${subtotal}${stockTag}\n`;
   });
 
   message += `\n💰 *Total Estimado:* ${totalStr}\n`;
