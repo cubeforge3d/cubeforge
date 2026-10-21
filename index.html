@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cube Forge | Impressão 3D & Colecionáveis</title>
+  <meta name="description" content="Cube Forge 3D - Colecionáveis, decoração moderna, suportes para setup e itens personalizados. Peça o seu pelo WhatsApp!">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="logo-emblem.png">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Iluminação de Fundo Dinâmica & Suave (Aurora Orgânica: Laranja, Azul e Transição Roxo Leve) -->
+  <div class="ambient-aurora-layer" id="ambient-aurora" aria-hidden="true">
+    <div class="ambient-orb orb-orange"></div>
+    <div class="ambient-orb orb-purple-transition"></div>
+    <div class="ambient-orb orb-cyan"></div>
+    <div class="ambient-orb orb-deep-blue"></div>
+    <div class="ambient-orb orb-purple-bottom"></div>
+    <div class="ambient-orb orb-orange-bottom"></div>
+  </div>
+
+  <!-- Desktop Navbar (Exibida apenas em computadores/telas grandes) -->
+  <nav class="desktop-navbar">
+    <div class="container navbar-container">
+      <a href="#" class="nav-logo">
+        <img src="logo-emblem.png" alt="Cube Forge Logo" class="brand-emblem-solto">
+        <span class="nav-brand"><span class="brand-cube">CUBE</span> <span class="brand-forge">FORGE</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="#catalogo">Vitrine</a>
+        <a href="#como-funciona">Como Pedir</a>
+        <a href="#faq">Dúvidas</a>
+        <a href="#" id="nav-instagram-link" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-instagram"></i> Instagram</a>
+      </div>
+      <div class="nav-right-actions">
+        <button id="nav-cart-btn" class="nav-cart-btn" aria-label="Abrir carrinho">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span>Carrinho</span>
+          <span class="cart-badge" id="nav-cart-badge">0</span>
+        </button>
+        <a href="#" id="nav-whatsapp-btn" class="nav-cta-btn" target="_blank" rel="noopener noreferrer">
+          <i class="fa-brands fa-whatsapp"></i> Fazer Pedido
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Top Hero / Bio Links Section -->
+  <header class="hero-section">
+    <div class="container hero-container">
+      
+      <!-- ==========================================
+           1. VERSÃO MOBILE (Exclusiva celular < 992px)
+           Link-in-Bio nativo, botões fáceis pro polegar
+           ========================================== -->
+      <div class="hero-mobile-content">
+        <!-- Avatar Mobile (Ícone solto com brilho neon) -->
+        <div class="hero-mobile-avatar">
+          <div class="emblem-wrapper-solto">
+            <img src="logo-emblem.png" alt="Cube Forge" class="hero-emblem-img">
+          </div>
+        </div>
+
+        <h1 class="brand-name" id="brand-name-display"><span class="brand-cube">CUBE</span> <span class="brand-forge">FORGE</span></h1>
+        <p class="brand-handle" id="instagram-handle-display">@cubeforge3d</p>
+        <p class="brand-bio">
+          Se dá para imaginar, a gente imprime! 🚀<br>
+          <strong>Colecionáveis exclusivos, itens para setup gamer, decoração e presentes personalizados.</strong>
+        </p>
+
+        <!-- Key Badges Mobile -->
+        <div class="trust-tags">
+          <span class="tag"><i class="fa-solid fa-location-dot"></i> Retirada & Entrega Local</span>
+          <span class="tag"><i class="fa-solid fa-wand-magic-sparkles"></i> 100% Personalizado</span>
+          <span class="tag"><i class="fa-solid fa-palette"></i> Cores Incríveis</span>
+          <span class="tag"><i class="fa-solid fa-layer-group"></i> PLA Alta Resolução</span>
+        </div>
+
+        <!-- Quick Action Buttons Mobile -->
+        <div class="action-buttons-group">
+          <!-- WhatsApp CTA -->
+          <a href="#" id="hero-whatsapp-btn" class="btn btn-whatsapp" target="_blank" rel="noopener noreferrer">
+            <div class="btn-icon-box">
+              <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <div class="btn-text-content">
+              <span class="btn-title">Fazer Pedido no WhatsApp</span>
+              <span class="btn-subtitle">Resposta rápida em poucos minutos</span>
+            </div>
+            <i class="fa-solid fa-chevron-right btn-arrow"></i>
+          </a>
+
+          <!-- Explore Site CTA -->
+          <a href="#catalogo" class="btn btn-primary" id="btn-explore">
+            <div class="btn-icon-box">
+              <i class="fa-solid fa-shapes"></i>
+            </div>
+            <div class="btn-text-content">
+              <span class="btn-title">Ver Vitrine de Inspiração</span>
+              <span class="btn-subtitle">Modelos prontos e ideias criativas</span>
+            </div>
+            <i class="fa-solid fa-arrow-down btn-arrow"></i>
+          </a>
+
+          <!-- Direct Instagram Profile -->
+          <a href="#" id="hero-instagram-btn" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+            <div class="btn-icon-box">
+              <i class="fa-brands fa-instagram"></i>
+            </div>
+            <div class="btn-text-content">
+              <span class="btn-title">Siga no Instagram</span>
+              <span class="btn-subtitle">Bastidores das impressões e novidades</span>
+            </div>
+            <i class="fa-solid fa-arrow-up-right-from-square btn-arrow"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           2. VERSÃO PC / DESKTOP (Exclusiva >= 992px)
+           Layout Widescreen Studio com Vitrine Visual Real
+           ========================================== -->
+      <div class="hero-desktop-content">
+        <!-- Coluna Esquerda: Apresentação & Ações Rápidas -->
+        <div class="desktop-hero-left">
+          <div class="desktop-badge-tag">
+            <img src="logo-emblem.png" alt="Cube Forge" class="badge-mini-emblem">
+            <span>Studio de Impressão 3D • Peças Exclusivas & Sob Medida</span>
+          </div>
+
+          <h1 class="desktop-hero-title">
+            Transformamos qualquer ideia em <span class="gradient-text">peças 3D de alta qualidade</span>.
+          </h1>
+
+          <p class="desktop-hero-subtitle">
+            Colecionáveis exclusivos para fãs de animes e games, suportes ergonômicos para seu setup gamer, decoração moderna e presentes personalizados. Produção local em PLA premium com acabamento suave e refinado.
+          </p>
+
+          <!-- Tiras de Diferenciais Horizontais (Samsung One UI 9 Nowbar Ambient Light) -->
+          <div class="desktop-features-strip">
+            <div class="feature-strip-item feature-strip-delivery">
+              <div class="feature-strip-icon"><i class="fa-solid fa-truck-fast"></i></div>
+              <div class="feature-strip-info">
+                <strong>Entrega & Retirada</strong>
+                <span>Presencial na região</span>
+              </div>
+            </div>
+
+            <div class="feature-strip-item feature-strip-custom">
+              <div class="feature-strip-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+              <div class="feature-strip-info">
+                <strong>100% Personalizado</strong>
+                <span>Cores & modelos à escolha</span>
+              </div>
+            </div>
+
+            <div class="feature-strip-item feature-strip-zap">
+              <div class="feature-strip-icon"><i class="fa-brands fa-whatsapp"></i></div>
+              <div class="feature-strip-info">
+                <strong>Orçamento no Zap</strong>
+                <span>Calculado na hora sem compromisso</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botões de Ação Exclusivos do Desktop (Lado a Lado - One UI 9 Nowbar Ambient Light) -->
+          <div class="desktop-actions-row">
+            <a href="#" id="desktop-whatsapp-btn" class="desktop-btn desktop-btn-whatsapp" target="_blank" rel="noopener noreferrer">
+              <span class="desktop-btn-icon"><i class="fa-brands fa-whatsapp"></i></span>
+              <span>Fazer Pedido no WhatsApp</span>
+            </a>
+
+            <a href="#catalogo" class="desktop-btn desktop-btn-primary" id="btn-explore-desktop">
+              <span class="desktop-btn-icon"><i class="fa-solid fa-shapes"></i></span>
+              <span>Ver Vitrine</span>
+              <i class="fa-solid fa-arrow-down-long btn-desktop-arrow"></i>
+            </a>
+
+            <a href="#" id="desktop-instagram-btn" target="_blank" rel="noopener noreferrer" class="desktop-btn desktop-btn-instagram" title="Ver Instagram">
+              <span class="desktop-btn-icon"><i class="fa-brands fa-instagram"></i></span>
+              <span>@cubeforge3d</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Coluna Direita: Showroom Panorâmico Multi-Produtos (Preenche a tela perfeitamente) -->
+        <div class="desktop-hero-right">
+          <div class="desktop-showroom-hub" id="desktop-showroom-hub">
+            
+            <!-- Top Bar da Vitrine: Título e controles de página -->
+            <div class="showroom-top-bar">
+              <div class="showroom-heading">
+                <span class="live-pulse-dot"></span>
+                <span class="showroom-heading-title">Vitrine de Peças Prontas</span>
+              </div>
+              
+              <div class="showroom-nav-controls">
+                <button class="showroom-nav-btn" id="showroom-prev-btn" aria-label="Peças anteriores" title="Ver anteriores">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <div class="showroom-pagination" id="showroom-pagination">
+                  <span class="showroom-page-text" id="showroom-page-text">1 / 2</span>
+                </div>
+                <button class="showroom-nav-btn" id="showroom-next-btn" aria-label="Próximas peças" title="Ver próximas">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Viewport do Carrossel Panorâmico 3:4 -->
+            <div class="showroom-cards-viewport" id="showroom-cards-viewport">
+              <div class="showroom-cards-track" id="showroom-cards-track">
+                <!-- Inserido dinamicamente via JavaScript com CATALOG_ITEMS -->
+              </div>
+            </div>
+
+            <!-- Faixa Inferior do Showroom: Encomenda Sob Medida do Pinterest/TikTok/STL -->
+            <div class="showroom-bottom-banner">
+              <div class="showroom-banner-content">
+                <div class="banner-icon-glow"><i class="fa-brands fa-pinterest-p"></i></div>
+                <div class="banner-text">
+                  <strong>Viu uma ideia no Pinterest, TikTok ou tem arquivo STL?</strong>
+                  <span>Não precisa ter arquivo 3D pronto! Mande a foto ou link no WhatsApp que avaliamos e orçamos na hora.</span>
+                </div>
+              </div>
+              <a href="#" id="desktop-hero-custom-btn" class="banner-zap-btn" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-whatsapp"></i> Orçar no Zap
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Catálogo / Vitrine de Inspiração -->
+  <section id="catalogo" class="section catalog-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">O que você quer criar?</span>
+        <h2 class="section-title">Vitrine de Inspiração</h2>
+        <p class="section-subtitle">Toque em qualquer modelo para pedir o seu no WhatsApp</p>
+      </div>
+
+      <!-- Sticky Filter Tabs Container -->
+      <div class="filter-sticky-wrapper" id="filter-sticky-wrapper">
+        <div class="filter-tabs" id="filter-tabs-container">
+          <button class="filter-btn active" data-category="all">✨ Todos</button>
+          <button class="filter-btn" data-category="colecionaveis">🎮 Colecionáveis</button>
+          <button class="filter-btn" data-category="decoracao">🌿 Decoração</button>
+          <button class="filter-btn" data-category="setup">🎧 Setup & Suportes</button>
+          <button class="filter-btn" data-category="personalizados">🎁 Presentes</button>
+        </div>
+      </div>
+
+      <!-- Portfolio Grid -->
+      <div class="portfolio-grid" id="portfolio-grid">
+        <!-- Itens inseridos via JavaScript dinamicamente -->
+      </div>
+
+      <!-- Custom Idea Banner (Viu na internet? Mande o print!) -->
+      <div class="custom-idea-banner">
+        <div class="custom-idea-content">
+          <div class="custom-idea-icon-box">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div class="custom-idea-text">
+            <h3>Viu outro modelo na internet?</h3>
+            <p>Achou algo legal no Instagram, Pinterest ou TikTok? Me mande o print ou link no WhatsApp que eu calculo o valor e imprimo para você!</p>
+          </div>
+        </div>
+        <a href="#" id="custom-idea-whatsapp-btn" class="btn-custom-idea" target="_blank" rel="noopener noreferrer">
+          <i class="fa-brands fa-whatsapp"></i> Pedir Minha Ideia
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it Works (Como Funciona) -->
+  <section id="como-funciona" class="section how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Sem Complicação</span>
+        <h2 class="section-title">Como pedir sua peça?</h2>
+        <p class="section-subtitle">Super simples em 3 passos</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card step-card-idea">
+          <div class="step-number">01</div>
+          <div class="step-icon"><i class="fa-solid fa-lightbulb"></i></div>
+          <h3>Mande a sua Ideia</h3>
+          <p>Envie uma foto da internet, print do Instagram ou me conte o que você tem em mente.</p>
+        </div>
+
+        <div class="step-card step-card-details">
+          <div class="step-number">02</div>
+          <div class="step-icon"><i class="fa-solid fa-palette"></i></div>
+          <h3>Escolha a Cor e Detalhes</h3>
+          <p>Combinamos a cor favorita, tamanho e passamos o valor certinho na hora pelo WhatsApp.</p>
+        </div>
+
+        <div class="step-card step-card-delivery">
+          <div class="step-number">03</div>
+          <div class="step-icon"><i class="fa-solid fa-handshake"></i></div>
+          <h3>Retire ou Receba</h3>
+          <p>Sua peça é impressa com todo cuidado e combinamos a entrega ou retirada em mãos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="section faq-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Tire suas dúvidas</span>
+        <h2 class="section-title">Perguntas Frequentes</h2>
+      </div>
+
+      <div class="faq-accordion">
+        <details class="faq-item" open>
+          <summary class="faq-question">
+            <span class="faq-q-text"><i class="fa-solid fa-circle-question faq-q-icon"></i> Não tenho modelo 3D, como faço para pedir?</span>
+            <i class="fa-solid fa-chevron-down faq-chevron"></i>
+          </summary>
+          <div class="faq-answer-wrapper">
+            <div class="faq-answer-inner">
+              <p><strong>É muito simples!</strong> Você não precisa entender de modelagem nem ter arquivo 3D pronto. Basta nos enviar uma foto, print ou link do <strong>Pinterest, Instagram ou TikTok</strong> no WhatsApp.</p>
+              <div class="faq-highlight-box">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Nós localizamos o modelo adequado, dimensionamos a peça e cuidamos de todo o processo de impressão para você.</span>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span class="faq-q-text"><i class="fa-solid fa-circle-question faq-q-icon"></i> Quanto tempo demora para ficar pronto?</span>
+            <i class="fa-solid fa-chevron-down faq-chevron"></i>
+          </summary>
+          <div class="faq-answer-wrapper">
+            <div class="faq-answer-inner">
+              <p><strong>Prazo personalizado sob medida:</strong> O tempo exato depende do tamanho da peça, nível de preenchimento e quantidade encomendada.</p>
+              <div class="faq-highlight-box">
+                <i class="fa-solid fa-clock"></i>
+                <span>Ao mandar a sua ideia pelo WhatsApp, calculamos na hora o tempo exato de máquina e combinamos uma data de entrega ideal com você.</span>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span class="faq-q-text"><i class="fa-solid fa-circle-question faq-q-icon"></i> Como é calculado o valor?</span>
+            <i class="fa-solid fa-chevron-down faq-chevron"></i>
+          </summary>
+          <div class="faq-answer-wrapper">
+            <div class="faq-answer-inner">
+              <p><strong>Preço justo e transparente:</strong> O valor é calculado exclusivamente com base no peso de material (PLA) e tempo de impressão da máquina.</p>
+              <div class="faq-highlight-box">
+                <i class="fa-brands fa-whatsapp"></i>
+                <span>Você recebe um orçamento claro e detalhado em poucos minutos no WhatsApp, sem compromisso e sem surpresas.</span>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span class="faq-q-text"><i class="fa-solid fa-circle-question faq-q-icon"></i> Como funciona a entrega ou retirada?</span>
+            <i class="fa-solid fa-chevron-down faq-chevron"></i>
+          </summary>
+          <div class="faq-answer-wrapper">
+            <div class="faq-answer-inner">
+              <p><strong>Atendimento prático e seguro na região:</strong></p>
+              <div class="faq-delivery-grid">
+                <div class="faq-delivery-item">
+                  <i class="fa-solid fa-hand-holding-heart"></i>
+                  <div>
+                    <strong>Retirada Presencial</strong>
+                    <span>Retire direto em mãos com a gente sem custo adicional de frete.</span>
+                  </div>
+                </div>
+                <div class="faq-delivery-item">
+                  <i class="fa-solid fa-truck-fast"></i>
+                  <div>
+                    <strong>Entrega Local</strong>
+                    <span>Combinamos o envio ágil e seguro direto para você na sua cidade/bairro.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA Section -->
+  <section class="section final-cta-section">
+    <div class="container">
+      <div class="cta-banner">
+        <h2>Pronto para encomendar sua peça?</h2>
+        <p>Clique no botão abaixo, me dê um oi no WhatsApp e vamos criar algo incrível juntos!</p>
+        <a href="#" class="btn btn-whatsapp-large" target="_blank" rel="noopener noreferrer">
+          <i class="fa-brands fa-whatsapp"></i> Chamar no WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-logo">
+        <img src="logo-emblem.png" alt="Cube Forge Logo" class="footer-emblem-img">
+        <span id="footer-brand-name"><span class="brand-cube">Cube</span> <span class="brand-forge">Forge</span></span>
+      </div>
+      <p class="footer-copy">© <span id="current-year"></span> Todos os direitos reservados. Cube Forge 3D.</p>
+      <div class="footer-socials">
+        <a href="#" id="footer-instagram-link" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <i class="fa-brands fa-instagram"></i>
+        </a>
+        <a href="#" id="footer-whatsapp-link" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+          <i class="fa-brands fa-whatsapp"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating WhatsApp Button (Fixado no canto inferior direito no mobile) -->
+  <aside class="floating-whatsapp-container">
+    <a href="#" id="floating-whatsapp-btn" class="floating-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Chamar no WhatsApp">
+      <div class="fab-pulse"></div>
+      <i class="fa-brands fa-whatsapp fab-icon"></i>
+      <span class="fab-tooltip">Pedir no WhatsApp</span>
+    </a>
+  </aside>
+
+  <!-- Floating Mobile Cart Button (Aparece no canto inferior esquerdo no celular) -->
+  <aside class="mobile-cart-float-container" id="mobile-cart-container">
+    <button class="mobile-cart-float-btn" id="mobile-cart-btn" aria-label="Abrir carrinho">
+      <div class="cart-pulse-ring"></div>
+      <i class="fa-solid fa-cart-shopping"></i>
+      <span class="mobile-cart-badge" id="mobile-cart-badge">0</span>
+      <span class="mobile-cart-label">Carrinho</span>
+    </button>
+  </aside>
+
+  <!-- Modal de Detalhes da Peça -->
+  <div class="modal-overlay" id="product-modal">
+    <div class="modal-content">
+      <button class="modal-close" id="modal-close-btn" aria-label="Fechar Modal"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-body" id="modal-body-content">
+        <!-- Preenchido via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer / Modal de Carrinho de Compras -->
+  <div class="cart-overlay" id="cart-overlay">
+    <div class="cart-drawer" id="cart-drawer">
+      <div class="cart-header">
+        <div class="cart-header-title">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <h3>Meu Carrinho</h3>
+          <span class="cart-count-pill" id="cart-header-count">(0)</span>
+        </div>
+        <button class="cart-close-btn" id="cart-close-btn" aria-label="Fechar carrinho"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Lista de Itens do Carrinho -->
+      <div class="cart-body" id="cart-items-container">
+        <!-- Inserido dinamicamente via JS -->
+      </div>
+
+      <!-- Rodapé do Carrinho com Total & Checkout no WhatsApp -->
+      <div class="cart-footer" id="cart-footer-panel">
+        <div class="cart-notes-wrapper">
+          <label for="cart-custom-notes"><i class="fa-solid fa-pen-to-square"></i> Observações do Pedido:</label>
+          <input type="text" id="cart-custom-notes" placeholder="Ex: Cores desejadas, nomes ou detalhes...">
+        </div>
+
+        <div class="cart-total-row">
+          <span class="total-label">Total Estimado:</span>
+          <span class="total-value" id="cart-total-display">R$ 0,00</span>
+        </div>
+
+        <button id="btn-checkout-whatsapp" class="btn-cart-checkout">
+          <i class="fa-brands fa-whatsapp"></i> Finalizar Pedido no WhatsApp
+        </button>
+
+        <!-- Barra de Confirmação para Esvaziar Carrinho -->
+        <div class="cart-clear-confirm-bar" id="cart-clear-confirm-bar">
+          <div class="confirm-bar-text">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Deseja realmente esvaziar o carrinho?</span>
+          </div>
+          <div class="confirm-bar-actions">
+            <button id="btn-confirm-clear-yes" class="btn-confirm-yes" type="button">
+              <i class="fa-solid fa-trash-can"></i> Sim, esvaziar
+            </button>
+            <button id="btn-confirm-clear-no" class="btn-confirm-no" type="button">Cancelar</button>
+          </div>
+        </div>
+
+        <div class="cart-secondary-actions" id="cart-secondary-actions">
+          <button id="btn-clear-cart" class="btn-cart-clear"><i class="fa-solid fa-trash-can"></i> Esvaziar</button>
+          <button id="btn-continue-shopping" class="btn-cart-continue">Continuar Escolhendo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Flutuante Compacto de Confirmação e Status (One UI 9 Nowbar Capsule) -->
+  <div class="cart-toast" id="cart-toast">
+    <div class="toast-icon" id="toast-icon-box"><i class="fa-solid fa-circle-check"></i></div>
+    <div class="toast-content">
+      <span class="toast-item-title" id="toast-item-name">Produto</span>
+      <span class="toast-item-status" id="toast-item-status">Adicionado ao carrinho!</span>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>

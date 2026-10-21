@@ -1,0 +1,6 @@
+# Temporary previews and tests
+preview*.png
+test_*.jpg
+logo-transparent-test.png
+.DS_Store
+Thumbs.db
