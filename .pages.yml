@@ -1,0 +1,44 @@
+media:
+  input: assets/img/produtos
+  output: ./assets/img/produtos
+
+content:
+  - name: produtos
+    label: Catálogo de Produtos
+    type: file
+    path: produtos.json
+    list: true
+    fields:
+      - name: id
+        label: ID
+        type: number
+      - name: nome
+        label: Nome
+        type: string
+        required: true
+      - name: preco
+        label: Preço
+        type: string
+        required: true
+      - name: categoria
+        label: Categoria
+        type: select
+        options:
+          - label: Colecionáveis
+            value: colecionaveis
+          - label: Decoração
+            value: decoracao
+          - label: Setup & Suportes
+            value: setup
+          - label: Presentes
+            value: personalizados
+      - name: descricao
+        label: Descrição
+        type: text
+      - name: imagem
+        label: Foto
+        type: image
+      - name: disponivel
+        label: Disponível em Estoque
+        type: boolean
+        default: true

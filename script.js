@@ -28,71 +28,177 @@ const SITE_CONFIG = {
 /**
  * ============================================================================
  * CATÁLOGO DE PRODUTOS / PREÇOS
- * Altere os valores no campo 'price' facilmente a qualquer momento!
+ * Extraído para produtos.json (gerenciável visualmente via Pages CMS)
  * ============================================================================
  */
-const CATALOG_ITEMS = [
+const FALLBACK_CATALOG_ITEMS = [
   {
     id: 1,
-    title: "Action Figures & Colecionáveis",
-    category: "colecionaveis",
-    categoryName: "Colecionáveis",
-    price: "A partir de R$ 40",
-    image: "img/item1.jpg",
+    nome: "Action Figures & Colecionáveis",
+    preco: "A partir de R$ 40",
+    categoria: "colecionaveis",
+    categoriaNome: "Colecionáveis",
+    descricao: "Seus personagens favoritos de animes, games e filmes impressos com riqueza de detalhes.",
+    imagem: "./assets/img/produtos/item1.jpg",
     icon: "fa-solid fa-dragon",
-    desc: "Seus personagens favoritos de animes, games e filmes impressos com riqueza de detalhes."
+    disponivel: true
   },
   {
     id: 2,
-    title: "Vaso Geométrico Moderno",
-    category: "decoracao",
-    categoryName: "Decoração",
-    price: "R$ 35,00",
-    image: "img/item2.jpg",
+    nome: "Vaso Geométrico Moderno",
+    preco: "R$ 35,00",
+    categoria: "decoracao",
+    categoriaNome: "Decoração",
+    descricao: "Design geométrico moderno e elegante para dar vida à sua mesa, sala ou escritório.",
+    imagem: "./assets/img/produtos/item2.jpg",
     icon: "fa-solid fa-seedling",
-    desc: "Design geométrico moderno e elegante para dar vida à sua mesa, sala ou escritório."
+    disponivel: true
   },
   {
     id: 3,
-    title: "Suporte para Headset & Celular",
-    category: "setup",
-    categoryName: "Setup & Suportes",
-    price: "R$ 45,00",
-    image: "img/item3.jpg",
+    nome: "Suporte para Headset & Celular",
+    preco: "R$ 45,00",
+    categoria: "setup",
+    categoriaNome: "Setup & Suportes",
+    descricao: "Organize seus fones e smartphone com uma base firme, moderna e ergonômica.",
+    imagem: "./assets/img/produtos/item3.jpg",
     icon: "fa-solid fa-headphones",
-    desc: "Organize seus fones e smartphone com uma base firme, moderna e ergonômica."
+    disponivel: true
   },
   {
     id: 4,
-    title: "Luminária de Foto (Litofania)",
-    category: "decoracao",
-    categoryName: "Decoração",
-    price: "R$ 65,00",
-    image: "img/item4.jpg",
+    nome: "Luminária de Foto (Litofania)",
+    preco: "R$ 65,00",
+    categoria: "decoracao",
+    categoriaNome: "Decoração",
+    descricao: "Sua foto de família, pet ou casal esculpida em relevo 3D. A imagem aparece ao acender a luz!",
+    imagem: "./assets/img/produtos/item4.jpg",
     icon: "fa-solid fa-lightbulb",
-    desc: "Sua foto de família, pet ou casal esculpida em relevo 3D. A imagem aparece ao acender a luz!"
+    disponivel: true
   },
   {
     id: 5,
-    title: "Chaveiros Personalizados",
-    category: "personalizados",
-    categoryName: "Presentes",
-    price: "R$ 15,00",
-    image: "img/item5.jpg",
+    nome: "Chaveiros Personalizados",
+    preco: "R$ 15,00",
+    categoria: "personalizados",
+    categoriaNome: "Presentes",
+    descricao: "Personalize com seu nome, apelido, logotipo ou símbolos de jogos para você ou para presentear.",
+    imagem: "./assets/img/produtos/item5.jpg",
     icon: "fa-solid fa-key",
-    desc: "Personalize com seu nome, apelido, logotipo ou símbolos de jogos para você ou para presentear."
+    disponivel: true
   },
   {
     id: 6,
-    title: "Suporte para Controle de Videogame",
-    category: "setup",
-    categoryName: "Setup & Suportes",
-    price: "R$ 39,00",
-    image: "img/item6.jpg",
+    nome: "Suporte para Controle de Videogame",
+    preco: "R$ 39,00",
+    categoria: "setup",
+    categoriaNome: "Setup & Suportes",
+    descricao: "Base temática estilosa para deixar seus controles de PS5, Xbox ou Switch sempre organizados.",
+    imagem: "./assets/img/produtos/item6.jpg",
     icon: "fa-solid fa-gamepad",
-    desc: "Base temática estilosa para deixar seus controles de PS5, Xbox ou Switch sempre organizados."
+    disponivel: true
   }
 ];
+
+let ALL_PRODUCTS = [];
+let CATALOG_ITEMS = [];
+
+/**
+ * Mapeamento e auxílio de categorias e ícones
+ */
+function getCategoryLabel(category) {
+  const map = {
+    colecionaveis: "Colecionáveis",
+    decoracao: "Decoração",
+    setup: "Setup & Suportes",
+    personalizados: "Presentes"
+  };
+  return map[category] || "Geral";
+}
+
+function getCategoryIcon(category) {
+  const map = {
+    colecionaveis: "fa-solid fa-dragon",
+    decoracao: "fa-solid fa-seedling",
+    setup: "fa-solid fa-headphones",
+    personalizados: "fa-solid fa-gift"
+  };
+  return map[category] || "fa-solid fa-cube";
+}
+
+/**
+ * Normaliza os dados vindos de produtos.json ou Pages CMS garantindo
+ * compatibilidade total tanto com campos em português quanto em inglês.
+ */
+function normalizeProduct(raw, index) {
+  const category = (raw.categoria || raw.category || "outros").toLowerCase();
+  const title = raw.nome || raw.title || "Peça 3D";
+  const price = raw.preco || raw.price || "Consulte";
+  const desc = raw.descricao || raw.desc || "";
+  let image = raw.imagem || raw.image || raw.foto || "";
+
+  // Garante caminhos relativos compatíveis com GitHub Pages (subcaminhos como /cubeforge/)
+  if (image && !image.startsWith("http") && !image.startsWith("./") && !image.startsWith("/")) {
+    image = "./" + image;
+  } else if (image.startsWith("/")) {
+    image = "." + image;
+  }
+
+  const id = raw.id !== undefined && raw.id !== null ? Number(raw.id) : (index + 1);
+  const isAvailable = raw.disponivel !== undefined ? Boolean(raw.disponivel) : (raw.available !== undefined ? Boolean(raw.available) : true);
+
+  return {
+    id,
+    nome: title,
+    title,
+    preco: price,
+    price,
+    numericPrice: parseItemPrice(price),
+    categoria: category,
+    category,
+    categoriaNome: raw.categoriaNome || raw.categoryName || getCategoryLabel(category),
+    categoryName: raw.categoriaNome || raw.categoryName || getCategoryLabel(category),
+    descricao: desc,
+    desc,
+    imagem: image,
+    image,
+    icon: raw.icon || getCategoryIcon(category),
+    disponivel: isAvailable
+  };
+}
+
+// Inicializa previamente com fallback para evitar qualquer tela vazia antes do fetch
+ALL_PRODUCTS = FALLBACK_CATALOG_ITEMS.map((item, idx) => normalizeProduct(item, idx));
+CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel);
+
+/**
+ * Busca produtos.json dinamicamente via fetch e atualiza a interface
+ */
+async function loadProductsData() {
+  try {
+    const response = await fetch('./produtos.json', { cache: 'no-cache' });
+    if (!response.ok) {
+      throw new Error(`Status ${response.status}`);
+    }
+    const data = await response.json();
+    if (Array.isArray(data) && data.length > 0) {
+      ALL_PRODUCTS = data.map((item, idx) => normalizeProduct(item, idx));
+      CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel);
+    }
+  } catch (err) {
+    console.warn("Aviso: fetch de produtos.json não completou, usando catálogo fallback local:", err);
+    if (!CATALOG_ITEMS || CATALOG_ITEMS.length === 0) {
+      ALL_PRODUCTS = FALLBACK_CATALOG_ITEMS.map((item, idx) => normalizeProduct(item, idx));
+      CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel);
+    }
+  }
+
+  // Renderiza vitrine e showroom com os produtos carregados e disponíveis
+  const activeBtn = document.querySelector(".filter-btn.active");
+  const currentCategory = activeBtn ? activeBtn.getAttribute("data-category") : "all";
+  renderCatalog(currentCategory || "all");
+  setupHeroSlider();
+}
 
 // ============================================================================
 // INICIALIZAÇÃO DA PÁGINA
@@ -108,6 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadCart();
   setupCartListeners();
   initInteractiveMotion();
+  loadProductsData();
 });
 
 /**
@@ -327,7 +434,7 @@ window.closeProductModal = function() {
  * Abre o modal preenchendo as informações da peça e ações (Carrinho ou Direto)
  */
 window.openProductModal = function(productId) {
-  const item = CATALOG_ITEMS.find(p => p.id === productId);
+  const item = CATALOG_ITEMS.find(p => p.id === productId) || ALL_PRODUCTS.find(p => p.id === productId);
   if (!item) return;
 
   const modal = document.getElementById("product-modal");
@@ -438,7 +545,7 @@ function setupHeroSlider() {
   `).join("");
 
   window.orderDirectFromCard = function(itemId) {
-    const item = CATALOG_ITEMS.find((p) => p.id === itemId);
+    const item = CATALOG_ITEMS.find((p) => p.id === itemId) || ALL_PRODUCTS.find(p => p.id === itemId);
     if (!item) return;
     const quoteMsg = SITE_CONFIG.catalogWhatsappMsg
       .replace("{item}", item.title)
@@ -481,17 +588,30 @@ function setupHeroSlider() {
     updateShowroom();
   }
 
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      nextShowroomPage();
-      resetAutoplay();
-    });
-  }
+  if (!track.dataset.eventsBound) {
+    track.dataset.eventsBound = "true";
 
-  if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
-      prevShowroomPage();
-      resetAutoplay();
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        nextShowroomPage();
+        resetAutoplay();
+      });
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", () => {
+        prevShowroomPage();
+        resetAutoplay();
+      });
+    }
+
+    if (showroomHub) {
+      showroomHub.addEventListener("mouseenter", stopAutoplay);
+      showroomHub.addEventListener("mouseleave", startAutoplay);
+    }
+
+    window.addEventListener("resize", () => {
+      updateShowroom();
     });
   }
 
@@ -513,15 +633,6 @@ function setupHeroSlider() {
     stopAutoplay();
     startAutoplay();
   }
-
-  if (showroomHub) {
-    showroomHub.addEventListener("mouseenter", stopAutoplay);
-    showroomHub.addEventListener("mouseleave", startAutoplay);
-  }
-
-  window.addEventListener("resize", () => {
-    updateShowroom();
-  });
 
   updateShowroom();
   startAutoplay();
@@ -601,7 +712,7 @@ function saveCart() {
 }
 
 window.addToCart = function(productId, quantity = 1, triggerBtn = null) {
-  const product = CATALOG_ITEMS.find(p => p.id === productId);
+  const product = CATALOG_ITEMS.find(p => p.id === productId) || ALL_PRODUCTS.find(p => p.id === productId);
   if (!product) return;
 
   // Animação imediata no botão clicado (+ Carrinho)
