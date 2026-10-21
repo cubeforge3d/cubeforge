@@ -5,9 +5,14 @@
  * ============================================================================
  */
 const SITE_CONFIG = {
-  // Seu número do WhatsApp com DDI (55) + DDD + Número (apenas dígitos)
-  // Exemplo para São Paulo: "5511999999999"
-  whatsappNumber: "5511999999999",
+  // Número oficial do WhatsApp da empresa com DDI (55) + DDD (27) + Número (apenas dígitos)
+  whatsappNumber: "5527936183114",
+
+  // Formato legível para exibição e acessibilidade
+  whatsappDisplay: "+55 27 93618-3114",
+
+  // Link oficial direto do WhatsApp Business da empresa
+  whatsappBusinessLink: "https://wa.me/message/RTGDS4KCBUCHL1",
 
   // Nome da sua Marca / Negócio
   brandName: "Cube Forge",
@@ -15,11 +20,11 @@ const SITE_CONFIG = {
   // Seu @ do Instagram (sem o @)
   instagramUser: "cubeforge3d",
 
-  // Mensagem padrão ao clicar no WhatsApp principal
-  defaultWhatsappMsg: "Olá! Vim pelo Instagram e gostaria de encomendar uma peça em 3D.",
+  // Mensagem padrão ao clicar no WhatsApp principal (se aplicável)
+  defaultWhatsappMsg: "Olá! Vim pelo site Cube Forge e gostaria de encomendar uma peça em 3D.",
 
   // Mensagem para peça do catálogo (nome e preço são inseridos automaticamente)
-  catalogWhatsappMsg: "Olá! Gostei do modelo \"{item}\" ({price}) no site e gostaria de encomendar.",
+  catalogWhatsappMsg: "Olá! Gostei do modelo \"{item}\" ({price}) no site da Cube Forge e gostaria de encomendar.",
 
   // Mensagem quando o cliente viu uma ideia em outro lugar (Instagram/Pinterest/TikTok)
   customIdeaWhatsappMsg: "Olá! Vi um modelo na internet e gostaria de saber se vocês conseguem imprimir para mim (vou te mandar a foto)."
@@ -221,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * Aplica os dados configurados (WhatsApp, Instagram, Nome) nos links da página
  */
 function setupBrandInfo() {
-  const { whatsappNumber, instagramUser, defaultWhatsappMsg, customIdeaWhatsappMsg } = SITE_CONFIG;
+  const { whatsappNumber, whatsappDisplay, whatsappBusinessLink, instagramUser, customIdeaWhatsappMsg } = SITE_CONFIG;
 
   // Atualizar Textos na Tela
   const brandDisplay = document.getElementById("brand-name-display");
@@ -237,34 +242,59 @@ function setupBrandInfo() {
   if (currentYear) currentYear.textContent = new Date().getFullYear();
 
   // Links do WhatsApp
-  const defaultWhatsAppUrl = createWhatsappUrl(whatsappNumber, defaultWhatsappMsg);
+  const directBusinessUrl = whatsappBusinessLink || `https://wa.me/${whatsappNumber}`;
   const customIdeaWhatsAppUrl = createWhatsappUrl(whatsappNumber, customIdeaWhatsappMsg);
 
-  // Botões de WhatsApp do Topo e Rodapé
+  // Botões de direcionamento direto do WhatsApp da Empresa (apontam para o link oficial)
   const heroWhatsappBtn = document.getElementById("hero-whatsapp-btn");
-  if (heroWhatsappBtn) heroWhatsappBtn.href = defaultWhatsAppUrl;
+  if (heroWhatsappBtn) {
+    heroWhatsappBtn.href = directBusinessUrl;
+    heroWhatsappBtn.setAttribute("title", `WhatsApp Cube Forge: ${whatsappDisplay}`);
+  }
 
   const desktopWhatsappBtn = document.getElementById("desktop-whatsapp-btn");
-  if (desktopWhatsappBtn) desktopWhatsappBtn.href = defaultWhatsAppUrl;
+  if (desktopWhatsappBtn) {
+    desktopWhatsappBtn.href = directBusinessUrl;
+    desktopWhatsappBtn.setAttribute("title", `WhatsApp Cube Forge: ${whatsappDisplay}`);
+  }
 
   const navWhatsappBtn = document.getElementById("nav-whatsapp-btn");
-  if (navWhatsappBtn) navWhatsappBtn.href = defaultWhatsAppUrl;
+  if (navWhatsappBtn) {
+    navWhatsappBtn.href = directBusinessUrl;
+    navWhatsappBtn.setAttribute("title", `WhatsApp: ${whatsappDisplay}`);
+  }
 
   const floatingWhatsappBtn = document.getElementById("floating-whatsapp-btn");
-  if (floatingWhatsappBtn) floatingWhatsappBtn.href = defaultWhatsAppUrl;
+  if (floatingWhatsappBtn) {
+    floatingWhatsappBtn.href = directBusinessUrl;
+    floatingWhatsappBtn.setAttribute("title", `Fale com a gente no WhatsApp: ${whatsappDisplay}`);
+  }
 
   const footerWhatsappLink = document.getElementById("footer-whatsapp-link");
-  if (footerWhatsappLink) footerWhatsappLink.href = defaultWhatsAppUrl;
+  if (footerWhatsappLink) {
+    footerWhatsappLink.href = directBusinessUrl;
+    footerWhatsappLink.setAttribute("title", `WhatsApp Cube Forge: ${whatsappDisplay}`);
+    footerWhatsappLink.setAttribute("aria-label", `WhatsApp: ${whatsappDisplay}`);
+  }
 
   const finalCtaBtn = document.querySelector(".btn-whatsapp-large");
-  if (finalCtaBtn) finalCtaBtn.href = defaultWhatsAppUrl;
+  if (finalCtaBtn) {
+    finalCtaBtn.href = directBusinessUrl;
+    finalCtaBtn.setAttribute("title", `WhatsApp Cube Forge: ${whatsappDisplay}`);
+  }
 
-  // Botão de Ideia Personalizada (Viu na internet?)
+  // Botão de Ideia Personalizada (Viu na internet? / Orçar no Zap)
   const customIdeaBtn = document.getElementById("custom-idea-whatsapp-btn");
-  if (customIdeaBtn) customIdeaBtn.href = customIdeaWhatsAppUrl;
+  if (customIdeaBtn) {
+    customIdeaBtn.href = customIdeaWhatsAppUrl;
+    customIdeaBtn.setAttribute("title", `Orçar pelo WhatsApp: ${whatsappDisplay}`);
+  }
 
   const desktopHeroCustomBtn = document.getElementById("desktop-hero-custom-btn");
-  if (desktopHeroCustomBtn) desktopHeroCustomBtn.href = customIdeaWhatsAppUrl;
+  if (desktopHeroCustomBtn) {
+    desktopHeroCustomBtn.href = customIdeaWhatsAppUrl;
+    desktopHeroCustomBtn.setAttribute("title", `Orçar pelo WhatsApp: ${whatsappDisplay}`);
+  }
 
   // Links do Instagram
   const instagramUrl = `https://instagram.com/${instagramUser}`;
@@ -285,8 +315,11 @@ function setupBrandInfo() {
  * Gera URL segura do WhatsApp
  */
 function createWhatsappUrl(number, message) {
-  const cleanNumber = number.replace(/\D/g, "");
-  const encodedText = encodeURIComponent(message);
+  const cleanNumber = (number || SITE_CONFIG.whatsappNumber || "5527936183114").replace(/\D/g, "");
+  if (!message || !message.trim()) {
+    return SITE_CONFIG.whatsappBusinessLink || `https://wa.me/${cleanNumber}`;
+  }
+  const encodedText = encodeURIComponent(message.trim());
   return `https://wa.me/${cleanNumber}?text=${encodedText}`;
 }
 

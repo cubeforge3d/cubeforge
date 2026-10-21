@@ -34,14 +34,16 @@ Abra o arquivo [`script.js`](file:///C:/Users/kaiob/.gemini/antigravity/scratch/
 
 ```javascript
 const SITE_CONFIG = {
-  // Coloque seu WhatsApp com 55 + DDD + Número (apenas números)
-  whatsappNumber: "5511999999999",
+  // Número oficial do WhatsApp da empresa com DDI (55) + DDD (27) + Número
+  whatsappNumber: "5527936183114",
+  whatsappDisplay: "+55 27 93618-3114",
+  whatsappBusinessLink: "https://wa.me/message/RTGDS4KCBUCHL1",
 
   // Nome da sua Loja/Marca
-  brandName: "Sua Marca 3D",
+  brandName: "Cube Forge",
 
   // Seu @ do Instagram (sem o @)
-  instagramUser: "seunome3d",
+  instagramUser: "cubeforge3d",
   
   ...
 };
