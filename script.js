@@ -20,8 +20,8 @@ const SITE_CONFIG = {
   // Seu @ do Instagram (sem o @)
   instagramUser: "cubeforge3d",
 
-  // Mensagem padrão ao clicar no WhatsApp principal (se aplicável)
-  defaultWhatsappMsg: "Olá! Vim pelo site Cube Forge e gostaria de encomendar uma peça em 3D.",
+  // Mensagem padrão ao clicar no WhatsApp principal (Fazer Pedido)
+  defaultWhatsappMsg: "Olá! Vim pelo site da Cube Forge e gostaria de fazer um pedido de impressão 3D.",
 
   // Mensagem para peça do catálogo (nome e preço são inseridos automaticamente)
   catalogWhatsappMsg: "Olá! Gostei do modelo \"{item}\" ({price}) no site da Cube Forge e gostaria de encomendar.",
@@ -424,45 +424,45 @@ function setupBrandInfo() {
   if (currentYear) currentYear.textContent = new Date().getFullYear();
 
   // Links do WhatsApp
-  const directBusinessUrl = whatsappBusinessLink || `https://wa.me/${whatsappNumber}`;
+  const defaultOrderWhatsAppUrl = createWhatsappUrl(whatsappNumber, defaultWhatsappMsg);
   const customIdeaWhatsAppUrl = createWhatsappUrl(whatsappNumber, customIdeaWhatsappMsg);
 
-  // Botões de direcionamento direto do WhatsApp da Empresa (apontam para o link oficial)
+  // Botões de Fazer Pedido no WhatsApp (com mensagem pronta predefinida)
   const heroWhatsappBtn = document.getElementById("hero-whatsapp-btn");
   if (heroWhatsappBtn) {
-    heroWhatsappBtn.href = directBusinessUrl;
-    heroWhatsappBtn.setAttribute("title", `WhatsApp Cube Forge: ${whatsappDisplay}`);
+    heroWhatsappBtn.href = defaultOrderWhatsAppUrl;
+    heroWhatsappBtn.setAttribute("title", `Fazer Pedido no WhatsApp: ${whatsappDisplay}`);
   }
 
   const desktopWhatsappBtn = document.getElementById("desktop-whatsapp-btn");
   if (desktopWhatsappBtn) {
-    desktopWhatsappBtn.href = directBusinessUrl;
-    desktopWhatsappBtn.setAttribute("title", `WhatsApp Cube Forge: ${whatsappDisplay}`);
+    desktopWhatsappBtn.href = defaultOrderWhatsAppUrl;
+    desktopWhatsappBtn.setAttribute("title", `Fazer Pedido no WhatsApp: ${whatsappDisplay}`);
   }
 
   const navWhatsappBtn = document.getElementById("nav-whatsapp-btn");
   if (navWhatsappBtn) {
-    navWhatsappBtn.href = directBusinessUrl;
-    navWhatsappBtn.setAttribute("title", `WhatsApp: ${whatsappDisplay}`);
+    navWhatsappBtn.href = defaultOrderWhatsAppUrl;
+    navWhatsappBtn.setAttribute("title", `Fazer Pedido no WhatsApp: ${whatsappDisplay}`);
   }
 
   const floatingWhatsappBtn = document.getElementById("floating-whatsapp-btn");
   if (floatingWhatsappBtn) {
-    floatingWhatsappBtn.href = directBusinessUrl;
-    floatingWhatsappBtn.setAttribute("title", `Fale com a gente no WhatsApp: ${whatsappDisplay}`);
+    floatingWhatsappBtn.href = defaultOrderWhatsAppUrl;
+    floatingWhatsappBtn.setAttribute("title", `Fazer Pedido no WhatsApp: ${whatsappDisplay}`);
   }
 
   const footerWhatsappLink = document.getElementById("footer-whatsapp-link");
   if (footerWhatsappLink) {
-    footerWhatsappLink.href = directBusinessUrl;
-    footerWhatsappLink.setAttribute("title", `WhatsApp Cube Forge: ${whatsappDisplay}`);
-    footerWhatsappLink.setAttribute("aria-label", `WhatsApp: ${whatsappDisplay}`);
+    footerWhatsappLink.href = defaultOrderWhatsAppUrl;
+    footerWhatsappLink.setAttribute("title", `Fazer Pedido no WhatsApp: ${whatsappDisplay}`);
+    footerWhatsappLink.setAttribute("aria-label", `Fazer Pedido no WhatsApp: ${whatsappDisplay}`);
   }
 
   const finalCtaBtn = document.querySelector(".btn-whatsapp-large");
   if (finalCtaBtn) {
-    finalCtaBtn.href = directBusinessUrl;
-    finalCtaBtn.setAttribute("title", `WhatsApp Cube Forge: ${whatsappDisplay}`);
+    finalCtaBtn.href = defaultOrderWhatsAppUrl;
+    finalCtaBtn.setAttribute("title", `Fazer Pedido no WhatsApp: ${whatsappDisplay}`);
   }
 
   // Botão de Ideia Personalizada (Viu na internet? / Orçar no Zap)
