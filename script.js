@@ -392,6 +392,96 @@ function renderFilterTabs(preferredCategory = null) {
 /**
  * Busca produtos.json dinamicamente via fetch e atualiza a interface
  */
+/**
+ * ============================================================================
+ * CONFIGURAÇÕES GERAIS E MODO DE MANUTENÇÃO (Pages CMS)
+ * ============================================================================
+ */
+let SITE_SETTINGS = {
+  modo_manutencao: false,
+  titulo_manutencao: "Estamos em Manutenção",
+  subtitulo_manutencao: "Voltamos em breve com novidades!",
+  mensagem_manutencao: "Estamos realizando ajustes em nossos equipamentos, estoque e catálogo para trazer peças exclusivas com a máxima qualidade. Nossas compras online voltam em breve!\n\nEnquanto isso, você pode encomendar, orçar ou tirar dúvidas diretamente pelo nosso WhatsApp ou Instagram.",
+  previsao_retorno: "Voltamos em breve!"
+};
+
+async function loadSiteSettings() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramManutencao = urlParams.get("manutencao") || urlParams.get("maintenance");
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const res = await fetch("./configuracoes.json?v=" + Date.now(), { cache: "no-store", signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && typeof data === "object") {
+        SITE_SETTINGS = { ...SITE_SETTINGS, ...data };
+      }
+    }
+  } catch (err) {
+    console.warn("Aviso: fetch de configuracoes.json não completou, usando padrão:", err);
+  }
+
+  // Permite testar e pré-visualizar via URL (?manutencao=1 para forçar ativo, ?manutencao=0 para desativar)
+  if (paramManutencao === "1" || paramManutencao === "true") {
+    SITE_SETTINGS.modo_manutencao = true;
+  } else if (paramManutencao === "0" || paramManutencao === "false") {
+    SITE_SETTINGS.modo_manutencao = false;
+  }
+
+  applyMaintenanceMode(Boolean(SITE_SETTINGS.modo_manutencao));
+}
+
+function applyMaintenanceMode(isActive) {
+  const overlay = document.getElementById("maintenance-overlay");
+  if (!overlay) return;
+
+  if (isActive) {
+    document.body.classList.add("body-maintenance");
+    overlay.classList.add("active");
+    overlay.setAttribute("aria-hidden", "false");
+
+    // Fecha o carrinho caso esteja aberto
+    if (typeof window.closeCart === "function") {
+      window.closeCart();
+    }
+
+    // Atualiza os textos dinâmicos do Pages CMS
+    const titleEl = document.getElementById("maintenance-title");
+    if (titleEl && SITE_SETTINGS.titulo_manutencao) {
+      titleEl.textContent = SITE_SETTINGS.titulo_manutencao;
+    }
+
+    const subtitleEl = document.getElementById("maintenance-subtitle");
+    if (subtitleEl && SITE_SETTINGS.subtitulo_manutencao) {
+      subtitleEl.textContent = SITE_SETTINGS.subtitulo_manutencao;
+    }
+
+    const messageEl = document.getElementById("maintenance-message");
+    if (messageEl && SITE_SETTINGS.mensagem_manutencao) {
+      messageEl.textContent = SITE_SETTINGS.mensagem_manutencao;
+    }
+
+    const returnTextEl = document.getElementById("maintenance-return-text");
+    if (returnTextEl && SITE_SETTINGS.previsao_retorno) {
+      returnTextEl.textContent = SITE_SETTINGS.previsao_retorno;
+    }
+
+    // Configura o link do WhatsApp na tela de manutenção
+    const zapBtn = document.getElementById("maintenance-whatsapp-btn");
+    if (zapBtn) {
+      const zapMsg = "Olá! Vi que o site da Cube Forge está em manutenção e gostaria de tirar uma dúvida / fazer um pedido direto por aqui.";
+      zapBtn.href = createWhatsappUrl(SITE_CONFIG.whatsappNumber, zapMsg);
+    }
+  } else {
+    document.body.classList.remove("body-maintenance");
+    overlay.classList.remove("active");
+    overlay.setAttribute("aria-hidden", "true");
+  }
+}
+
 async function loadProductsData() {
   try {
     const controller = new AbortController();
@@ -429,6 +519,7 @@ async function loadProductsData() {
 // INICIALIZAÇÃO DA PÁGINA
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
+  loadSiteSettings();
   setupBrandInfo();
   renderFilterTabs("all");
   renderCatalog("all");
@@ -1456,6 +1547,10 @@ function updateCartUI() {
 }
 
 window.openCart = function() {
+  if (SITE_SETTINGS.modo_manutencao) {
+    applyMaintenanceMode(true);
+    return;
+  }
   const overlay = document.getElementById("cart-overlay");
   if (overlay) {
     overlay.classList.add("active");

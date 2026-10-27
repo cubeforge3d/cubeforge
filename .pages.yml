@@ -3,6 +3,37 @@ media:
   output: ./assets/img/produtos
 
 content:
+  - name: configuracoes
+    label: "⚙️ Modo de Manutenção"
+    type: file
+    path: configuracoes.json
+    fields:
+      - name: modo_manutencao
+        label: "Ativar Modo de Manutenção (Desativar Site & Vendas)"
+        type: boolean
+        default: false
+        description: "Ligue este interruptor para pausar o site temporariamente. O site exibirá um aviso elegante de manutenção informando que volta em breve, pausando as vendas e oferecendo botões diretos de contato via WhatsApp e Instagram."
+      - name: titulo_manutencao
+        label: Título do Aviso
+        type: string
+        default: "Estamos em Manutenção"
+        description: "Título principal na tela de manutenção."
+      - name: subtitulo_manutencao
+        label: Subtítulo
+        type: string
+        default: "Voltamos em breve com novidades!"
+        description: "Frase de apoio abaixo do título."
+      - name: mensagem_manutencao
+        label: Mensagem para os Clientes
+        type: text
+        default: "Estamos realizando ajustes em nossos equipamentos, estoque e catálogo para trazer peças exclusivas com a máxima qualidade. Nossas compras online voltam em breve!\n\nEnquanto isso, você pode encomendar, orçar ou tirar dúvidas diretamente pelo nosso WhatsApp ou Instagram."
+        description: "Texto explicativo detalhado exibido para os clientes durante a pausa."
+      - name: previsao_retorno
+        label: Previsão de Retorno (Tag em Destaque)
+        type: string
+        default: "Voltamos em breve!"
+        description: "Ex: 'Voltamos em breve!', 'Retorno hoje às 19h', 'Previsão: amanhã cedo'."
+
   - name: produtos
     label: Catálogo de Produtos
     type: file

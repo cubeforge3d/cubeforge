@@ -566,6 +566,77 @@
     </div>
   </div>
 
+  <!-- =====================================================================
+       TELA DE MODO MANUTENÇÃO (Ativável via interruptor no Pages CMS)
+       ===================================================================== -->
+  <div id="maintenance-overlay" class="maintenance-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="maintenance-backdrop"></div>
+    <div class="maintenance-container">
+      <div class="maintenance-card">
+        
+        <!-- Header da Marca -->
+        <div class="maintenance-brand">
+          <img src="./logo-emblem.png" alt="Cube Forge Logo" class="maintenance-logo">
+          <span class="maintenance-brand-text">
+            <span class="brand-cube">CUBE</span> <span class="brand-forge">FORGE</span>
+          </span>
+        </div>
+
+        <!-- Badge de Status Animado -->
+        <div class="maintenance-status-badge">
+          <span class="maintenance-pulse-dot"></span>
+          <span id="maintenance-status-label">Manutenção Programada</span>
+        </div>
+
+        <!-- Ícone de Ferramentas / Ajuste -->
+        <div class="maintenance-icon-glow">
+          <i class="fa-solid fa-screwdriver-wrench"></i>
+        </div>
+
+        <!-- Título e Subtítulo -->
+        <h1 class="maintenance-title" id="maintenance-title">Estamos em Manutenção</h1>
+        <p class="maintenance-subtitle" id="maintenance-subtitle">Voltamos em breve com novidades!</p>
+
+        <!-- Mensagem Detalhada -->
+        <div class="maintenance-message-box">
+          <p id="maintenance-message">
+            Estamos realizando melhorias em nosso maquinário, estoque e catálogo para trazer peças exclusivas com a máxima qualidade. Nossas compras online voltam em breve!
+          </p>
+        </div>
+
+        <!-- Tag de Previsão de Retorno -->
+        <div class="maintenance-return-tag" id="maintenance-return-tag">
+          <i class="fa-solid fa-clock"></i>
+          <span id="maintenance-return-text">Voltamos em breve!</span>
+        </div>
+
+        <!-- Divisor / Chamada -->
+        <div class="maintenance-divider">
+          <span>Atendimento normal nos canais</span>
+        </div>
+
+        <!-- Botões de Ação (WhatsApp e Instagram) -->
+        <div class="maintenance-actions">
+          <a href="#" id="maintenance-whatsapp-btn" class="maintenance-btn maintenance-btn-whatsapp" target="_blank" rel="noopener noreferrer">
+            <span class="maintenance-btn-icon"><i class="fa-brands fa-whatsapp"></i></span>
+            <span>Fazer Pedido no WhatsApp</span>
+          </a>
+
+          <a href="https://instagram.com/cubeforge3d" id="maintenance-instagram-btn" class="maintenance-btn maintenance-btn-instagram" target="_blank" rel="noopener noreferrer">
+            <span class="maintenance-btn-icon"><i class="fa-brands fa-instagram"></i></span>
+            <span>Acompanhar no Instagram</span>
+          </a>
+        </div>
+
+        <!-- Rodapé do Card -->
+        <div class="maintenance-footer-note">
+          <i class="fa-solid fa-shield-halved"></i> Se você já possui um pedido em andamento, sua produção e entrega continuam normais!
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- JavaScript -->
   <script src="./script.js"></script>
 </body>
