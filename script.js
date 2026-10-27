@@ -43,7 +43,7 @@ const FALLBACK_CATALOG_ITEMS = [
   {
     id: 1,
     nome: "Action Figures & Colecionáveis",
-    preco: "A partir de R$ 40",
+    preco: "A partir de R$ 30",
     categoria: "colecionaveis",
     categoriaNome: "Colecionáveis",
     descricao: "Seus personagens favoritos de animes, games e filmes impressos com riqueza de detalhes.",
@@ -52,7 +52,7 @@ const FALLBACK_CATALOG_ITEMS = [
     disponivel: true,
     destaque: true,
     estoque: 2,
-    link_compra: ""
+    link_compra: "https://checkout.infinitepay.io/cubeforge/jJSa8VugaV?from=webbuilder&ajs_aid=f3c24f00-d4b3-4584-b41a-7343dc0e044d"
   },
   {
     id: 2,
@@ -66,7 +66,7 @@ const FALLBACK_CATALOG_ITEMS = [
     disponivel: true,
     destaque: true,
     estoque: 0,
-    link_compra: ""
+    link_compra: "https://checkout.infinitepay.io/cubeforge/xSCMOn2vl6?from=webbuilder&ajs_aid=f3c24f00-d4b3-4584-b41a-7343dc0e044d"
   },
   {
     id: 3,
@@ -414,6 +414,7 @@ async function loadProductsData() {
   renderFilterTabs(currentCategory);
   renderCatalog(currentCategory || "all");
   setupHeroSlider();
+  updateCartUI();
 }
 
 // ============================================================================
@@ -1128,6 +1129,8 @@ window.addToCart = function(productId, quantity = 1, triggerBtn = null) {
   if (existing) {
     existing.quantity += quantity;
     existing.estoque = product.estoque || 0;
+    existing.link_compra = product.link_compra || "";
+    existing.checkoutUrl = product.checkoutUrl || "";
   } else {
     cart.push({
       id: product.id,
@@ -1138,6 +1141,8 @@ window.addToCart = function(productId, quantity = 1, triggerBtn = null) {
       icon: product.icon,
       categoryName: product.categoryName,
       estoque: product.estoque || 0,
+      link_compra: product.link_compra || "",
+      checkoutUrl: product.checkoutUrl || "",
       quantity: quantity
     });
   }
@@ -1248,6 +1253,10 @@ function updateCartUI() {
     if (footerPanel) footerPanel.style.display = "flex";
 
     container.innerHTML = cart.map(item => {
+      const p = CATALOG_ITEMS.find(x => x.id === item.id) || ALL_PRODUCTS.find(x => x.id === item.id);
+      const directCheckout = (p && p.link_compra) ? p.link_compra : (item.link_compra || (p ? p.checkoutUrl : ""));
+      const hasDirectCheckout = directCheckout && directCheckout.trim() !== "" && directCheckout !== SITE_CONFIG.jimStoreUrl;
+
       const imgContent = item.image 
         ? `<img src="${item.image}" alt="${item.title}">` 
         : `<i class="${item.icon}"></i>`;
@@ -1274,6 +1283,13 @@ function updateCartUI() {
               </div>
               <span class="cart-item-subtotal">${itemSubtotal}</span>
             </div>
+            ${(cart.length > 1 && hasDirectCheckout) ? `
+              <div class="cart-item-quick-row">
+                <a href="${directCheckout}" target="_blank" rel="noopener noreferrer" class="cart-item-quick-pay" title="Pagar somente este item online no Checkout da InfinitePay">
+                  <i class="fa-solid fa-credit-card"></i> Pagar item no checkout
+                </a>
+              </div>
+            ` : ''}
           </div>
           <button class="cart-item-remove-btn" onclick="removeFromCart(${item.id})" title="Remover item">
             <i class="fa-solid fa-trash-can"></i>
@@ -1282,6 +1298,8 @@ function updateCartUI() {
       `;
     }).join("");
   }
+
+  updateCartNotesValidation();
 }
 
 window.openCart = function() {
@@ -1304,15 +1322,19 @@ window.closeCart = function() {
 };
 
 /**
- * Valida o campo de observações do carrinho.
- * Se houver texto digitado, exibe aviso profissional de personalização
- * e bloqueia o botão de compra online (InfinitePay), permitindo apenas WhatsApp.
- * Se o campo for esvaziado, o botão de compra online volta a ficar disponível.
+ * Valida o campo de observações do carrinho e atualiza o link dinâmico da InfinitePay.
+ * - Se houver texto digitado: exibe aviso de personalização e bloqueia compra online.
+ * - Se estiver vazio:
+ *    - Se houver 1 produto no carrinho com link direto de checkout (link_compra):
+ *      o botão vai DIRETAMENTE para a página de checkout desse produto na InfinitePay!
+ *    - Se houver múltiplos produtos: o botão direciona para a loja online Jim
+ *      e exibe dica explicativa para facilitar a compra.
  */
 function updateCartNotesValidation() {
   const notesInput = document.getElementById("cart-custom-notes");
   const warningEl = document.getElementById("cart-notes-warning");
   const btnCheckoutJim = document.getElementById("btn-checkout-jim");
+  const multiHint = document.getElementById("cart-multi-item-hint");
 
   if (!notesInput) return;
 
@@ -1320,6 +1342,7 @@ function updateCartNotesValidation() {
 
   if (hasNotes) {
     if (warningEl) warningEl.classList.add("active");
+    if (multiHint) multiHint.style.display = "none";
     if (btnCheckoutJim) {
       btnCheckoutJim.classList.add("disabled");
       btnCheckoutJim.setAttribute("aria-disabled", "true");
@@ -1334,9 +1357,35 @@ function updateCartNotesValidation() {
       btnCheckoutJim.classList.remove("disabled");
       btnCheckoutJim.removeAttribute("aria-disabled");
       btnCheckoutJim.setAttribute("tabindex", "0");
-      btnCheckoutJim.href = SITE_CONFIG.jimStoreUrl || "https://jim.com/a/cubeforge";
-      btnCheckoutJim.innerHTML = '<i class="fa-solid fa-credit-card"></i> Pagar Online na Loja (InfinitePay)';
-      btnCheckoutJim.title = "Pagar online na loja oficial com cartão ou Pix";
+
+      if (cart.length === 1) {
+        // Encontra o produto no catálogo para pegar o checkoutUrl / link_compra mais atualizado
+        const singleItem = cart[0];
+        const prod = CATALOG_ITEMS.find(x => x.id === singleItem.id) || ALL_PRODUCTS.find(x => x.id === singleItem.id);
+        const directCheckout = (prod && prod.link_compra) ? prod.link_compra : (singleItem.link_compra || (prod ? prod.checkoutUrl : null));
+        const hasDirectCheckout = directCheckout && directCheckout.trim() !== "" && directCheckout !== SITE_CONFIG.jimStoreUrl;
+
+        if (hasDirectCheckout) {
+          btnCheckoutJim.href = directCheckout;
+          btnCheckoutJim.innerHTML = '<i class="fa-solid fa-credit-card"></i> Pagar no Checkout (InfinitePay)';
+          btnCheckoutJim.title = `Ir direto para o checkout de "${singleItem.title}" na InfinitePay`;
+        } else {
+          btnCheckoutJim.href = SITE_CONFIG.jimStoreUrl || "https://jim.com/a/cubeforge";
+          btnCheckoutJim.innerHTML = '<i class="fa-solid fa-credit-card"></i> Pagar Online na Loja (InfinitePay)';
+          btnCheckoutJim.title = "Pagar online na loja oficial com cartão ou Pix";
+        }
+        if (multiHint) multiHint.style.display = "none";
+      } else if (cart.length > 1) {
+        btnCheckoutJim.href = SITE_CONFIG.jimStoreUrl || "https://jim.com/a/cubeforge";
+        btnCheckoutJim.innerHTML = '<i class="fa-solid fa-bag-shopping"></i> Pagar Online na Loja Jim';
+        btnCheckoutJim.title = "Abrir loja online InfinitePay";
+        if (multiHint) multiHint.style.display = "flex";
+      } else {
+        btnCheckoutJim.href = SITE_CONFIG.jimStoreUrl || "https://jim.com/a/cubeforge";
+        btnCheckoutJim.innerHTML = '<i class="fa-solid fa-credit-card"></i> Pagar Online na Loja (InfinitePay)';
+        btnCheckoutJim.title = "Pagar online na loja oficial com cartão ou Pix";
+        if (multiHint) multiHint.style.display = "none";
+      }
     }
   }
 }

@@ -4549,3 +4549,54 @@ button {
 .btn-cart-checkout.highlight-pulse {
   animation: highlightPulseZap 0.75s ease-in-out 2;
 }
+
+/* 7. Dica e Ações de Checkout Dinâmico no Carrinho (InfinitePay) */
+.cart-multi-item-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(14, 165, 233, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: var(--radius-sm);
+  padding: 8px 11px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #bae6fd;
+}
+
+.cart-multi-item-hint i {
+  color: #38bdf8;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.cart-multi-item-hint strong {
+  color: #ffffff;
+}
+
+.cart-item-quick-row {
+  margin-top: 5px;
+}
+
+.cart-item-quick-pay {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 6px;
+  padding: 3px 8px;
+  text-decoration: none;
+  transition: all var(--transition-smooth);
+}
+
+.cart-item-quick-pay:hover {
+  background: rgba(14, 165, 233, 0.25);
+  border-color: #38bdf8;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
