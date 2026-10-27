@@ -14,6 +14,9 @@ const SITE_CONFIG = {
   // Link oficial direto do WhatsApp Business da empresa
   whatsappBusinessLink: "https://wa.me/message/RTGDS4KCBUCHL1",
 
+  // Link oficial da Loja Online no Jim / InfinitePay (Pix e Cartão em até 12x)
+  jimStoreUrl: "https://jim.com/a/kaiobretas",
+
   // Nome da sua Marca / Negócio
   brandName: "Cube Forge",
 
@@ -47,7 +50,8 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item1.jpg",
     icon: "fa-solid fa-dragon",
     disponivel: true,
-    estoque: 2
+    estoque: 2,
+    link_compra: ""
   },
   {
     id: 2,
@@ -59,7 +63,8 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item2.jpg",
     icon: "fa-solid fa-seedling",
     disponivel: true,
-    estoque: 0
+    estoque: 0,
+    link_compra: ""
   },
   {
     id: 3,
@@ -71,7 +76,8 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item3.jpg",
     icon: "fa-solid fa-headphones",
     disponivel: true,
-    estoque: 1
+    estoque: 1,
+    link_compra: ""
   },
   {
     id: 4,
@@ -83,7 +89,8 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item4.jpg",
     icon: "fa-solid fa-lightbulb",
     disponivel: true,
-    estoque: 0
+    estoque: 0,
+    link_compra: ""
   },
   {
     id: 5,
@@ -95,7 +102,8 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item5.jpg",
     icon: "fa-solid fa-key",
     disponivel: true,
-    estoque: 4
+    estoque: 4,
+    link_compra: ""
   },
   {
     id: 6,
@@ -107,7 +115,8 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item6.jpg",
     icon: "fa-solid fa-gamepad",
     disponivel: true,
-    estoque: 0
+    estoque: 0,
+    link_compra: ""
   }
 ];
 
@@ -244,6 +253,10 @@ function normalizeProduct(raw, index) {
   const isAvailable = raw.disponivel !== undefined ? Boolean(raw.disponivel) : (raw.available !== undefined ? Boolean(raw.available) : true);
   const stock = Math.max(0, parseInt(raw.estoque ?? raw.stock ?? raw.estoque_pronta_entrega ?? 0, 10) || 0);
 
+  // Link direto de pagamento na InfinitePay / Jim (ou fallback para loja geral)
+  const linkCompra = (raw.link_compra || raw.link_pagamento || raw.link_infinitepay || raw.checkout_url || "").toString().trim();
+  const checkoutUrl = linkCompra || SITE_CONFIG.jimStoreUrl;
+
   // Ícone/Emoji customizado ou inteligente
   let icon = raw.categoria_icone || raw.icon || "";
   if (!icon) {
@@ -270,7 +283,9 @@ function normalizeProduct(raw, index) {
     nova_categoria: raw.nova_categoria || "",
     disponivel: isAvailable,
     estoque: stock,
-    prontaEntrega: stock > 0
+    prontaEntrega: stock > 0,
+    link_compra: linkCompra,
+    checkoutUrl: checkoutUrl
   };
 }
 
@@ -408,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * Aplica os dados configurados (WhatsApp, Instagram, Nome) nos links da página
  */
 function setupBrandInfo() {
-  const { whatsappNumber, whatsappDisplay, whatsappBusinessLink, instagramUser, customIdeaWhatsappMsg } = SITE_CONFIG;
+  const { whatsappNumber, whatsappDisplay, whatsappBusinessLink, instagramUser, defaultWhatsappMsg, customIdeaWhatsappMsg } = SITE_CONFIG;
 
   // Atualizar Textos na Tela
   const brandDisplay = document.getElementById("brand-name-display");
@@ -491,6 +506,19 @@ function setupBrandInfo() {
 
   const footerInstagramLink = document.getElementById("footer-instagram-link");
   if (footerInstagramLink) footerInstagramLink.href = instagramUrl;
+
+  // Links da Loja Online no Jim / InfinitePay (Pix e Cartão até 12x)
+  const navJimLink = document.getElementById("nav-jim-link");
+  if (navJimLink) navJimLink.href = SITE_CONFIG.jimStoreUrl;
+
+  const heroJimBtn = document.getElementById("hero-jim-btn");
+  if (heroJimBtn) heroJimBtn.href = SITE_CONFIG.jimStoreUrl;
+
+  const btnCheckoutJim = document.getElementById("btn-checkout-jim");
+  if (btnCheckoutJim) btnCheckoutJim.href = SITE_CONFIG.jimStoreUrl;
+
+  const footerJimLink = document.getElementById("footer-jim-link");
+  if (footerJimLink) footerJimLink.href = SITE_CONFIG.jimStoreUrl;
 }
 
 /**
@@ -577,6 +605,9 @@ function renderCatalog(filterCategory = "all") {
           <button class="btn-card-direct" onclick="openProductModal(${item.id})" aria-label="Pedir ${item.title} direto no WhatsApp">
             <i class="fa-brands fa-whatsapp"></i> Pedir Direto
           </button>
+          <a href="${item.checkoutUrl}" class="btn-card-buy-online" target="_blank" rel="noopener noreferrer" aria-label="Comprar ${item.title} online no Pix ou Cartão em até 12x">
+            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online</span>
+          </a>
         </div>
       </div>
     `;
@@ -737,6 +768,9 @@ window.openProductModal = function(productId) {
       </div>
 
       <div class="modal-actions-container">
+        <a href="${item.checkoutUrl}" class="modal-buy-online-btn" target="_blank" rel="noopener noreferrer">
+          <i class="fa-solid fa-credit-card"></i> Comprar Online (Pix ou Cartão 12x)
+        </a>
         <button class="modal-cart-btn" onclick="addToCart(${item.id}, 1, this); closeProductModal();">
           <i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho
         </button>
@@ -812,6 +846,9 @@ function setupHeroSlider() {
           <button class="btn-card-direct" onclick="event.stopPropagation(); orderDirectFromCard(${item.id})" title="Pedir no WhatsApp">
             <i class="fa-brands fa-whatsapp"></i> <span>Pedir</span>
           </button>
+          <a href="${item.checkoutUrl}" class="btn-card-buy-online showroom-buy-btn" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Comprar online no Pix ou Cartão em até 12x">
+            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online</span>
+          </a>
         </div>
       </div>
     </div>
@@ -1352,6 +1389,11 @@ function initInteractiveMotion() {
     .btn-custom-idea,
     .btn-card-cart,
     .btn-card-direct,
+    .btn-card-buy-online,
+    .modal-buy-online-btn,
+    .btn-cart-checkout-jim,
+    .btn-jim-store,
+    .nav-jim-link,
     .nav-cart-btn,
     .nav-cta-btn,
     .banner-zap-btn,
