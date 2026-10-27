@@ -635,7 +635,7 @@ function renderCatalog(filterCategory = "all") {
             <i class="fa-brands fa-whatsapp"></i> Pedir Direto
           </button>
           <button type="button" class="btn-card-buy-online" onclick="buySingleProductOnline(${item.id}, event)" aria-label="Comprar ${item.title} online no Pix ou Cartão em até 12x" title="Ir direto para o checkout da InfinitePay">
-            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online</span>
+            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online • Até 12x no Cartão</span>
           </button>
         </div>
       `;
@@ -831,7 +831,7 @@ window.openProductModal = function(productId) {
   } else {
     modalActionsHtml = `
       <button type="button" class="modal-buy-online-btn" onclick="buySingleProductOnline(${item.id}, event)">
-        <i class="fa-solid fa-credit-card"></i> Comprar Online no Checkout (Pix ou 12x)
+        <i class="fa-solid fa-credit-card"></i> Comprar Online • Até 12x no Cartão
       </button>
       <button class="modal-cart-btn" onclick="addToCart(${item.id}, 1, this); closeProductModal();">
         <i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho
@@ -967,7 +967,7 @@ function setupHeroSlider() {
             <i class="fa-brands fa-whatsapp"></i> <span>Pedir</span>
           </button>
           <button type="button" class="btn-card-buy-online showroom-buy-btn" onclick="event.stopPropagation(); buySingleProductOnline(${item.id}, event)" title="Comprar online no Pix ou Cartão em até 12x">
-            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online</span>
+            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online • Até 12x no Cartão</span>
           </button>
         </div>
       `;
@@ -1498,7 +1498,7 @@ function updateCartValidation() {
       btnCheckoutJim.classList.remove("disabled");
       btnCheckoutJim.removeAttribute("aria-disabled");
       btnCheckoutJim.setAttribute("tabindex", "0");
-      btnCheckoutJim.innerHTML = '<i class="fa-solid fa-credit-card"></i> Pagar Online no Checkout (InfinitePay)';
+      btnCheckoutJim.innerHTML = '<i class="fa-solid fa-credit-card"></i> Comprar Online • Até 12x no Cartão';
       btnCheckoutJim.title = "Finalizar pedido com todos os itens e quantidades no checkout da InfinitePay";
     }
   }
