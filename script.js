@@ -529,7 +529,10 @@ function setupBrandInfo() {
   if (heroJimBtn) heroJimBtn.href = SITE_CONFIG.jimStoreUrl;
 
   const btnCheckoutJim = document.getElementById("btn-checkout-jim");
-  if (btnCheckoutJim) btnCheckoutJim.href = SITE_CONFIG.jimStoreUrl;
+  if (btnCheckoutJim) {
+    btnCheckoutJim.href = SITE_CONFIG.jimStoreUrl;
+    updateCartNotesValidation();
+  }
 
   const footerJimLink = document.getElementById("footer-jim-link");
   if (footerJimLink) footerJimLink.href = SITE_CONFIG.jimStoreUrl;
@@ -1178,6 +1181,9 @@ window.clearCart = function() {
   if (cart.length === 0) return;
   cart = [];
   saveCart();
+  const notesInput = document.getElementById("cart-custom-notes");
+  if (notesInput) notesInput.value = "";
+  updateCartNotesValidation();
   const confirmBar = document.getElementById("cart-clear-confirm-bar");
   if (confirmBar) confirmBar.classList.remove("active");
   showCartToast("Carrinho esvaziado", "empty", "Todos os itens foram removidos");
@@ -1289,6 +1295,7 @@ window.openCart = function() {
   if (overlay) {
     overlay.classList.add("active");
     document.body.style.overflow = "hidden";
+    updateCartNotesValidation();
   }
 };
 
@@ -1301,6 +1308,44 @@ window.closeCart = function() {
   const confirmBar = document.getElementById("cart-clear-confirm-bar");
   if (confirmBar) confirmBar.classList.remove("active");
 };
+
+/**
+ * Valida o campo de observações do carrinho.
+ * Se houver texto digitado, exibe aviso profissional de personalização
+ * e bloqueia o botão de compra online (InfinitePay), permitindo apenas WhatsApp.
+ * Se o campo for esvaziado, o botão de compra online volta a ficar disponível.
+ */
+function updateCartNotesValidation() {
+  const notesInput = document.getElementById("cart-custom-notes");
+  const warningEl = document.getElementById("cart-notes-warning");
+  const btnCheckoutJim = document.getElementById("btn-checkout-jim");
+
+  if (!notesInput) return;
+
+  const hasNotes = notesInput.value.trim().length > 0;
+
+  if (hasNotes) {
+    if (warningEl) warningEl.classList.add("active");
+    if (btnCheckoutJim) {
+      btnCheckoutJim.classList.add("disabled");
+      btnCheckoutJim.setAttribute("aria-disabled", "true");
+      btnCheckoutJim.setAttribute("tabindex", "-1");
+      btnCheckoutJim.removeAttribute("href");
+      btnCheckoutJim.innerHTML = '<i class="fa-solid fa-lock"></i> Compra Online Indisponível (Use o WhatsApp)';
+      btnCheckoutJim.title = "Pedidos com observações ou personalizações devem ser verificados e combinados pelo WhatsApp.";
+    }
+  } else {
+    if (warningEl) warningEl.classList.remove("active");
+    if (btnCheckoutJim) {
+      btnCheckoutJim.classList.remove("disabled");
+      btnCheckoutJim.removeAttribute("aria-disabled");
+      btnCheckoutJim.setAttribute("tabindex", "0");
+      btnCheckoutJim.href = SITE_CONFIG.jimStoreUrl || "https://jim.com/a/cubeforge";
+      btnCheckoutJim.innerHTML = '<i class="fa-solid fa-credit-card"></i> Pagar Online na Loja (InfinitePay)';
+      btnCheckoutJim.title = "Pagar online na loja oficial com cartão ou Pix";
+    }
+  }
+}
 
 function checkoutCartWhatsApp() {
   if (cart.length === 0) return;
@@ -1412,6 +1457,44 @@ function setupCartListeners() {
 
   const checkoutBtn = document.getElementById("btn-checkout-whatsapp");
   if (checkoutBtn) checkoutBtn.addEventListener("click", checkoutCartWhatsApp);
+
+  // Monitora alterações no campo de observações para exibir aviso e bloquear/desbloquear compra online
+  const notesInput = document.getElementById("cart-custom-notes");
+  if (notesInput) {
+    notesInput.addEventListener("input", updateCartNotesValidation);
+    notesInput.addEventListener("change", updateCartNotesValidation);
+    notesInput.addEventListener("keyup", updateCartNotesValidation);
+  }
+
+  // Previne clique e exibe feedback se o botão de compra online estiver bloqueado por observações
+  const btnCheckoutJim = document.getElementById("btn-checkout-jim");
+  if (btnCheckoutJim) {
+    btnCheckoutJim.addEventListener("click", (e) => {
+      if (btnCheckoutJim.classList.contains("disabled") || !btnCheckoutJim.hasAttribute("href")) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Animação de feedback tátil/visual
+        const warningEl = document.getElementById("cart-notes-warning");
+        if (warningEl) {
+          warningEl.classList.remove("shake");
+          void warningEl.offsetWidth;
+          warningEl.classList.add("shake");
+        }
+
+        const zapBtn = document.getElementById("btn-checkout-whatsapp");
+        if (zapBtn) {
+          zapBtn.classList.remove("highlight-pulse");
+          void zapBtn.offsetWidth;
+          zapBtn.classList.add("highlight-pulse");
+          setTimeout(() => zapBtn.classList.remove("highlight-pulse"), 1600);
+        }
+      }
+    });
+  }
+
+  // Atualiza validação inicial
+  updateCartNotesValidation();
 
   // Esvaziar carrinho com barra de confirmação segura
   const clearBtn = document.getElementById("btn-clear-cart");

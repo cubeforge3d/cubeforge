@@ -4407,3 +4407,130 @@ button {
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(2, 132, 199, 0.45);
 }
+
+/* 6. Aviso de Observações/Personalização no Carrinho */
+.cart-notes-warning {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.08) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-top: 6px;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.12);
+  animation: warningSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.cart-notes-warning.active {
+  display: flex;
+}
+
+.cart-notes-warning-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cart-notes-warning-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  flex-shrink: 0;
+}
+
+.cart-notes-warning-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 0.2px;
+}
+
+.cart-notes-warning-text {
+  font-size: 0.75rem;
+  line-height: 1.42;
+  color: #fde68a;
+  margin: 0;
+}
+
+.cart-notes-warning-text strong {
+  color: #ffffff;
+}
+
+.cart-notes-warning-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.69rem;
+  font-weight: 700;
+  color: #f59e0b;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 6px;
+  padding: 4px 8px;
+  align-self: flex-start;
+  letter-spacing: 0.1px;
+}
+
+/* Estado Desativado/Bloqueado da Compra Online */
+.btn-cart-checkout-jim.disabled {
+  opacity: 0.48;
+  filter: grayscale(0.85);
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.22) !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.btn-cart-checkout-jim.disabled:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  color: #94a3b8 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Animação de Chacoalhar Aviso e Pulsar WhatsApp ao Tentar Clicar */
+@keyframes warningSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shakeNotice {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.cart-notes-warning.shake {
+  animation: shakeNotice 0.45s ease-in-out;
+}
+
+@keyframes highlightPulseZap {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), 0 8px 24px rgba(37, 211, 102, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 12px 30px rgba(37, 211, 102, 0.8), 0 0 18px rgba(37, 211, 102, 0.6);
+  }
+}
+
+.btn-cart-checkout.highlight-pulse {
+  animation: highlightPulseZap 0.75s ease-in-out 2;
+}
