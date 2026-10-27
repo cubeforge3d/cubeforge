@@ -1486,6 +1486,7 @@ function updateCartUI() {
   if (!container) return;
 
   if (cart.length === 0) {
+    if (typeof setCartStep === "function") setCartStep(1);
     container.innerHTML = `
       <div class="cart-empty-state">
         <div class="cart-empty-icon"><i class="fa-solid fa-cart-shopping"></i></div>
@@ -1544,7 +1545,124 @@ function updateCartUI() {
   }
 
   updateCartValidation();
+  if (currentCartStep === 2 && typeof renderCartStep2 === "function") renderCartStep2();
 }
+
+
+/**
+ * ============================================================================
+ * GERENCIADOR DE ETAPAS DO CARRINHO (ESTILO IFOOD: ITENS -> PAGAMENTO)
+ * ============================================================================
+ */
+let currentCartStep = 1;
+
+function setCartStep(step) {
+  currentCartStep = step;
+  const drawer = document.getElementById("cart-drawer");
+  const backBtn = document.getElementById("cart-back-step-btn");
+  const pill1 = document.getElementById("cart-step-pill-1");
+  const pill2 = document.getElementById("cart-step-pill-2");
+  const titleText = document.getElementById("cart-header-title-text");
+
+  if (drawer) {
+    drawer.setAttribute("data-current-step", String(step));
+  }
+
+  if (step === 1) {
+    if (backBtn) backBtn.style.display = "none";
+    if (pill1) pill1.classList.add("active");
+    if (pill2) pill2.classList.remove("active");
+    if (titleText) titleText.textContent = "Meu Carrinho";
+  } else {
+    if (!cart || cart.length === 0) {
+      setCartStep(1);
+      return;
+    }
+    if (backBtn) backBtn.style.display = "inline-flex";
+    if (pill1) pill1.classList.remove("active");
+    if (pill2) pill2.classList.add("active");
+    if (titleText) titleText.textContent = "Pagamento";
+    
+    renderCartStep2();
+  }
+
+  updateCartValidation();
+}
+
+function renderCartStep2() {
+  const summaryPreview = document.getElementById("summary-items-preview");
+  const summaryCount = document.getElementById("summary-items-count");
+  const summaryTotal = document.getElementById("summary-total-amount");
+  const conditionsBox = document.getElementById("cart-payment-conditions");
+
+  const totalCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const totalPrice = cart.reduce((acc, item) => acc + (item.numericPrice * item.quantity), 0);
+
+  if (summaryCount) {
+    summaryCount.textContent = totalCount + (totalCount === 1 ? " item" : " itens");
+  }
+
+  if (summaryTotal) {
+    summaryTotal.textContent = formatBRL(totalPrice);
+  }
+
+  if (summaryPreview) {
+    summaryPreview.innerHTML = cart.map(item => {
+      const imgHtml = item.image 
+        ? `<img src="${item.image}" alt="${item.title}" class="summary-item-thumb">`
+        : `<div class="summary-item-thumb" style="display:flex;align-items:center;justify-content:center;"><i class="${item.icon}"></i></div>`;
+      return `
+        <div class="summary-item-row">
+          <div class="summary-item-left">
+            ${imgHtml}
+            <span class="summary-item-title">${item.title}</span>
+          </div>
+          <span class="summary-item-qty">${item.quantity}x</span>
+          <span class="summary-item-price">${formatBRL(item.numericPrice * item.quantity)}</span>
+        </div>
+      `;
+    }).join("");
+  }
+
+  if (conditionsBox) {
+    const notesInput = document.getElementById("cart-custom-notes");
+    const hasNotes = notesInput ? (notesInput.value.trim().length > 0) : false;
+    const hasOrderOnly = cart.some(item => Boolean(item.somente_encomenda));
+
+    if (hasOrderOnly) {
+      conditionsBox.innerHTML = `
+        <div class="payment-condition-box alert-order-only">
+          <div class="payment-condition-header">
+            <i class="fa-solid fa-box-archive"></i>
+            <span>Pedido com Peça Somente sob Encomenda</span>
+          </div>
+          <p>Seu carrinho contém produto(s) fabricados exclusivamente sob encomenda. Para combinar cores e prazo, a finalização e o pagamento são feitos diretamente pelo <strong>WhatsApp</strong>.</p>
+        </div>
+      `;
+    } else if (hasNotes) {
+      conditionsBox.innerHTML = `
+        <div class="payment-condition-box alert-notes">
+          <div class="payment-condition-header">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Pedido com Observações Personalizadas</span>
+          </div>
+          <p>Como você adicionou observações de personalização (cores, nomes ou detalhes), seu pedido deve ser alinhado diretamente pelo <strong>WhatsApp</strong>.</p>
+        </div>
+      `;
+    } else {
+      conditionsBox.innerHTML = `
+        <div class="payment-condition-box alert-ready">
+          <div class="payment-condition-header">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Pronto para Finalizar</span>
+          </div>
+          <p>Você pode pagar online com segurança no <strong>Cartão em até 12x</strong> ou <strong>Pix</strong>, ou se preferir, pode finalizar direto pelo <strong>WhatsApp</strong>.</p>
+        </div>
+      `;
+    }
+  }
+}
+window.setCartStep = setCartStep;
 
 window.openCart = function() {
   if (SITE_SETTINGS.modo_manutencao) {
@@ -1555,6 +1673,7 @@ window.openCart = function() {
   if (overlay) {
     overlay.classList.add("active");
     document.body.style.overflow = "hidden";
+    setCartStep(1);
     updateCartValidation();
   }
 };
@@ -1582,10 +1701,7 @@ function updateCartValidation() {
   const btnCheckoutJim = document.getElementById("btn-checkout-jim");
 
   const hasNotes = notesInput ? (notesInput.value.trim().length > 0) : false;
-  const notesWrapper = document.getElementById("cart-notes-wrapper");
-  if (hasNotes && notesWrapper) {
-    notesWrapper.classList.add("expanded");
-  }
+
   const hasOrderOnly = cart.some(item => Boolean(item.somente_encomenda));
 
   // 1. Alerta de Item Somente sob Encomenda no Carrinho
@@ -2004,16 +2120,32 @@ function setupCartListeners() {
   const closeBtn = document.getElementById("cart-close-btn");
   if (closeBtn) closeBtn.addEventListener("click", closeCart);
 
-  const notesToggleBtn = document.getElementById("cart-notes-toggle-btn");
-  const notesWrapper = document.getElementById("cart-notes-wrapper");
   const notesInput = document.getElementById("cart-custom-notes");
-  if (notesToggleBtn && notesWrapper) {
-    notesToggleBtn.addEventListener("click", () => {
-      notesWrapper.classList.toggle("expanded");
-      if (notesWrapper.classList.contains("expanded") && notesInput) {
-        notesInput.focus();
-      }
-    });
+
+  // Navegação entre etapas (Estilo iFood)
+  const btnGotoPayment = document.getElementById("btn-cart-goto-payment");
+  if (btnGotoPayment) {
+    btnGotoPayment.addEventListener("click", () => setCartStep(2));
+  }
+
+  const btnBackStep = document.getElementById("cart-back-step-btn");
+  if (btnBackStep) {
+    btnBackStep.addEventListener("click", () => setCartStep(1));
+  }
+
+  const btnBackToItems = document.getElementById("btn-back-to-items");
+  if (btnBackToItems) {
+    btnBackToItems.addEventListener("click", () => setCartStep(1));
+  }
+
+  const pill1 = document.getElementById("cart-step-pill-1");
+  if (pill1) {
+    pill1.addEventListener("click", () => setCartStep(1));
+  }
+
+  const pill2 = document.getElementById("cart-step-pill-2");
+  if (pill2) {
+    pill2.addEventListener("click", () => setCartStep(2));
   }
 
   const overlay = document.getElementById("cart-overlay");
