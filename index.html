@@ -201,7 +201,7 @@
             <div class="showroom-top-bar">
               <div class="showroom-heading">
                 <span class="live-pulse-dot"></span>
-                <span class="showroom-heading-title">Vitrine de Peças Prontas</span>
+                <span class="showroom-heading-title">Peças em Destaque</span>
               </div>
               
               <div class="showroom-nav-controls">
@@ -225,18 +225,7 @@
             </div>
 
             <!-- Faixa Inferior do Showroom: Encomenda Sob Medida do Pinterest/TikTok/STL -->
-            <div class="showroom-bottom-banner">
-              <div class="showroom-banner-content">
-                <div class="banner-icon-glow"><i class="fa-brands fa-pinterest-p"></i></div>
-                <div class="banner-text">
-                  <strong>Viu uma ideia no Pinterest, TikTok ou tem arquivo STL?</strong>
-                  <span>Não precisa ter arquivo 3D pronto! Mande a foto ou link no WhatsApp que avaliamos e orçamos na hora.</span>
-                </div>
-              </div>
-              <a href="https://api.whatsapp.com/send?phone=5527936183114&text=Ol%C3%A1!%20Vi%20um%20modelo%20na%20internet%20e%20gostaria%20de%20saber%20se%20voc%C3%AAs%20conseguem%20imprimir%20para%20mim%20(vou%20te%20mandar%20a%20foto)." id="desktop-hero-custom-btn" class="banner-zap-btn" target="_blank" rel="noopener noreferrer" title="WhatsApp Cube Forge: +55 27 93618-3114">
-                <i class="fa-brands fa-whatsapp"></i> Orçar no Zap
-              </a>
-            </div>
+            
 
           </div>
         </div>
@@ -490,41 +479,34 @@
 
       <!-- Rodapé do Carrinho com Total & Checkout no WhatsApp -->
       <div class="cart-footer" id="cart-footer-panel">
-        <div class="cart-notes-wrapper">
-          <label for="cart-custom-notes"><i class="fa-solid fa-pen-to-square"></i> Observações do Pedido:</label>
-          <input type="text" id="cart-custom-notes" placeholder="Ex: Cores desejadas, nomes ou detalhes...">
-          
-          <!-- Aviso Profissional de Pedido Personalizado -->
-          <div class="cart-notes-warning" id="cart-notes-warning" role="alert" aria-live="polite">
-            <div class="cart-notes-warning-header">
-              <div class="cart-notes-warning-icon">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-              </div>
-              <span class="cart-notes-warning-title">Atenção para Pedidos Personalizados</span>
-            </div>
-            <p class="cart-notes-warning-text">
-              Como seu pedido contém <strong>observações personalizadas</strong>, ele deve ser alinhado diretamente pelo <strong>WhatsApp</strong> para combinarmos cores, nomes e acabamentos.
-            </p>
-            <div class="cart-notes-warning-pill">
-              <i class="fa-solid fa-lock"></i> Compra online desativada temporariamente
-            </div>
+        <div class="cart-notes-wrapper" id="cart-notes-wrapper">
+          <button type="button" class="cart-notes-toggle-btn" id="cart-notes-toggle-btn" aria-expanded="false">
+            <span><i class="fa-solid fa-pen-to-square"></i> Observações / Cores desejadas</span>
+            <i class="fa-solid fa-chevron-down cart-notes-arrow"></i>
+          </button>
+          <div class="cart-notes-collapse" id="cart-notes-collapse">
+            <input type="text" id="cart-custom-notes" placeholder="Ex: Cores desejadas, nomes ou detalhes..." autocomplete="off">
           </div>
+        </div>
 
-          <!-- Aviso Profissional para Item Somente sob Encomenda -->
-          <div class="cart-order-only-warning" id="cart-order-only-warning" role="alert" aria-live="polite">
-            <div class="cart-order-only-warning-header">
-              <div class="cart-order-only-warning-icon">
-                <i class="fa-solid fa-box-archive"></i>
-              </div>
-              <span class="cart-order-only-warning-title">Item Somente sob Encomenda no Carrinho</span>
-            </div>
-            <p class="cart-order-only-warning-text">
-              Seu carrinho contém produto(s) <strong>somente sob encomenda</strong>. Para comprar online, remova o item sob encomenda, ou finalize seu pedido diretamente pelo <strong>WhatsApp</strong>.
-            </p>
-            <div class="cart-order-only-warning-pill">
-              <i class="fa-solid fa-lock"></i> Compra online indisponível para encomendas
-            </div>
+        <!-- Aviso Compacto de Pedido Personalizado -->
+        <div class="cart-notes-warning" id="cart-notes-warning" role="alert" aria-live="polite">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <div class="cart-warning-body">
+            <strong>Personalização no pedido:</strong>
+            <span>Finalize no WhatsApp para combinar cores e detalhes.</span>
           </div>
+          <span class="cart-lock-tag"><i class="fa-solid fa-lock"></i> No Zap</span>
+        </div>
+
+        <!-- Aviso Compacto para Item Somente sob Encomenda -->
+        <div class="cart-order-only-warning" id="cart-order-only-warning" role="alert" aria-live="polite">
+          <i class="fa-solid fa-box-archive"></i>
+          <div class="cart-warning-body">
+            <strong>Item sob Encomenda:</strong>
+            <span>Finalize no WhatsApp ou remova para pagar online.</span>
+          </div>
+          <span class="cart-lock-tag"><i class="fa-solid fa-lock"></i> No Zap</span>
         </div>
 
         <div class="cart-total-row">

@@ -1472,6 +1472,10 @@ function updateCartValidation() {
   const btnCheckoutJim = document.getElementById("btn-checkout-jim");
 
   const hasNotes = notesInput ? (notesInput.value.trim().length > 0) : false;
+  const notesWrapper = document.getElementById("cart-notes-wrapper");
+  if (hasNotes && notesWrapper) {
+    notesWrapper.classList.add("expanded");
+  }
   const hasOrderOnly = cart.some(item => Boolean(item.somente_encomenda));
 
   // 1. Alerta de Item Somente sob Encomenda no Carrinho
@@ -1890,6 +1894,18 @@ function setupCartListeners() {
   const closeBtn = document.getElementById("cart-close-btn");
   if (closeBtn) closeBtn.addEventListener("click", closeCart);
 
+  const notesToggleBtn = document.getElementById("cart-notes-toggle-btn");
+  const notesWrapper = document.getElementById("cart-notes-wrapper");
+  const notesInput = document.getElementById("cart-custom-notes");
+  if (notesToggleBtn && notesWrapper) {
+    notesToggleBtn.addEventListener("click", () => {
+      notesWrapper.classList.toggle("expanded");
+      if (notesWrapper.classList.contains("expanded") && notesInput) {
+        notesInput.focus();
+      }
+    });
+  }
+
   const overlay = document.getElementById("cart-overlay");
   if (overlay) {
     overlay.addEventListener("click", (e) => {
@@ -1901,7 +1917,6 @@ function setupCartListeners() {
   if (checkoutBtn) checkoutBtn.addEventListener("click", checkoutCartWhatsApp);
 
   // Monitora alterações no campo de observações para exibir aviso e bloquear/desbloquear compra online
-  const notesInput = document.getElementById("cart-custom-notes");
   if (notesInput) {
     notesInput.addEventListener("input", updateCartNotesValidation);
     notesInput.addEventListener("change", updateCartNotesValidation);
