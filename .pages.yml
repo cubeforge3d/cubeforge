@@ -69,6 +69,11 @@ content:
         type: boolean
         default: true
         description: "Ative este botão para exibir este produto no carrossel de destaques no topo do site (Showroom). Se desativado, ele continua visível no catálogo abaixo, mas não aparece nos destaques."
+      - name: somente_encomenda
+        label: Somente sob Encomenda
+        type: boolean
+        default: false
+        description: "Ative este botão para produtos que são fabricados exclusivamente sob encomenda. Ele continuará aparecendo no catálogo e no carrinho com o selo '📦 Somente sob Encomenda', a compra online fica desativada e o cliente tem a opção de encomendar diretamente pelo WhatsApp."
       - name: estoque
         label: Estoque a Pronta Entrega (Qtd)
         type: number

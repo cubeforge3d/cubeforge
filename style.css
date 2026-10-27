@@ -2173,6 +2173,13 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.stock-pill.order-only {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.88) 0%, rgba(14, 165, 233, 0.95) 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
 .stock-pulse-dot {
   width: 6px;
   height: 6px;
@@ -2216,6 +2223,12 @@ button {
 
 .product-stock-bar.on-demand {
   color: var(--text-muted);
+}
+
+.product-stock-bar.order-only {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.25);
+  color: #38bdf8;
 }
 
 /* Alerta de Urgência no Modal de Detalhes */
@@ -2271,6 +2284,27 @@ button {
   flex-shrink: 0;
 }
 
+.modal-stock-alert.order-only {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.15) 0%, rgba(14, 165, 233, 0.1) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #e0f2fe;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.15);
+}
+
+.modal-stock-alert.order-only .stock-alert-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #0284c7;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
 /* Botão de filtro destacado para Pronta Entrega */
 .filter-btn-ready {
   border-color: rgba(255, 106, 0, 0.4) !important;
@@ -2296,6 +2330,13 @@ button {
   padding: 1px 6px;
   border-radius: var(--radius-sm);
   margin-top: 3px;
+}
+
+/* Tag de somente sob encomenda no item do carrinho (mesmo padrão visual) */
+.cart-item-stock-tag.order-only {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.32);
 }
 
 .product-info {
@@ -4369,6 +4410,42 @@ button {
   font-size: 0.72rem;
 }
 
+/* Botão Encomendar no WhatsApp para produtos Somente sob Encomenda */
+.btn-card-order-zap {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(37, 211, 102, 0.2) 0%, rgba(18, 140, 126, 0.3) 100%);
+  border: 1px solid rgba(37, 211, 102, 0.45);
+  color: #4ade80;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.78rem;
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+  box-shadow: var(--glass-specular-subtle);
+  transition: all var(--transition-smooth);
+}
+
+.btn-card-order-zap:hover {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+  border-color: #25d366;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.45);
+}
+
+.showroom-order-btn {
+  grid-column: 1 / -1;
+  padding: 6px 8px;
+  font-size: 0.72rem;
+}
+
 /* 4. Botão Comprar Online no Modal do Produto */
 .modal-buy-online-btn {
   width: 100%;
@@ -4397,6 +4474,21 @@ button {
   color: #ffffff;
   transform: translateY(-1px);
   box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45);
+}
+
+.modal-encomenda-main-btn {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 800 !important;
+  font-size: 0.95rem !important;
+  padding: 13px 18px !important;
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4) !important;
+}
+
+.modal-encomenda-main-btn:hover {
+  transform: translateY(-2px) scale(1.01) !important;
+  box-shadow: 0 8px 26px rgba(37, 211, 102, 0.6) !important;
 }
 
 /* 5. Botão de Pagamento InfinitePay no Rodapé do Carrinho */
@@ -4545,6 +4637,80 @@ button {
 }
 
 .cart-notes-warning.shake {
+  animation: shakeNotice 0.45s ease-in-out;
+}
+
+/* 6.1 Aviso de Produto Somente sob Encomenda no Carrinho */
+.cart-order-only-warning {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.16) 0%, rgba(14, 165, 233, 0.1) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-top: 6px;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.15);
+  animation: warningSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.cart-order-only-warning.active {
+  display: flex;
+}
+
+.cart-order-only-warning-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cart-order-only-warning-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.22);
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  flex-shrink: 0;
+}
+
+.cart-order-only-warning-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 0.2px;
+}
+
+.cart-order-only-warning-text {
+  font-size: 0.75rem;
+  line-height: 1.42;
+  color: #bae6fd;
+  margin: 0;
+}
+
+.cart-order-only-warning-text strong {
+  color: #ffffff;
+}
+
+.cart-order-only-warning-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.69rem;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 6px;
+  padding: 4px 8px;
+  align-self: flex-start;
+  letter-spacing: 0.1px;
+}
+
+.cart-order-only-warning.shake {
   animation: shakeNotice 0.45s ease-in-out;
 }
 

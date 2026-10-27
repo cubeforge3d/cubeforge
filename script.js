@@ -54,7 +54,8 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-dragon",
     disponivel: true,
     destaque: true,
-    estoque: 2
+    estoque: 2,
+    somente_encomenda: false
   },
   {
     id: 2,
@@ -67,7 +68,8 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-seedling",
     disponivel: true,
     destaque: true,
-    estoque: 0
+    estoque: 0,
+    somente_encomenda: false
   },
   {
     id: 3,
@@ -80,7 +82,8 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-headphones",
     disponivel: true,
     destaque: true,
-    estoque: 1
+    estoque: 1,
+    somente_encomenda: false
   },
   {
     id: 4,
@@ -93,7 +96,8 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-lightbulb",
     disponivel: true,
     destaque: true,
-    estoque: 0
+    estoque: 0,
+    somente_encomenda: true
   },
   {
     id: 5,
@@ -106,7 +110,8 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-key",
     disponivel: true,
     destaque: true,
-    estoque: 4
+    estoque: 4,
+    somente_encomenda: false
   },
   {
     id: 6,
@@ -119,7 +124,8 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-gamepad",
     disponivel: true,
     destaque: true,
-    estoque: 0
+    estoque: 0,
+    somente_encomenda: false
   }
 ];
 
@@ -262,6 +268,11 @@ function normalizeProduct(raw, index) {
           ? Boolean(raw.showroom) 
           : true));
   const stock = Math.max(0, parseInt(raw.estoque ?? raw.stock ?? raw.estoque_pronta_entrega ?? 0, 10) || 0);
+  const isOrderOnly = raw.somente_encomenda !== undefined 
+    ? Boolean(raw.somente_encomenda) 
+    : (raw.sob_encomenda !== undefined 
+       ? Boolean(raw.sob_encomenda) 
+       : false);
 
   // Ícone/Emoji customizado ou inteligente
   let icon = raw.categoria_icone || raw.icon || "";
@@ -289,8 +300,10 @@ function normalizeProduct(raw, index) {
     nova_categoria: raw.nova_categoria || "",
     disponivel: isAvailable,
     destaque: isDestaque,
+    somente_encomenda: isOrderOnly,
+    sob_encomenda: isOrderOnly,
     estoque: stock,
-    prontaEntrega: stock > 0
+    prontaEntrega: !isOrderOnly && stock > 0
   };
 }
 
@@ -405,6 +418,7 @@ async function loadProductsData() {
   renderFilterTabs(currentCategory);
   renderCatalog(currentCategory || "all");
   setupHeroSlider();
+  syncCartWithCatalog();
   updateCartUI();
 }
 
@@ -538,7 +552,7 @@ function renderCatalog(filterCategory = "all") {
   if (filterCategory === "all") {
     filteredItems = CATALOG_ITEMS;
   } else if (filterCategory === "pronta-entrega") {
-    filteredItems = CATALOG_ITEMS.filter(item => item.estoque > 0);
+    filteredItems = CATALOG_ITEMS.filter(item => item.estoque > 0 && !item.somente_encomenda);
   } else {
     filteredItems = CATALOG_ITEMS.filter(item => item.category === filterCategory);
   }
@@ -558,26 +572,74 @@ function renderCatalog(filterCategory = "all") {
           <span>${item.categoryName}</span>
          </div>`;
 
-    // Selo de Pronta Entrega / Urgência
-    const isReady = item.estoque > 0;
-    const stockPill = isReady
-      ? `<span class="stock-pill in-stock" title="Temos ${item.estoque} unidade(s) pronta(s) para envio imediato!">
-           <span class="stock-pulse-dot"></span>
-           ⚡ ${item.estoque === 1 ? 'Última pronta!' : item.estoque + ' prontas'}
-         </span>`
-      : `<span class="stock-pill on-demand" title="Feito sob encomenda na cor que você preferir">
-           🛠️ Sob Encomenda
-         </span>`;
+    // Selo de Pronta Entrega / Urgência / Somente sob Encomenda
+    const isOrderOnly = Boolean(item.somente_encomenda);
+    const isReady = !isOrderOnly && item.estoque > 0;
 
-    const stockBar = isReady
-      ? `<div class="product-stock-bar in-stock">
-           <i class="fa-solid fa-bolt"></i>
-           <span><strong>Pronta Entrega:</strong> ${item.estoque === 1 ? 'Apenas 1 unidade' : item.estoque + ' unidades disponíveis'}</span>
-         </div>`
-      : `<div class="product-stock-bar on-demand">
-           <i class="fa-solid fa-wand-magic-sparkles"></i>
-           <span><strong>Sob Encomenda:</strong> Feito na sua cor</span>
-         </div>`;
+    let stockPill = "";
+    if (isOrderOnly) {
+      stockPill = `<span class="stock-pill order-only" title="Peça fabricada exclusivamente sob encomenda">
+                     📦 Somente sob Encomenda
+                   </span>`;
+    } else if (isReady) {
+      stockPill = `<span class="stock-pill in-stock" title="Temos ${item.estoque} unidade(s) pronta(s) para envio imediato!">
+                     <span class="stock-pulse-dot"></span>
+                     ⚡ ${item.estoque === 1 ? 'Última pronta!' : item.estoque + ' prontas'}
+                   </span>`;
+    } else {
+      stockPill = `<span class="stock-pill on-demand" title="Feito sob encomenda na cor que você preferir">
+                     🛠️ Sob Encomenda
+                   </span>`;
+    }
+
+    let stockBar = "";
+    if (isOrderOnly) {
+      stockBar = `<div class="product-stock-bar order-only">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span><strong>Somente sob Encomenda:</strong> Feito sob pedido</span>
+                  </div>`;
+    } else if (isReady) {
+      stockBar = `<div class="product-stock-bar in-stock">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span><strong>Pronta Entrega:</strong> ${item.estoque === 1 ? 'Apenas 1 unidade' : item.estoque + ' unidades disponíveis'}</span>
+                  </div>`;
+    } else {
+      stockBar = `<div class="product-stock-bar on-demand">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span><strong>Sob Encomenda:</strong> Feito na sua cor</span>
+                  </div>`;
+    }
+
+    let actionsHtml = "";
+    if (isOrderOnly) {
+      actionsHtml = `
+        <div class="product-actions-group">
+          <button class="btn-card-cart" onclick="addToCart(${item.id}, 1, this)" aria-label="Adicionar ${item.title} ao carrinho">
+            <i class="fa-solid fa-cart-plus"></i> + Carrinho
+          </button>
+          <button class="btn-card-direct" onclick="openProductModal(${item.id})" aria-label="Ver detalhes de ${item.title}">
+            <i class="fa-solid fa-eye"></i> Detalhes
+          </button>
+          <button type="button" class="btn-card-order-zap" onclick="orderEncomendaFromCard(${item.id})" aria-label="Encomendar ${item.title} pelo WhatsApp" title="Conversar no WhatsApp para encomendar">
+            <i class="fa-brands fa-whatsapp"></i> <span>Encomendar no WhatsApp</span>
+          </button>
+        </div>
+      `;
+    } else {
+      actionsHtml = `
+        <div class="product-actions-group">
+          <button class="btn-card-cart" onclick="addToCart(${item.id}, 1, this)" aria-label="Adicionar ${item.title} ao carrinho">
+            <i class="fa-solid fa-cart-plus"></i> + Carrinho
+          </button>
+          <button class="btn-card-direct" onclick="openProductModal(${item.id})" aria-label="Pedir ${item.title} direto no WhatsApp">
+            <i class="fa-brands fa-whatsapp"></i> Pedir Direto
+          </button>
+          <button type="button" class="btn-card-buy-online" onclick="buySingleProductOnline(${item.id}, event)" aria-label="Comprar ${item.title} online no Pix ou Cartão em até 12x" title="Ir direto para o checkout da InfinitePay">
+            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online</span>
+          </button>
+        </div>
+      `;
+    }
 
     card.innerHTML = `
       <div class="product-img-box" onclick="openProductModal(${item.id})" style="cursor: pointer;" title="Clique para ver detalhes de ${item.title}">
@@ -592,17 +654,7 @@ function renderCatalog(filterCategory = "all") {
         </div>
         <p class="product-desc">${item.desc}</p>
         ${stockBar}
-        <div class="product-actions-group">
-          <button class="btn-card-cart" onclick="addToCart(${item.id}, 1, this)" aria-label="Adicionar ${item.title} ao carrinho">
-            <i class="fa-solid fa-cart-plus"></i> + Carrinho
-          </button>
-          <button class="btn-card-direct" onclick="openProductModal(${item.id})" aria-label="Pedir ${item.title} direto no WhatsApp">
-            <i class="fa-brands fa-whatsapp"></i> Pedir Direto
-          </button>
-          <button type="button" class="btn-card-buy-online" onclick="buySingleProductOnline(${item.id}, event)" aria-label="Comprar ${item.title} online no Pix ou Cartão em até 12x" title="Ir direto para o checkout da InfinitePay">
-            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online</span>
-          </button>
-        </div>
+        ${actionsHtml}
       </div>
     `;
 
@@ -722,9 +774,25 @@ window.openProductModal = function(productId) {
         <span>${item.categoryName}</span>
        </div>`;
 
-  const isReady = item.estoque > 0;
-  const stockAlert = isReady
-    ? `<div class="modal-stock-alert in-stock">
+  const isOrderOnly = Boolean(item.somente_encomenda);
+  const isReady = !isOrderOnly && item.estoque > 0;
+
+  let stockAlert = "";
+  if (isOrderOnly) {
+    stockAlert = `
+      <div class="modal-stock-alert order-only">
+        <div class="stock-alert-icon"><i class="fa-solid fa-box-archive"></i></div>
+        <div>
+          <strong>📦 Peça Somente sob Encomenda</strong>
+          <div style="font-size: 0.78rem; opacity: 0.95; margin-top: 2px;">
+            Esta peça é fabricada exclusivamente sob encomenda na cor e acabamento que você preferir. Prazos e detalhes são alinhados pelo WhatsApp!
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (isReady) {
+    stockAlert = `
+      <div class="modal-stock-alert in-stock">
         <div class="stock-alert-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
         <div>
           <strong>⚡ Peça com Pronta Entrega!</strong>
@@ -732,8 +800,11 @@ window.openProductModal = function(productId) {
             Temos <strong>${item.estoque} ${item.estoque === 1 ? 'peça já impressa' : 'peças já impressas'}</strong> pronta(s) para envio ou retirada rápida. Aproveite antes que acabe!
           </div>
         </div>
-       </div>`
-    : `<div class="modal-stock-alert on-demand">
+      </div>
+    `;
+  } else {
+    stockAlert = `
+      <div class="modal-stock-alert on-demand">
         <div class="stock-alert-icon"><i class="fa-solid fa-hammer"></i></div>
         <div>
           <strong>🛠️ Produção Sob Encomenda</strong>
@@ -741,7 +812,35 @@ window.openProductModal = function(productId) {
             Impressão 3D de alta resolução fabricada especialmente para você na cor e tamanho que preferir.
           </div>
         </div>
-       </div>`;
+      </div>
+    `;
+  }
+
+  let modalActionsHtml = "";
+  if (isOrderOnly) {
+    const orderMsg = `Olá! Vi o produto sob encomenda "${item.title}" (${item.price}) no site da Cube Forge e gostaria de encomendar! Poderia me passar prazos e opções de personalização?`;
+    const orderZapUrl = createWhatsappUrl(SITE_CONFIG.whatsappNumber, orderMsg);
+    modalActionsHtml = `
+      <a href="${orderZapUrl}" class="modal-direct-btn modal-encomenda-main-btn" target="_blank" rel="noopener noreferrer">
+        <i class="fa-brands fa-whatsapp"></i> Encomendar esta Peça no WhatsApp
+      </a>
+      <button class="modal-cart-btn" onclick="addToCart(${item.id}, 1, this); closeProductModal();">
+        <i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho
+      </button>
+    `;
+  } else {
+    modalActionsHtml = `
+      <button type="button" class="modal-buy-online-btn" onclick="buySingleProductOnline(${item.id}, event)">
+        <i class="fa-solid fa-credit-card"></i> Comprar Online no Checkout (Pix ou 12x)
+      </button>
+      <button class="modal-cart-btn" onclick="addToCart(${item.id}, 1, this); closeProductModal();">
+        <i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho
+      </button>
+      <a href="${whatsappUrl}" class="modal-direct-btn" target="_blank" rel="noopener noreferrer">
+        <i class="fa-brands fa-whatsapp"></i> Pedir Direto no WhatsApp
+      </a>
+    `;
+  }
 
   modalBody.innerHTML = `
     <div class="modal-image-area">
@@ -762,15 +861,7 @@ window.openProductModal = function(productId) {
       </div>
 
       <div class="modal-actions-container">
-        <button type="button" class="modal-buy-online-btn" onclick="buySingleProductOnline(${item.id}, event)">
-          <i class="fa-solid fa-credit-card"></i> Comprar Online no Checkout (Pix ou 12x)
-        </button>
-        <button class="modal-cart-btn" onclick="addToCart(${item.id}, 1, this); closeProductModal();">
-          <i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho
-        </button>
-        <a href="${whatsappUrl}" class="modal-direct-btn" target="_blank" rel="noopener noreferrer">
-          <i class="fa-brands fa-whatsapp"></i> Pedir Direto no WhatsApp
-        </a>
+        ${modalActionsHtml}
       </div>
     </div>
   `;
@@ -840,10 +931,47 @@ function setupHeroSlider() {
 
   // Renderiza todos os cards dos produtos em destaque em formato 3:4
   track.innerHTML = showroomItems.map((item) => {
-    const isReady = item.estoque > 0;
-    const stockPill = isReady
-      ? `<span class="stock-pill in-stock" title="Temos ${item.estoque} unidade(s) pronta(s) para envio imediato!"><span class="stock-pulse-dot"></span> ⚡ ${item.estoque === 1 ? '1 pronta' : item.estoque + ' prontas'}</span>`
-      : `<span class="stock-pill on-demand">🛠️ Sob Encomenda</span>`;
+    const isOrderOnly = Boolean(item.somente_encomenda);
+    const isReady = !isOrderOnly && item.estoque > 0;
+    let stockPill = "";
+    if (isOrderOnly) {
+      stockPill = `<span class="stock-pill order-only">📦 Somente sob Encomenda</span>`;
+    } else if (isReady) {
+      stockPill = `<span class="stock-pill in-stock" title="Temos ${item.estoque} unidade(s) pronta(s) para envio imediato!"><span class="stock-pulse-dot"></span> ⚡ ${item.estoque === 1 ? '1 pronta' : item.estoque + ' prontas'}</span>`;
+    } else {
+      stockPill = `<span class="stock-pill on-demand">🛠️ Sob Encomenda</span>`;
+    }
+
+    let actionsHtml = "";
+    if (isOrderOnly) {
+      actionsHtml = `
+        <div class="showroom-card-actions">
+          <button class="btn-card-cart" onclick="event.stopPropagation(); addToCart(${item.id}, 1, this)" title="Adicionar ao carrinho">
+            <i class="fa-solid fa-cart-plus"></i> <span>+ Carrinho</span>
+          </button>
+          <button class="btn-card-direct" onclick="event.stopPropagation(); openProductModal(${item.id})" title="Ver detalhes">
+            <i class="fa-solid fa-eye"></i> <span>Detalhes</span>
+          </button>
+          <button type="button" class="btn-card-order-zap showroom-order-btn" onclick="event.stopPropagation(); orderEncomendaFromCard(${item.id})" title="Encomendar via WhatsApp">
+            <i class="fa-brands fa-whatsapp"></i> <span>Encomendar</span>
+          </button>
+        </div>
+      `;
+    } else {
+      actionsHtml = `
+        <div class="showroom-card-actions">
+          <button class="btn-card-cart" onclick="event.stopPropagation(); addToCart(${item.id}, 1, this)" title="Adicionar ao carrinho">
+            <i class="fa-solid fa-cart-plus"></i> <span>+ Carrinho</span>
+          </button>
+          <button class="btn-card-direct" onclick="event.stopPropagation(); orderDirectFromCard(${item.id})" title="Pedir no WhatsApp">
+            <i class="fa-brands fa-whatsapp"></i> <span>Pedir</span>
+          </button>
+          <button type="button" class="btn-card-buy-online showroom-buy-btn" onclick="event.stopPropagation(); buySingleProductOnline(${item.id}, event)" title="Comprar online no Pix ou Cartão em até 12x">
+            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online</span>
+          </button>
+        </div>
+      `;
+    }
 
     return `
     <div class="showroom-product-card" data-id="${item.id}">
@@ -856,28 +984,26 @@ function setupHeroSlider() {
       <div class="showroom-card-info">
         <h4 class="showroom-card-title" onclick="openProductModal(${item.id})" title="${item.title}">${item.title}</h4>
         <p class="showroom-card-desc">${item.desc}</p>
-        <div class="showroom-card-actions">
-          <button class="btn-card-cart" onclick="event.stopPropagation(); addToCart(${item.id}, 1, this)" title="Adicionar ao carrinho">
-            <i class="fa-solid fa-cart-plus"></i> <span>+ Carrinho</span>
-          </button>
-          <button class="btn-card-direct" onclick="event.stopPropagation(); orderDirectFromCard(${item.id})" title="Pedir no WhatsApp">
-            <i class="fa-brands fa-whatsapp"></i> <span>Pedir</span>
-          </button>
-          <button type="button" class="btn-card-buy-online showroom-buy-btn" onclick="event.stopPropagation(); buySingleProductOnline(${item.id}, event)" title="Comprar online no Pix ou Cartão em até 12x">
-            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online</span>
-          </button>
-        </div>
+        ${actionsHtml}
       </div>
     </div>
   `;
   }).join("");
 
   window.orderDirectFromCard = function(itemId) {
-    const item = allAvailable.find((p) => p.id === itemId);
+    const item = allAvailable.find((p) => p.id === itemId) || (CATALOG_ITEMS && CATALOG_ITEMS.find((p) => p.id === itemId));
     if (!item) return;
     const quoteMsg = SITE_CONFIG.catalogWhatsappMsg
       .replace("{item}", item.title)
       .replace("{price}", item.price);
+    const url = createWhatsappUrl(SITE_CONFIG.whatsappNumber, quoteMsg);
+    window.open(url, "_blank");
+  };
+
+  window.orderEncomendaFromCard = function(itemId) {
+    const item = allAvailable.find((p) => p.id === itemId) || (CATALOG_ITEMS && CATALOG_ITEMS.find((p) => p.id === itemId));
+    if (!item) return;
+    const quoteMsg = `Olá! Vi o produto sob encomenda "${item.title}" (${item.price}) no site da Cube Forge e gostaria de encomendar! Poderia me passar os prazos e opções?`;
     const url = createWhatsappUrl(SITE_CONFIG.whatsappNumber, quoteMsg);
     window.open(url, "_blank");
   };
@@ -1070,6 +1196,31 @@ function formatBRL(value) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function syncCartWithCatalog() {
+  if (!Array.isArray(cart) || cart.length === 0) return;
+  const pool = (ALL_PRODUCTS && ALL_PRODUCTS.length > 0) ? ALL_PRODUCTS : FALLBACK_CATALOG_ITEMS;
+  let changed = false;
+  cart.forEach(item => {
+    const prod = pool.find(p => p.id === item.id);
+    if (prod) {
+      const orderOnly = Boolean(prod.somente_encomenda);
+      if (item.somente_encomenda !== orderOnly) {
+        item.somente_encomenda = orderOnly;
+        changed = true;
+      }
+      if (item.estoque !== (prod.estoque || 0)) {
+        item.estoque = prod.estoque || 0;
+        changed = true;
+      }
+    }
+  });
+  if (changed) {
+    try {
+      localStorage.setItem("cubeforge_cart", JSON.stringify(cart));
+    } catch (_) {}
+  }
+}
+
 function loadCart() {
   try {
     const saved = localStorage.getItem("cubeforge_cart");
@@ -1081,6 +1232,7 @@ function loadCart() {
     console.error("Erro ao carregar carrinho:", err);
     cart = [];
   }
+  syncCartWithCatalog();
   updateCartUI();
 }
 
@@ -1109,8 +1261,7 @@ window.addToCart = function(productId, quantity = 1, triggerBtn = null) {
   if (existing) {
     existing.quantity += quantity;
     existing.estoque = product.estoque || 0;
-    existing.link_compra = product.link_compra || "";
-    existing.checkoutUrl = product.checkoutUrl || "";
+    existing.somente_encomenda = Boolean(product.somente_encomenda);
   } else {
     cart.push({
       id: product.id,
@@ -1121,8 +1272,7 @@ window.addToCart = function(productId, quantity = 1, triggerBtn = null) {
       icon: product.icon,
       categoryName: product.categoryName,
       estoque: product.estoque || 0,
-      link_compra: product.link_compra || "",
-      checkoutUrl: product.checkoutUrl || "",
+      somente_encomenda: Boolean(product.somente_encomenda),
       quantity: quantity
     });
   }
@@ -1238,6 +1388,13 @@ function updateCartUI() {
         : `<i class="${item.icon}"></i>`;
       const itemSubtotal = formatBRL(item.numericPrice * item.quantity);
 
+      let stockTagHtml = "";
+      if (item.somente_encomenda) {
+        stockTagHtml = `<span class="cart-item-stock-tag order-only">📦 Somente sob Encomenda</span>`;
+      } else if (item.estoque > 0) {
+        stockTagHtml = `<span class="cart-item-stock-tag">⚡ Pronta Entrega (${item.estoque} disp.)</span>`;
+      }
+
       return `
         <div class="cart-item-card">
           <div class="cart-item-img">
@@ -1246,7 +1403,7 @@ function updateCartUI() {
           <div class="cart-item-details">
             <h4 class="cart-item-title">${item.title}</h4>
             <div class="cart-item-unit-price">${item.price} cada</div>
-            ${item.estoque > 0 ? `<span class="cart-item-stock-tag">⚡ Pronta Entrega (${item.estoque} disp.)</span>` : ''}
+            ${stockTagHtml}
             <div class="cart-item-actions-row">
               <div class="qty-control-box">
                 <button class="qty-btn" onclick="updateCartQuantity(${item.id}, -1)" aria-label="Diminuir quantidade">
@@ -1268,7 +1425,7 @@ function updateCartUI() {
     }).join("");
   }
 
-  updateCartNotesValidation();
+  updateCartValidation();
 }
 
 window.openCart = function() {
@@ -1276,7 +1433,7 @@ window.openCart = function() {
   if (overlay) {
     overlay.classList.add("active");
     document.body.style.overflow = "hidden";
-    updateCartNotesValidation();
+    updateCartValidation();
   }
 };
 
@@ -1291,31 +1448,53 @@ window.closeCart = function() {
 };
 
 /**
- * Valida o campo de observações do carrinho e atualiza o estado do botão de checkout.
- * - Se houver texto digitado: exibe aviso profissional de personalização e bloqueia compra online.
- * - Se estiver vazio: mantém botão habilitado para gerar o checkout unificado na InfinitePay.
+ * Valida o carrinho e atualiza avisos e estado do botão de checkout online:
+ * - Se houver produtos "Somente sob Encomenda": exibe aviso específico e bloqueia compra online.
+ * - Se houver observações digitadas: exibe aviso de personalização e bloqueia compra online.
+ * - Se estiver limpo: habilita o botão para gerar o checkout unificado na InfinitePay.
  */
-function updateCartNotesValidation() {
+function updateCartValidation() {
   const notesInput = document.getElementById("cart-custom-notes");
-  const warningEl = document.getElementById("cart-notes-warning");
+  const notesWarningEl = document.getElementById("cart-notes-warning");
+  const orderOnlyWarningEl = document.getElementById("cart-order-only-warning");
   const btnCheckoutJim = document.getElementById("btn-checkout-jim");
 
-  if (!notesInput) return;
+  const hasNotes = notesInput ? (notesInput.value.trim().length > 0) : false;
+  const hasOrderOnly = cart.some(item => Boolean(item.somente_encomenda));
 
-  const hasNotes = notesInput.value.trim().length > 0;
+  // 1. Alerta de Item Somente sob Encomenda no Carrinho
+  if (orderOnlyWarningEl) {
+    if (hasOrderOnly) {
+      orderOnlyWarningEl.classList.add("active");
+    } else {
+      orderOnlyWarningEl.classList.remove("active");
+    }
+  }
 
-  if (hasNotes) {
-    if (warningEl) warningEl.classList.add("active");
-    if (btnCheckoutJim) {
+  // 2. Alerta de Observações Personalizadas
+  if (notesWarningEl) {
+    if (hasNotes) {
+      notesWarningEl.classList.add("active");
+    } else {
+      notesWarningEl.classList.remove("active");
+    }
+  }
+
+  // 3. Atualiza estado e mensagem do botão de checkout online
+  if (btnCheckoutJim) {
+    if (hasOrderOnly) {
+      btnCheckoutJim.classList.add("disabled");
+      btnCheckoutJim.setAttribute("aria-disabled", "true");
+      btnCheckoutJim.setAttribute("tabindex", "-1");
+      btnCheckoutJim.innerHTML = '<i class="fa-solid fa-lock"></i> Compra Online Indisponível (Item sob Encomenda)';
+      btnCheckoutJim.title = "Seu carrinho contém item(ns) sob encomenda. Remova-o(s) para comprar online ou finalize seu pedido pelo WhatsApp.";
+    } else if (hasNotes) {
       btnCheckoutJim.classList.add("disabled");
       btnCheckoutJim.setAttribute("aria-disabled", "true");
       btnCheckoutJim.setAttribute("tabindex", "-1");
       btnCheckoutJim.innerHTML = '<i class="fa-solid fa-lock"></i> Compra Online Indisponível (Use o WhatsApp)';
       btnCheckoutJim.title = "Pedidos com observações ou personalizações devem ser verificados e combinados pelo WhatsApp.";
-    }
-  } else {
-    if (warningEl) warningEl.classList.remove("active");
-    if (btnCheckoutJim) {
+    } else {
       btnCheckoutJim.classList.remove("disabled");
       btnCheckoutJim.removeAttribute("aria-disabled");
       btnCheckoutJim.setAttribute("tabindex", "0");
@@ -1324,6 +1503,7 @@ function updateCartNotesValidation() {
     }
   }
 }
+window.updateCartNotesValidation = updateCartValidation;
 
 /**
  * Gera dinamicamente o link de checkout para um único produto na InfinitePay
@@ -1337,6 +1517,12 @@ window.buySingleProductOnline = async function(productId, e) {
 
   const product = CATALOG_ITEMS.find(p => p.id === productId) || ALL_PRODUCTS.find(p => p.id === productId);
   if (!product) return;
+
+  // Se o item for somente sob encomenda, redireciona para o WhatsApp de encomendas
+  if (product.somente_encomenda) {
+    orderEncomendaFromCard(productId);
+    return;
+  }
 
   const checkoutWindow = window.open("", "_blank");
   if (checkoutWindow) {
@@ -1435,6 +1621,27 @@ async function checkoutCartOnlineInfinitePay(e) {
 
   if (cart.length === 0) return;
 
+  // 1. Bloqueia compra online se houver item somente sob encomenda
+  const hasOrderOnly = cart.some(item => Boolean(item.somente_encomenda));
+  if (hasOrderOnly) {
+    const warningEl = document.getElementById("cart-order-only-warning");
+    if (warningEl) {
+      warningEl.classList.remove("shake");
+      void warningEl.offsetWidth;
+      warningEl.classList.add("shake");
+    }
+
+    const zapBtn = document.getElementById("btn-checkout-whatsapp");
+    if (zapBtn) {
+      zapBtn.classList.remove("highlight-pulse");
+      void zapBtn.offsetWidth;
+      zapBtn.classList.add("highlight-pulse");
+      setTimeout(() => zapBtn.classList.remove("highlight-pulse"), 1600);
+    }
+    return;
+  }
+
+  // 2. Bloqueia compra online se houver observações digitadas
   const notesInput = document.getElementById("cart-custom-notes");
   if (notesInput && notesInput.value.trim().length > 0) {
     // Alerta visual de pedido personalizado
@@ -1576,7 +1783,14 @@ function checkoutCartWhatsApp() {
 
   cart.forEach(item => {
     const subtotal = formatBRL(item.numericPrice * item.quantity);
-    const stockTag = item.estoque > 0 ? " [⚡ Pronta Entrega]" : " [🛠️ Sob Encomenda]";
+    let stockTag = "";
+    if (item.somente_encomenda) {
+      stockTag = " [📦 Somente sob Encomenda]";
+    } else if (item.estoque > 0) {
+      stockTag = " [⚡ Pronta Entrega]";
+    } else {
+      stockTag = " [🛠️ Sob Encomenda]";
+    }
     message += `• *${item.quantity}x* ${item.title} (${item.price} cada) = ${subtotal}${stockTag}\n`;
   });
 
