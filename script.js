@@ -1166,19 +1166,34 @@ function setupHeroSlider() {
 function setupFaqAccordion() {
   const faqItems = document.querySelectorAll(".faq-item");
   faqItems.forEach(item => {
+    // Sincronizar estado inicial se o item já vem com [open] no HTML
+    if (item.hasAttribute("open") && !item.classList.contains("faq-open")) {
+      item.classList.add("faq-open");
+    }
+
     const summary = item.querySelector("summary");
     if (!summary) return;
 
     summary.addEventListener("click", (e) => {
       e.preventDefault();
+
+      // Cancelar timer de fechamento pendente caso o usuário clique rapidamente
+      if (item._faqCloseTimer) {
+        clearTimeout(item._faqCloseTimer);
+        item._faqCloseTimer = null;
+      }
+
       const isOpen = item.classList.contains("faq-open");
 
       if (isOpen) {
-        // Suavemente recolhe
+        // Suavemente recolhe via CSS Grid (1fr -> 0fr)
         item.classList.remove("faq-open");
-        setTimeout(() => {
+        
+        // Remove o atributo 'open' nativo apenas quando a altura já tiver zerado suavemente
+        item._faqCloseTimer = setTimeout(() => {
           item.removeAttribute("open");
-        }, 320);
+          item._faqCloseTimer = null;
+        }, 340);
       } else {
         // Suavemente expande
         item.setAttribute("open", "");
