@@ -536,15 +536,17 @@ function setupBrandInfo() {
 }
 
 /**
- * Gera URL segura do WhatsApp
+ * Gera URL segura do WhatsApp preservando 100% dos emojis (sem corromper no wa.me)
  */
 function createWhatsappUrl(number, message) {
   const cleanNumber = (number || SITE_CONFIG.whatsappNumber || "5527936183114").replace(/\D/g, "");
   if (!message || !message.trim()) {
-    return SITE_CONFIG.whatsappBusinessLink || `https://wa.me/${cleanNumber}`;
+    return SITE_CONFIG.whatsappBusinessLink || `https://api.whatsapp.com/send?phone=${cleanNumber}`;
   }
   const encodedText = encodeURIComponent(message.trim());
-  return `https://wa.me/${cleanNumber}?text=${encodedText}`;
+  // Usa o endpoint oficial api.whatsapp.com/send para garantir que emojis como 🛒, ⚡, 💰, 📝
+  // não sejam corrompidos em símbolos de interrogação () pelo redirecionador wa.me
+  return `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodedText}`;
 }
 
 /**
