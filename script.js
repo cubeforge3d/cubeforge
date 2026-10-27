@@ -646,8 +646,10 @@ function renderCatalog(filterCategory = "all") {
 
     card.innerHTML = `
       <div class="product-img-box" onclick="openProductModal(${item.id})" style="cursor: pointer;" title="Clique para ver detalhes de ${item.title}">
-        <span class="product-category-tag">${item.categoryName}</span>
-        ${stockPill}
+        <div class="card-media-badges">
+          <span class="product-category-tag">${item.categoryName}</span>
+          ${stockPill}
+        </div>
         ${imageContent}
       </div>
       <div class="product-info">
@@ -985,8 +987,10 @@ function setupHeroSlider() {
     <div class="showroom-product-card" data-id="${item.id}">
       <div class="showroom-card-media" onclick="openProductModal(${item.id})" title="Clique para ver detalhes de ${item.title}">
         <img src="${item.image}" alt="${item.title}" loading="lazy">
-        <span class="card-category-pill"><i class="${item.icon}"></i> ${item.categoryName}</span>
-        ${stockPill}
+        <div class="card-media-badges">
+          <span class="card-category-pill"><i class="${item.icon}"></i> ${item.categoryName}</span>
+          ${stockPill}
+        </div>
         <span class="card-price-pill">${item.price}</span>
       </div>
       <div class="showroom-card-info">

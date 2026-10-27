@@ -2180,6 +2180,39 @@ button {
 /* ==========================================================================
    Selo de Pronta Entrega e Urgência de Estoque
    ========================================================================== */
+/* ==========================================================================
+   Container de Badges sobre Imagens de Produtos (Showroom e Catálogo)
+   Empilha as etiquetas verticalmente no canto superior esquerdo, garantindo
+   que a categoria e o status de pronta entrega/encomenda nunca se sobreponham
+   ========================================================================== */
+.card-media-badges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  z-index: 3;
+  pointer-events: none;
+  max-width: calc(100% - 20px);
+}
+
+.card-media-badges .card-category-pill,
+.card-media-badges .product-category-tag,
+.card-media-badges .stock-pill {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  max-width: 100%;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+}
+
 .stock-pill {
   position: absolute;
   top: 10px;
