@@ -64,6 +64,11 @@ content:
         label: Disponível no Catálogo
         type: boolean
         default: true
+      - name: destaque
+        label: Exibir nos Destaques (Vitrine do Topo)
+        type: boolean
+        default: true
+        description: "Ative este botão para exibir este produto no carrossel de destaques no topo do site (Showroom). Se desativado, ele continua visível no catálogo abaixo, mas não aparece nos destaques."
       - name: estoque
         label: Estoque a Pronta Entrega (Qtd)
         type: number

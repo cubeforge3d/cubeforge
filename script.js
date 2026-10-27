@@ -50,6 +50,7 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item1.jpg",
     icon: "fa-solid fa-dragon",
     disponivel: true,
+    destaque: true,
     estoque: 2,
     link_compra: ""
   },
@@ -63,6 +64,7 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item2.jpg",
     icon: "fa-solid fa-seedling",
     disponivel: true,
+    destaque: true,
     estoque: 0,
     link_compra: ""
   },
@@ -76,6 +78,7 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item3.jpg",
     icon: "fa-solid fa-headphones",
     disponivel: true,
+    destaque: true,
     estoque: 1,
     link_compra: ""
   },
@@ -89,6 +92,7 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item4.jpg",
     icon: "fa-solid fa-lightbulb",
     disponivel: true,
+    destaque: true,
     estoque: 0,
     link_compra: ""
   },
@@ -102,6 +106,7 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item5.jpg",
     icon: "fa-solid fa-key",
     disponivel: true,
+    destaque: true,
     estoque: 4,
     link_compra: ""
   },
@@ -115,6 +120,7 @@ const FALLBACK_CATALOG_ITEMS = [
     imagem: "./assets/img/produtos/item6.jpg",
     icon: "fa-solid fa-gamepad",
     disponivel: true,
+    destaque: true,
     estoque: 0,
     link_compra: ""
   }
@@ -251,6 +257,13 @@ function normalizeProduct(raw, index) {
 
   const id = raw.id !== undefined && raw.id !== null ? Number(raw.id) : (index + 1);
   const isAvailable = raw.disponivel !== undefined ? Boolean(raw.disponivel) : (raw.available !== undefined ? Boolean(raw.available) : true);
+  const isDestaque = raw.destaque !== undefined 
+    ? Boolean(raw.destaque) 
+    : (raw.em_destaque !== undefined 
+       ? Boolean(raw.em_destaque) 
+       : (raw.showroom !== undefined 
+          ? Boolean(raw.showroom) 
+          : true));
   const stock = Math.max(0, parseInt(raw.estoque ?? raw.stock ?? raw.estoque_pronta_entrega ?? 0, 10) || 0);
 
   // Link direto de pagamento na InfinitePay / Jim (ou fallback para loja geral)
@@ -282,6 +295,7 @@ function normalizeProduct(raw, index) {
     categoria_icone: raw.categoria_icone || "",
     nova_categoria: raw.nova_categoria || "",
     disponivel: isAvailable,
+    destaque: isDestaque,
     estoque: stock,
     prontaEntrega: stock > 0,
     link_compra: linkCompra,
@@ -807,10 +821,20 @@ function setupSmoothScroll() {
 }
 
 /**
- * Showroom Panorâmico Multi-Produtos no Desktop
- * Renderiza múltiplos cards em formato 3:4 simultâneos, paginação fluida e autoplay suave
+ * Showroom Panorâmico Multi-Produtos no Desktop (Vitrine de Peças Prontas)
+ * Renderiza múltiplos cards em formato 3:4 simultâneos, com paginação fluida,
+ * transição suave de 8.5 segundos e pausa absoluta garantida ao passar o mouse.
  */
 let currentShowroomPage = 0;
+let showroomAutoplayTimer = null;
+let isShowroomHovered = false;
+
+function stopShowroomAutoplay() {
+  if (showroomAutoplayTimer) {
+    clearInterval(showroomAutoplayTimer);
+    showroomAutoplayTimer = null;
+  }
+}
 
 function setupHeroSlider() {
   const showroomHub = document.getElementById("desktop-showroom-hub");
@@ -819,10 +843,23 @@ function setupHeroSlider() {
   const prevBtn = document.getElementById("showroom-prev-btn");
   const nextBtn = document.getElementById("showroom-next-btn");
 
-  if (!track || !CATALOG_ITEMS || CATALOG_ITEMS.length === 0) return;
+  if (!track) return;
 
-  // Renderiza todos os cards em formato 3:4
-  track.innerHTML = CATALOG_ITEMS.map((item) => {
+  // Interrompe qualquer temporizador anterior imediatamente para evitar duplicação ou conflito
+  stopShowroomAutoplay();
+
+  const allAvailable = (CATALOG_ITEMS && CATALOG_ITEMS.length > 0) ? CATALOG_ITEMS : ALL_PRODUCTS;
+  if (!allAvailable || allAvailable.length === 0) return;
+
+  // Filtra apenas os produtos ativos com destaque habilitado no Pages CMS
+  let showroomItems = allAvailable.filter(item => item.destaque !== false);
+  if (showroomItems.length === 0) {
+    // Fallback de segurança: se nenhum produto estiver marcado, exibe todos os disponíveis do catálogo
+    showroomItems = allAvailable;
+  }
+
+  // Renderiza todos os cards dos produtos em destaque em formato 3:4
+  track.innerHTML = showroomItems.map((item) => {
     const isReady = item.estoque > 0;
     const stockPill = isReady
       ? `<span class="stock-pill in-stock" title="Temos ${item.estoque} unidade(s) pronta(s) para envio imediato!"><span class="stock-pulse-dot"></span> ⚡ ${item.estoque === 1 ? '1 pronta' : item.estoque + ' prontas'}</span>`
@@ -856,7 +893,7 @@ function setupHeroSlider() {
   }).join("");
 
   window.orderDirectFromCard = function(itemId) {
-    const item = CATALOG_ITEMS.find((p) => p.id === itemId) || ALL_PRODUCTS.find(p => p.id === itemId);
+    const item = allAvailable.find((p) => p.id === itemId);
     if (!item) return;
     const quoteMsg = SITE_CONFIG.catalogWhatsappMsg
       .replace("{item}", item.title)
@@ -871,13 +908,39 @@ function setupHeroSlider() {
 
   function getTotalPages() {
     const cardsPerView = getCardsPerView();
-    return Math.ceil(CATALOG_ITEMS.length / cardsPerView);
+    return Math.max(1, Math.ceil(showroomItems.length / cardsPerView));
   }
 
   function updateShowroom() {
     const totalPages = getTotalPages();
     if (currentShowroomPage >= totalPages) currentShowroomPage = 0;
     if (currentShowroomPage < 0) currentShowroomPage = totalPages - 1;
+
+    // Se houver apenas 1 página, fixa na posição 0 e desativa as setas
+    if (totalPages <= 1) {
+      track.style.transform = "translateX(0px)";
+      if (pageText) pageText.textContent = "1 / 1";
+      if (prevBtn) {
+        prevBtn.style.opacity = "0.35";
+        prevBtn.style.pointerEvents = "none";
+      }
+      if (nextBtn) {
+        nextBtn.style.opacity = "0.35";
+        nextBtn.style.pointerEvents = "none";
+      }
+      stopShowroomAutoplay();
+      return;
+    }
+
+    // Restaura setas ativas para 2 ou mais páginas
+    if (prevBtn) {
+      prevBtn.style.opacity = "1";
+      prevBtn.style.pointerEvents = "auto";
+    }
+    if (nextBtn) {
+      nextBtn.style.opacity = "1";
+      nextBtn.style.pointerEvents = "auto";
+    }
 
     // Deslocamento por página: 100% da viewport + gap (14px)
     track.style.transform = `translateX(calc(-${currentShowroomPage} * (100% + 14px)))`;
@@ -889,16 +952,42 @@ function setupHeroSlider() {
 
   function nextShowroomPage() {
     const totalPages = getTotalPages();
+    if (totalPages <= 1) return;
     currentShowroomPage = (currentShowroomPage + 1) % totalPages;
     updateShowroom();
   }
 
   function prevShowroomPage() {
     const totalPages = getTotalPages();
+    if (totalPages <= 1) return;
     currentShowroomPage = (currentShowroomPage - 1 + totalPages) % totalPages;
     updateShowroom();
   }
 
+  function startAutoplay() {
+    stopShowroomAutoplay();
+    // Não inicia autoplay se o mouse estiver em cima ou se houver apenas 1 página
+    if (isShowroomHovered) return;
+    if (getTotalPages() <= 1) return;
+
+    // Tempo ajustado: 8.5 segundos (8500ms) para leitura confortável sem pressa
+    showroomAutoplayTimer = setInterval(() => {
+      if (isShowroomHovered) {
+        stopShowroomAutoplay();
+        return;
+      }
+      nextShowroomPage();
+    }, 8500);
+  }
+
+  function resetAutoplay() {
+    stopShowroomAutoplay();
+    if (!isShowroomHovered && getTotalPages() > 1) {
+      startAutoplay();
+    }
+  }
+
+  // Registra eventos do mouse e controles uma única vez
   if (!track.dataset.eventsBound) {
     track.dataset.eventsBound = "true";
 
@@ -916,9 +1005,30 @@ function setupHeroSlider() {
       });
     }
 
+    // Pausa garantida sempre que o mouse estiver sobre o showroom ou sobre qualquer produto
     if (showroomHub) {
-      showroomHub.addEventListener("mouseenter", stopAutoplay);
-      showroomHub.addEventListener("mouseleave", startAutoplay);
+      showroomHub.addEventListener("mouseenter", () => {
+        isShowroomHovered = true;
+        stopShowroomAutoplay();
+      });
+
+      showroomHub.addEventListener("mouseleave", () => {
+        isShowroomHovered = false;
+        resetAutoplay();
+      });
+
+      // Suporte a foco de navegação por teclado e acessibilidade
+      showroomHub.addEventListener("focusin", () => {
+        isShowroomHovered = true;
+        stopShowroomAutoplay();
+      });
+
+      showroomHub.addEventListener("focusout", (e) => {
+        if (!showroomHub.contains(e.relatedTarget)) {
+          isShowroomHovered = false;
+          resetAutoplay();
+        }
+      });
     }
 
     window.addEventListener("resize", () => {
@@ -926,27 +1036,8 @@ function setupHeroSlider() {
     });
   }
 
-  let autoplayTimer = null;
-
-  function startAutoplay() {
-    stopAutoplay();
-    autoplayTimer = setInterval(nextShowroomPage, 5200);
-  }
-
-  function stopAutoplay() {
-    if (autoplayTimer) {
-      clearInterval(autoplayTimer);
-      autoplayTimer = null;
-    }
-  }
-
-  function resetAutoplay() {
-    stopAutoplay();
-    startAutoplay();
-  }
-
   updateShowroom();
-  startAutoplay();
+  resetAutoplay();
 }
 
 /**
