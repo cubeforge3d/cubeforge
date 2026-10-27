@@ -54,8 +54,7 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-dragon",
     disponivel: true,
     destaque: true,
-    estoque: 2,
-    link_compra: "https://checkout.infinitepay.io/cubeforge/jJSa8VugaV?from=webbuilder&ajs_aid=f3c24f00-d4b3-4584-b41a-7343dc0e044d"
+    estoque: 2
   },
   {
     id: 2,
@@ -68,8 +67,7 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-seedling",
     disponivel: true,
     destaque: true,
-    estoque: 0,
-    link_compra: "https://checkout.infinitepay.io/cubeforge/xSCMOn2vl6?from=webbuilder&ajs_aid=f3c24f00-d4b3-4584-b41a-7343dc0e044d"
+    estoque: 0
   },
   {
     id: 3,
@@ -82,8 +80,7 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-headphones",
     disponivel: true,
     destaque: true,
-    estoque: 1,
-    link_compra: ""
+    estoque: 1
   },
   {
     id: 4,
@@ -96,8 +93,7 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-lightbulb",
     disponivel: true,
     destaque: true,
-    estoque: 0,
-    link_compra: ""
+    estoque: 0
   },
   {
     id: 5,
@@ -110,8 +106,7 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-key",
     disponivel: true,
     destaque: true,
-    estoque: 4,
-    link_compra: ""
+    estoque: 4
   },
   {
     id: 6,
@@ -124,8 +119,7 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-gamepad",
     disponivel: true,
     destaque: true,
-    estoque: 0,
-    link_compra: ""
+    estoque: 0
   }
 ];
 
@@ -269,10 +263,6 @@ function normalizeProduct(raw, index) {
           : true));
   const stock = Math.max(0, parseInt(raw.estoque ?? raw.stock ?? raw.estoque_pronta_entrega ?? 0, 10) || 0);
 
-  // Link direto de pagamento na InfinitePay / Jim (ou fallback para loja geral)
-  const linkCompra = (raw.link_compra || raw.link_pagamento || raw.link_infinitepay || raw.checkout_url || "").toString().trim();
-  const checkoutUrl = linkCompra || SITE_CONFIG.jimStoreUrl;
-
   // Ícone/Emoji customizado ou inteligente
   let icon = raw.categoria_icone || raw.icon || "";
   if (!icon) {
@@ -300,9 +290,7 @@ function normalizeProduct(raw, index) {
     disponivel: isAvailable,
     destaque: isDestaque,
     estoque: stock,
-    prontaEntrega: stock > 0,
-    link_compra: linkCompra,
-    checkoutUrl: checkoutUrl
+    prontaEntrega: stock > 0
   };
 }
 
@@ -519,20 +507,10 @@ function setupBrandInfo() {
   const footerInstagramLink = document.getElementById("footer-instagram-link");
   if (footerInstagramLink) footerInstagramLink.href = instagramUrl;
 
-  // Links da Loja Online no Jim / InfinitePay (Pix e Cartão até 12x)
-  const navJimLink = document.getElementById("nav-jim-link");
-  if (navJimLink) navJimLink.href = SITE_CONFIG.jimStoreUrl;
-
-  const heroJimBtn = document.getElementById("hero-jim-btn");
-  if (heroJimBtn) heroJimBtn.href = SITE_CONFIG.jimStoreUrl;
-
   const btnCheckoutJim = document.getElementById("btn-checkout-jim");
   if (btnCheckoutJim) {
     updateCartNotesValidation();
   }
-
-  const footerJimLink = document.getElementById("footer-jim-link");
-  if (footerJimLink) footerJimLink.href = SITE_CONFIG.jimStoreUrl;
 }
 
 /**
@@ -621,9 +599,9 @@ function renderCatalog(filterCategory = "all") {
           <button class="btn-card-direct" onclick="openProductModal(${item.id})" aria-label="Pedir ${item.title} direto no WhatsApp">
             <i class="fa-brands fa-whatsapp"></i> Pedir Direto
           </button>
-          <a href="${item.checkoutUrl}" class="btn-card-buy-online" target="_blank" rel="noopener noreferrer" aria-label="Comprar ${item.title} online no Pix ou Cartão em até 12x">
+          <button type="button" class="btn-card-buy-online" onclick="buySingleProductOnline(${item.id}, event)" aria-label="Comprar ${item.title} online no Pix ou Cartão em até 12x" title="Ir direto para o checkout da InfinitePay">
             <i class="fa-solid fa-credit-card"></i> <span>Comprar Online</span>
-          </a>
+          </button>
         </div>
       </div>
     `;
@@ -784,9 +762,9 @@ window.openProductModal = function(productId) {
       </div>
 
       <div class="modal-actions-container">
-        <a href="${item.checkoutUrl}" class="modal-buy-online-btn" target="_blank" rel="noopener noreferrer">
-          <i class="fa-solid fa-credit-card"></i> Comprar Online (Pix ou Cartão 12x)
-        </a>
+        <button type="button" class="modal-buy-online-btn" onclick="buySingleProductOnline(${item.id}, event)">
+          <i class="fa-solid fa-credit-card"></i> Comprar Online no Checkout (Pix ou 12x)
+        </button>
         <button class="modal-cart-btn" onclick="addToCart(${item.id}, 1, this); closeProductModal();">
           <i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho
         </button>
@@ -885,9 +863,9 @@ function setupHeroSlider() {
           <button class="btn-card-direct" onclick="event.stopPropagation(); orderDirectFromCard(${item.id})" title="Pedir no WhatsApp">
             <i class="fa-brands fa-whatsapp"></i> <span>Pedir</span>
           </button>
-          <a href="${item.checkoutUrl}" class="btn-card-buy-online showroom-buy-btn" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Comprar online no Pix ou Cartão em até 12x">
+          <button type="button" class="btn-card-buy-online showroom-buy-btn" onclick="event.stopPropagation(); buySingleProductOnline(${item.id}, event)" title="Comprar online no Pix ou Cartão em até 12x">
             <i class="fa-solid fa-credit-card"></i> <span>Comprar Online</span>
-          </a>
+          </button>
         </div>
       </div>
     </div>
@@ -1346,6 +1324,104 @@ function updateCartNotesValidation() {
     }
   }
 }
+
+/**
+ * Gera dinamicamente o link de checkout para um único produto na InfinitePay
+ * e abre direto a tela de pagamento.
+ */
+window.buySingleProductOnline = async function(productId, e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  const product = CATALOG_ITEMS.find(p => p.id === productId) || ALL_PRODUCTS.find(p => p.id === productId);
+  if (!product) return;
+
+  const checkoutWindow = window.open("", "_blank");
+  if (checkoutWindow) {
+    checkoutWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+        <head>
+          <meta charset="utf-8">
+          <title>Conectando ao Checkout - Cube Forge</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style>
+            body {
+              margin: 0;
+              min-height: 100vh;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              background: #080d18;
+              color: #ffffff;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+              text-align: center;
+              padding: 24px;
+              box-sizing: border-box;
+            }
+            .spinner {
+              width: 48px;
+              height: 48px;
+              border: 3px solid rgba(56, 189, 248, 0.15);
+              border-top-color: #38bdf8;
+              border-radius: 50%;
+              animation: spin 0.8s linear infinite;
+              margin-bottom: 22px;
+            }
+            @keyframes spin { to { transform: rotate(360deg); } }
+            h2 { font-size: 1.25rem; font-weight: 700; margin: 0 0 8px; color: #f8fafc; }
+            p { font-size: 0.9rem; color: #94a3b8; margin: 0; line-height: 1.4; }
+          </style>
+        </head>
+        <body>
+          <div class="spinner"></div>
+          <h2>Conectando ao Checkout Seguro</h2>
+          <p>Preparando seu pedido na InfinitePay...</p>
+        </body>
+      </html>
+    `);
+  }
+
+  try {
+    const unitCents = Math.round((product.numericPrice || 0) * 100);
+    const response = await fetch("https://api.checkout.infinitepay.io/links", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        handle: SITE_CONFIG.infinitePayHandle || "cubeforge",
+        redirect_url: window.location.href.split("?")[0],
+        items: [
+          {
+            quantity: 1,
+            price: unitCents > 0 ? unitCents : 1000,
+            description: product.title
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) throw new Error(`InfinitePay API Status ${response.status}`);
+    const data = await response.json();
+    if (data && data.url) {
+      if (checkoutWindow) {
+        checkoutWindow.location.href = data.url;
+      } else {
+        window.location.href = data.url;
+      }
+    } else {
+      throw new Error("URL de checkout não retornada");
+    }
+  } catch (err) {
+    console.warn("Erro ao gerar checkout do produto:", err);
+    if (checkoutWindow) {
+      checkoutWindow.close();
+    }
+    alert("Não foi possível conectar ao checkout online no momento. Por favor, tente novamente ou nos chame no WhatsApp!");
+  }
+};
 
 /**
  * Gera dinamicamente o link de checkout unificado na InfinitePay via API oficial

@@ -74,7 +74,3 @@ content:
         type: number
         default: 0
         description: "Quantidade de peças já impressas prontas para envio imediato. Se for 1 ou mais, o site ativa o selo de urgência '⚡ Pronta Entrega'. Deixe 0 se a peça for apenas sob encomenda."
-      - name: link_compra
-        label: Link de Pagamento / InfinitePay (Opcional)
-        type: string
-        description: "Cole aqui o link direto de pagamento deste produto na InfinitePay / Jim (ex: oi.infinitepay.io/... ou jim.com/...). Se deixar em branco, o botão usará a loja geral https://jim.com/a/cubeforge."

@@ -8,8 +8,7 @@
     "imagem": "./assets/img/produtos/item1.jpg",
     "disponivel": true,
     "destaque": true,
-    "estoque": 2,
-    "link_compra": "https://checkout.infinitepay.io/cubeforge/jJSa8VugaV?from=webbuilder&ajs_aid=f3c24f00-d4b3-4584-b41a-7343dc0e044d"
+    "estoque": 2
   },
   {
     "id": 2,
@@ -20,8 +19,7 @@
     "imagem": "./assets/img/produtos/item2.jpg",
     "disponivel": true,
     "destaque": true,
-    "estoque": 0,
-    "link_compra": "https://checkout.infinitepay.io/cubeforge/xSCMOn2vl6?from=webbuilder&ajs_aid=f3c24f00-d4b3-4584-b41a-7343dc0e044d"
+    "estoque": 0
   },
   {
     "id": 3,
