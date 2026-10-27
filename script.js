@@ -394,7 +394,10 @@ function renderFilterTabs(preferredCategory = null) {
  */
 async function loadProductsData() {
   try {
-    const response = await fetch('./produtos.json', { cache: 'no-cache' });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const response = await fetch('./produtos.json', { cache: 'default', signal: controller.signal });
+    clearTimeout(timeoutId);
     if (!response.ok) {
       throw new Error(`Status ${response.status}`);
     }
@@ -915,6 +918,11 @@ function setupHeroSlider() {
   const nextBtn = document.getElementById("showroom-next-btn");
 
   if (!track) return;
+  // Em celulares (< 992px), o showroom do desktop está oculto; evita autoplay e processamento desnecessário
+  if (window.innerWidth < 992) {
+    stopShowroomAutoplay();
+    return;
+  }
 
   // Interrompe qualquer temporizador anterior imediatamente para evitar duplicação ou conflito
   stopShowroomAutoplay();

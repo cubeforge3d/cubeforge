@@ -354,6 +354,41 @@ button {
     margin-right: auto;
   }
 
+  /* Otimizações de Alta Performance para Celular (Chrome Android, Samsung, iOS) */
+  .ambient-aurora-layer {
+    background: 
+      radial-gradient(circle at 10% 10%, rgba(255, 106, 0, 0.20) 0%, transparent 48%),
+      radial-gradient(circle at 90% 18%, rgba(0, 210, 255, 0.18) 0%, transparent 48%),
+      radial-gradient(circle at 50% 85%, rgba(147, 51, 234, 0.15) 0%, transparent 52%),
+      #080d18 !important;
+  }
+
+  .ambient-orb {
+    display: none !important;
+  }
+
+  /* Remove repaints de backdrop-filter contínuo em elementos que rolam no celular */
+  .product-card,
+  .showroom-product-card,
+  .step-card,
+  .feature-strip-item,
+  .faq-item,
+  .btn,
+  .btn-card-cart,
+  .btn-card-direct,
+  .btn-card-buy-online,
+  .btn-card-order-zap,
+  .custom-idea-banner,
+  .trust-tags .tag {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Suavização de rolagem nativa */
+  body, html {
+    -webkit-overflow-scrolling: touch;
+  }
+
   .action-buttons-group {
     width: 100%;
     max-width: 480px;
@@ -2054,6 +2089,8 @@ button {
 }
 
 .product-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 450px;
   background: var(--bg-card);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
