@@ -72,4 +72,4 @@ content:
       - name: link_compra
         label: Link de Pagamento / InfinitePay (Opcional)
         type: string
-        description: "Cole aqui o link direto de pagamento deste produto na InfinitePay / Jim (ex: oi.infinitepay.io/... ou jim.com/...). Se deixar em branco, o botão usará a loja geral https://jim.com/a/kaiobretas."
+        description: "Cole aqui o link direto de pagamento deste produto na InfinitePay / Jim (ex: oi.infinitepay.io/... ou jim.com/...). Se deixar em branco, o botão usará a loja geral https://jim.com/a/cubeforge."

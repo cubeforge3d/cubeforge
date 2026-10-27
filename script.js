@@ -15,7 +15,7 @@ const SITE_CONFIG = {
   whatsappBusinessLink: "https://wa.me/message/RTGDS4KCBUCHL1",
 
   // Link oficial da Loja Online no Jim / InfinitePay (Pix e Cartão em até 12x)
-  jimStoreUrl: "https://jim.com/a/kaiobretas",
+  jimStoreUrl: "https://jim.com/a/cubeforge",
 
   // Nome da sua Marca / Negócio
   brandName: "Cube Forge",
