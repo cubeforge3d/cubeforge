@@ -469,12 +469,6 @@ function setupBrandInfo() {
     desktopWhatsappBtn.setAttribute("title", `Fazer Pedido no WhatsApp: ${whatsappDisplay}`);
   }
 
-  const navWhatsappBtn = document.getElementById("nav-whatsapp-btn");
-  if (navWhatsappBtn) {
-    navWhatsappBtn.href = defaultOrderWhatsAppUrl;
-    navWhatsappBtn.setAttribute("title", `Fazer Pedido no WhatsApp: ${whatsappDisplay}`);
-  }
-
   const floatingWhatsappBtn = document.getElementById("floating-whatsapp-btn");
   if (floatingWhatsappBtn) {
     floatingWhatsappBtn.href = defaultOrderWhatsAppUrl;
