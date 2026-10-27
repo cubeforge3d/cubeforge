@@ -39,7 +39,7 @@
     "categoria": "decoracao",
     "descricao": "Sua foto de família, pet ou casal esculpida em relevo 3D. A imagem aparece ao acender a luz!",
     "imagem": "./assets/img/produtos/item4.jpg",
-    "disponivel": true,
+    "disponivel": false,
     "destaque": true,
     "estoque": 0
   },
