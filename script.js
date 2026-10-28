@@ -131,8 +131,6 @@ const FALLBACK_CATALOG_ITEMS = [
 
 let ALL_PRODUCTS = [];
 let CATALOG_ITEMS = [];
-let currentCatalogSearch = "";
-let currentCatalogFilter = "all";
 
 /**
  * ============================================================================
@@ -283,9 +281,6 @@ function normalizeProduct(raw, index) {
   }
 
   return {
-    ordem: raw.ordem !== undefined ? Number(raw.ordem) : 10,
-    tags: (raw.tags || "").toString().toLowerCase(),
-    selo_personalizado: (raw.selo_personalizado || raw.badge || "").toString().trim(),
     id,
     nome: title,
     title,
@@ -314,7 +309,7 @@ function normalizeProduct(raw, index) {
 
 // Inicializa previamente com fallback para evitar qualquer tela vazia antes do fetch
 ALL_PRODUCTS = FALLBACK_CATALOG_ITEMS.map((item, idx) => normalizeProduct(item, idx));
-CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel).sort((a, b) => (a.ordem ?? 10) - (b.ordem ?? 10));
+CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel);
 
 /**
  * Renderiza dinamicamente as abas de filtro a partir das categorias reais dos produtos
@@ -333,8 +328,7 @@ function renderFilterTabs(preferredCategory = null) {
 
   // Agrupa categorias únicas a partir dos produtos disponíveis
   const categoryMap = new Map();
-  const hasReadyStock = CATALOG_ITEMS.some(item => item.estoque > 0 && !item.somente_encomenda);
-  const hasOrderOnly = CATALOG_ITEMS.some(item => Boolean(item.somente_encomenda));
+  const hasReadyStock = CATALOG_ITEMS.some(item => item.estoque > 0);
 
   CATALOG_ITEMS.forEach(item => {
     const slug = item.categoria || item.category;
@@ -358,7 +352,7 @@ function renderFilterTabs(preferredCategory = null) {
   });
 
   // Se a categoria selecionada não existir mais, volta para "all"
-  if (activeCategory !== "all" && activeCategory !== "pronta-entrega" && activeCategory !== "sob-encomenda" && !categoryMap.has(activeCategory)) {
+  if (activeCategory !== "all" && activeCategory !== "pronta-entrega" && !categoryMap.has(activeCategory)) {
     activeCategory = "all";
   }
   if (activeCategory === "pronta-entrega" && !hasReadyStock) {
@@ -372,9 +366,6 @@ function renderFilterTabs(preferredCategory = null) {
 
   if (hasReadyStock) {
     allTabs.push({ slug: "pronta-entrega", name: "Pronta Entrega", emoji: "⚡", isReady: true });
-  }
-  if (hasOrderOnly) {
-    allTabs.push({ slug: "sob-encomenda", name: "Sob Encomenda", emoji: "📦", isReady: false, isOrderOnly: true });
   }
 
   categoryMap.forEach(cat => {
@@ -495,21 +486,6 @@ async function loadSiteSettings() {
       const data = await res.json();
       if (data && typeof data === "object") {
         SITE_SETTINGS = { ...SITE_SETTINGS, ...data };
-        if (SITE_SETTINGS.whatsapp_numero) SITE_CONFIG.whatsappNumber = SITE_SETTINGS.whatsapp_numero;
-        if (SITE_SETTINGS.whatsapp_display) SITE_CONFIG.whatsappDisplay = SITE_SETTINGS.whatsapp_display;
-        if (SITE_SETTINGS.instagram_user) SITE_CONFIG.instagramUser = SITE_SETTINGS.instagram_user;
-        if (SITE_SETTINGS.chave_pix) SITE_CONFIG.pixKey = SITE_SETTINGS.chave_pix;
-
-        const announcementBar = document.getElementById("top-announcement-bar");
-        const announcementText = document.getElementById("announcement-text");
-        if (announcementBar && announcementText) {
-          if (SITE_SETTINGS.banner_alerta_ativo && SITE_SETTINGS.banner_alerta) {
-            announcementText.textContent = SITE_SETTINGS.banner_alerta;
-            announcementBar.style.display = "block";
-          } else {
-            announcementBar.style.display = "none";
-          }
-        }
       }
     }
   } catch (err) {
@@ -576,64 +552,23 @@ function applyMaintenanceMode(isActive) {
 
 async function loadProductsData() {
   try {
-    const fetchJson = async (fileName) => {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
-        const res = await fetch(`./${fileName}`, { cache: 'default', signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const data = await res.json();
-          return Array.isArray(data) ? data : [];
-        }
-      } catch (e) {
-        // Arquivo opcional ou erro silencioso
-      }
-      return [];
-    };
-
-    const [activeList, orderList, pausedList] = await Promise.all([
-      fetchJson('produtos.json'),
-      fetchJson('produtos_encomenda.json'),
-      fetchJson('produtos_pausados.json')
-    ]);
-
-    // Peças em produtos_encomenda.json: sob encomenda garantida
-    orderList.forEach(item => {
-      if (item && item.somente_encomenda === undefined) {
-        item.somente_encomenda = true;
-      }
-    });
-
-    // Peças em produtos_pausados.json: pausadas por padrão, a menos que o usuário ative no CMS
-    pausedList.forEach(item => {
-      if (item && item.disponivel === undefined) {
-        item.disponivel = false;
-      }
-    });
-
-    const rawCombined = [...activeList, ...orderList, ...pausedList];
-
-    if (rawCombined.length > 0) {
-      // Deduplica por ID caso o item apareça em mais de um arquivo
-      const uniqueMap = new Map();
-      rawCombined.forEach((item, idx) => {
-        const key = item.id !== undefined && item.id !== null ? `id_${item.id}` : `idx_${idx}`;
-        if (!uniqueMap.has(key)) {
-          uniqueMap.set(key, item);
-        }
-      });
-      const uniqueList = Array.from(uniqueMap.values());
-      ALL_PRODUCTS = uniqueList.map((item, idx) => normalizeProduct(item, idx));
-      CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel).sort((a, b) => (a.ordem ?? 10) - (b.ordem ?? 10));
-    } else {
-      throw new Error("Nenhum produto encontrado nos arquivos de catálogo");
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const response = await fetch('./produtos.json', { cache: 'default', signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      throw new Error(`Status ${response.status}`);
+    }
+    const data = await response.json();
+    if (Array.isArray(data) && data.length > 0) {
+      ALL_PRODUCTS = data.map((item, idx) => normalizeProduct(item, idx));
+      CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel);
     }
   } catch (err) {
-    console.warn("Aviso: fetch de produtos não completou, usando catálogo fallback local:", err);
+    console.warn("Aviso: fetch de produtos.json não completou, usando catálogo fallback local:", err);
     if (!CATALOG_ITEMS || CATALOG_ITEMS.length === 0) {
       ALL_PRODUCTS = FALLBACK_CATALOG_ITEMS.map((item, idx) => normalizeProduct(item, idx));
-      CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel).sort((a, b) => (a.ordem ?? 10) - (b.ordem ?? 10));
+      CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel);
     }
   }
 
@@ -652,7 +587,6 @@ async function loadProductsData() {
 // INICIALIZAÇÃO DA PÁGINA
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
-  initCatalogSearch();
   loadSiteSettings();
   setupBrandInfo();
   renderFilterTabs("all");
@@ -781,65 +715,11 @@ function renderCatalog(filterCategory = "all") {
     filteredItems = CATALOG_ITEMS;
   } else if (filterCategory === "pronta-entrega") {
     filteredItems = CATALOG_ITEMS.filter(item => item.estoque > 0 && !item.somente_encomenda);
-  } else if (filterCategory === "sob-encomenda" || filterCategory === "encomenda") {
-    filteredItems = CATALOG_ITEMS.filter(item => Boolean(item.somente_encomenda));
   } else {
     filteredItems = CATALOG_ITEMS.filter(item => item.category === filterCategory);
   }
 
-  currentCatalogFilter = filterCategory || "all";
-
-  // Busca instantânea em tempo real por nome, categoria, descrição ou tags
-  if (currentCatalogSearch) {
-    const q = currentCatalogSearch.toLowerCase().trim();
-    filteredItems = filteredItems.filter(item => {
-      const matchName = (item.title || item.nome || "").toLowerCase().includes(q);
-      const matchCat = (item.categoryName || item.categoriaNome || item.category || item.categoria || "").toLowerCase().includes(q);
-      const matchDesc = (item.desc || item.descricao || "").toLowerCase().includes(q);
-      const matchTags = (item.tags || "").toLowerCase().includes(q);
-      const matchReady = (q.includes("pront") || q.includes("estoque")) && (item.estoque > 0 && !item.somente_encomenda);
-      const matchOrder = (q.includes("encomenda") || q.includes("pedido") || q.includes("medida")) && Boolean(item.somente_encomenda);
-      return matchName || matchCat || matchDesc || matchTags || matchReady || matchOrder;
-    });
-  }
-
-  // Atualiza badge de contagem de peças no topo da pesquisa
-  const countBadge = document.getElementById("catalog-count-badge");
-  if (countBadge) {
-    if (filteredItems.length === 0) {
-      countBadge.textContent = "0 peças";
-    } else if (filteredItems.length === 1) {
-      countBadge.textContent = "1 peça";
-    } else {
-      countBadge.textContent = `${filteredItems.length} peças`;
-    }
-  }
   grid.innerHTML = "";
-  if (filteredItems.length === 0) {
-    const cleanNumber = (SITE_CONFIG.whatsappNumber || "5527936183114").replace(/\D/g, "");
-    const safeQ = (currentCatalogSearch || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    grid.innerHTML = `
-      <div class="catalog-empty-state">
-        <div class="empty-state-icon-box">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </div>
-        <h3 class="empty-state-title">Nenhum modelo encontrado</h3>
-        <p class="empty-state-desc">
-          ${safeQ ? `Não encontramos peças correspondentes a "<strong>${safeQ}</strong>".` : "Não há peças disponíveis neste filtro no momento."}
-          <br>Lembrando que criamos e imprimimos qualquer modelo personalizado sob encomenda!
-        </p>
-        <div class="empty-state-actions">
-          <button type="button" class="btn-empty-clear" onclick="resetCatalogFilters()">
-            <i class="fa-solid fa-rotate-left"></i> Ver Todos os Produtos
-          </button>
-          <a href="https://api.whatsapp.com/send?phone=${cleanNumber}&text=Ol%C3%A1!%20Procurei%20no%20site%20por%20'${encodeURIComponent(currentCatalogSearch || "um modelo")}'%20e%20gostaria%20de%20saber%20se%20voc%C3%AAs%20imprimem%20para%20mim." class="btn-empty-whatsapp" target="_blank" rel="noopener noreferrer">
-            <i class="fa-brands fa-whatsapp"></i> Pedir Minha Ideia no Zap
-          </a>
-        </div>
-      </div>
-    `;
-    return;
-  }
 
   filteredItems.forEach((item, index) => {
     const card = document.createElement("div");
@@ -929,7 +809,6 @@ function renderCatalog(filterCategory = "all") {
           <span class="product-category-tag">${item.categoryName}</span>
           ${stockPill}
         </div>
-        ${item.selo_personalizado ? `<span class="product-badge-custom">${item.selo_personalizado}</span>` : ""}
         ${imageContent}
       </div>
       <div class="product-info">
@@ -2625,61 +2504,3 @@ function initInteractiveMotion() {
     }
   }, { passive: true });
 }
-
-
-/**
- * Inicializa a barra de pesquisa rápida da vitrine
- */
-function initCatalogSearch() {
-  const searchInput = document.getElementById("catalog-search-input");
-  const clearBtn = document.getElementById("catalog-search-clear");
-  if (!searchInput) return;
-
-  // Ajusta placeholder dinamicamente: no celular vertical deve ser exatamente "Buscar modelo"
-  const updatePlaceholder = () => {
-    const isMobilePortrait = window.matchMedia("(max-width: 600px) and (orientation: portrait)").matches || 
-                             (window.innerWidth <= 480);
-    if (isMobilePortrait) {
-      searchInput.placeholder = "Buscar modelo";
-    } else {
-      searchInput.placeholder = "Buscar por modelo, categoria ou ideia... (ex: vaso, headset, anime)";
-    }
-  };
-  updatePlaceholder();
-  window.addEventListener("resize", updatePlaceholder, { passive: true });
-  window.addEventListener("orientationchange", updatePlaceholder, { passive: true });
-
-  searchInput.addEventListener("input", (e) => {
-    currentCatalogSearch = e.target.value.trim();
-    if (clearBtn) {
-      clearBtn.style.display = currentCatalogSearch ? "flex" : "none";
-    }
-    // Se digitou uma busca e estava em aba restrita, volta para 'all' para buscar no catálogo completo
-    if (currentCatalogSearch && currentCatalogFilter !== "all") {
-      currentCatalogFilter = "all";
-      renderFilterTabs("all");
-    }
-    renderCatalog(currentCatalogFilter);
-  });
-
-  if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
-      searchInput.value = "";
-      currentCatalogSearch = "";
-      clearBtn.style.display = "none";
-      renderCatalog(currentCatalogFilter);
-      searchInput.focus();
-    });
-  }
-}
-
-window.resetCatalogFilters = function() {
-  const searchInput = document.getElementById("catalog-search-input");
-  const clearBtn = document.getElementById("catalog-search-clear");
-  if (searchInput) searchInput.value = "";
-  if (clearBtn) clearBtn.style.display = "none";
-  currentCatalogSearch = "";
-  currentCatalogFilter = "all";
-  renderFilterTabs("all");
-  renderCatalog("all");
-};
