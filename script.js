@@ -313,6 +313,7 @@ CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel);
 
 /**
  * Renderiza dinamicamente as abas de filtro a partir das categorias reais dos produtos
+ * Mantém tudo rigorosamente em 1 linha. No PC, se houver muitas categorias, exibe botão "Mais ⌄" estilo AliExpress.
  */
 function renderFilterTabs(preferredCategory = null) {
   const container = document.getElementById("filter-tabs-container");
@@ -321,7 +322,7 @@ function renderFilterTabs(preferredCategory = null) {
   // Categoria ativa atual
   let activeCategory = preferredCategory;
   if (!activeCategory) {
-    const currentActiveBtn = container.querySelector(".filter-btn.active");
+    const currentActiveBtn = container.querySelector(".filter-btn.active") || container.querySelector(".filter-dropdown-item.active");
     activeCategory = currentActiveBtn ? currentActiveBtn.getAttribute("data-category") : "all";
   }
 
@@ -358,34 +359,101 @@ function renderFilterTabs(preferredCategory = null) {
     activeCategory = "all";
   }
 
-  // Gera o HTML das abas dinâmicas com destaque de Pronta Entrega
-  let html = `
-    <button class="filter-btn ${activeCategory === 'all' ? 'active' : ''}" data-category="all">
-      ✨ Todos
-    </button>
-  `;
+  // Monta lista de abas ordenada
+  const allTabs = [
+    { slug: "all", name: "Todos", emoji: "✨", isReady: false }
+  ];
 
   if (hasReadyStock) {
-    const isReadyActive = activeCategory === "pronta-entrega";
-    html += `
-      <button class="filter-btn filter-btn-ready ${isReadyActive ? 'active' : ''}" data-category="pronta-entrega" title="Filtrar apenas peças com envio imediato">
-        <span class="stock-pulse-dot"></span> ⚡ Pronta Entrega
-      </button>
-    `;
+    allTabs.push({ slug: "pronta-entrega", name: "Pronta Entrega", emoji: "⚡", isReady: true });
   }
 
   categoryMap.forEach(cat => {
-    const isActive = activeCategory === cat.slug;
-    html += `
-      <button class="filter-btn ${isActive ? 'active' : ''}" data-category="${cat.slug}">
-        ${cat.emoji} ${cat.name}
-      </button>
-    `;
+    allTabs.push({ slug: cat.slug, name: cat.name, emoji: cat.emoji, isReady: false });
   });
+
+  const isMobile = window.innerWidth < 768;
+  let html = "";
+
+  if (isMobile) {
+    // No celular: todos os botões em linha única com deslizamento horizontal touch nativo
+    allTabs.forEach(tab => {
+      const isActive = activeCategory === tab.slug;
+      if (tab.isReady) {
+        html += `
+          <button class="filter-btn filter-btn-ready ${isActive ? 'active' : ''}" data-category="pronta-entrega" title="Filtrar apenas peças com envio imediato">
+            <span class="stock-pulse-dot"></span> ⚡ Pronta Entrega
+          </button>
+        `;
+      } else {
+        html += `
+          <button class="filter-btn ${isActive ? 'active' : ''}" data-category="${tab.slug}">
+            ${tab.emoji} ${tab.name}
+          </button>
+        `;
+      }
+    });
+  } else {
+    // No PC / Desktop: linha única com limite visível e menu dropdown "Mais ⌄" no final (Estilo AliExpress)
+    let maxVisible = 5;
+    if (window.innerWidth < 992) {
+      maxVisible = 3;
+    } else if (window.innerWidth < 1200) {
+      maxVisible = 4;
+    }
+
+    const visibleTabs = allTabs.length > maxVisible ? allTabs.slice(0, maxVisible) : allTabs;
+    const overflowTabs = allTabs.length > maxVisible ? allTabs.slice(maxVisible) : [];
+
+    // Renderiza botões visíveis
+    visibleTabs.forEach(tab => {
+      const isActive = activeCategory === tab.slug;
+      if (tab.isReady) {
+        html += `
+          <button class="filter-btn filter-btn-ready ${isActive ? 'active' : ''}" data-category="pronta-entrega" title="Filtrar apenas peças com envio imediato">
+            <span class="stock-pulse-dot"></span> ⚡ Pronta Entrega
+          </button>
+        `;
+      } else {
+        html += `
+          <button class="filter-btn ${isActive ? 'active' : ''}" data-category="${tab.slug}">
+            ${tab.emoji} ${tab.name}
+          </button>
+        `;
+      }
+    });
+
+    // Se houver itens excedentes, renderiza o botão "Mais ⌄" com menu popover estilo AliExpress
+    if (overflowTabs.length > 0) {
+      const activeOverflowItem = overflowTabs.find(t => t.slug === activeCategory);
+      const isMoreActive = !!activeOverflowItem;
+      const moreBtnLabel = isMoreActive ? `Mais: ${activeOverflowItem.emoji} ${activeOverflowItem.name}` : "Mais";
+
+      html += `
+        <div class="filter-more-wrapper" id="filter-more-wrapper">
+          <button class="filter-btn filter-btn-more ${isMoreActive ? 'active' : ''}" id="filter-btn-more" type="button" aria-expanded="false" title="Ver mais categorias">
+            <span class="more-label">${moreBtnLabel}</span>
+            <i class="fa-solid fa-chevron-down more-chevron"></i>
+          </button>
+          <div class="filter-more-dropdown" id="filter-more-dropdown" role="menu">
+            ${overflowTabs.map(t => {
+              const isActive = activeCategory === t.slug;
+              return `
+                <button class="filter-dropdown-item ${isActive ? 'active' : ''}" data-category="${t.slug}" role="menuitem">
+                  <span>${t.emoji} ${t.name}</span>
+                  <i class="fa-solid fa-check dropdown-item-check"></i>
+                </button>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `;
+    }
+  }
 
   container.innerHTML = html;
 
-  // Reconecta os eventos de clique e scroll nas abas dinâmicas
+  // Reconecta os eventos de clique, dropdown e scroll
   setupFilterButtons();
 }
 
@@ -759,23 +827,44 @@ function renderCatalog(filterCategory = "all") {
 }
 
 /**
- * Configura as abas de filtro com rolagem dinâmica, centralização e auto-scroll
+ * Configura as abas de filtro com suporte a linha única, dropdown "Mais ⌄" (AliExpress),
+ * rolagem dinâmica, centralização e auto-scroll suave
  */
 function setupFilterButtons() {
-  const buttons = document.querySelectorAll(".filter-btn");
-  const filterTabsContainer = document.getElementById("filter-tabs-container");
+  const container = document.getElementById("filter-tabs-container");
+  if (!container) return;
 
+  const buttons = container.querySelectorAll(".filter-btn:not(.filter-btn-more)");
+  const dropdownItems = container.querySelectorAll(".filter-dropdown-item");
+  const moreWrapper = document.getElementById("filter-more-wrapper");
+  const moreBtn = document.getElementById("filter-btn-more");
+  const moreDropdown = document.getElementById("filter-more-dropdown");
+
+  // Cliques nos botões visíveis da barra principal
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
-      buttons.forEach(b => b.classList.remove("active"));
+      // Remove active de todos os botões e itens do dropdown
+      container.querySelectorAll(".filter-btn, .filter-dropdown-item").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
 
-      // 1. Centraliza horizontalmente o botão dentro da barra no celular (sem interferir na rolagem vertical)
-      if (filterTabsContainer) {
+      // Reseta rótulo e estado do botão "Mais" se existir
+      if (moreBtn) {
+        const labelEl = moreBtn.querySelector(".more-label");
+        if (labelEl) labelEl.textContent = "Mais";
+        moreBtn.classList.remove("active");
+      }
+      if (moreWrapper) {
+        moreWrapper.classList.remove("open");
+        if (moreDropdown) moreDropdown.classList.remove("open");
+        if (moreBtn) moreBtn.setAttribute("aria-expanded", "false");
+      }
+
+      // 1. Centraliza horizontalmente o botão dentro da barra no celular
+      if (window.innerWidth < 768) {
         const btnLeft = btn.offsetLeft;
         const btnWidth = btn.offsetWidth;
-        const containerWidth = filterTabsContainer.offsetWidth;
-        filterTabsContainer.scrollTo({
+        const containerWidth = container.offsetWidth;
+        container.scrollTo({
           left: btnLeft - (containerWidth / 2) + (btnWidth / 2),
           behavior: "smooth"
         });
@@ -785,14 +874,89 @@ function setupFilterButtons() {
       const category = btn.getAttribute("data-category");
       renderCatalog(category);
 
-      // 3. Rola a página para que os produtos fiquem exatamente no campo de visão
+      // 3. Rola a página para que os produtos e a barra fiquem perfeitamente alinhados
       scrollToCatalogProducts();
     });
   });
+
+  // Toggle do Dropdown "Mais" estilo AliExpress no PC
+  if (moreBtn && moreWrapper && moreDropdown) {
+    moreBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = moreWrapper.classList.toggle("open");
+      moreDropdown.classList.toggle("open", isOpen);
+      moreBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+  }
+
+  // Cliques nos itens do menu dropdown "Mais"
+  dropdownItems.forEach(item => {
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
+      container.querySelectorAll(".filter-btn, .filter-dropdown-item").forEach(b => b.classList.remove("active"));
+      item.classList.add("active");
+
+      if (moreBtn) {
+        moreBtn.classList.add("active");
+        const labelEl = moreBtn.querySelector(".more-label");
+        const itemText = item.querySelector("span") ? item.querySelector("span").textContent.trim() : item.textContent.trim();
+        if (labelEl) labelEl.textContent = `Mais: ${itemText}`;
+      }
+
+      if (moreWrapper) {
+        moreWrapper.classList.remove("open");
+        if (moreDropdown) moreDropdown.classList.remove("open");
+        if (moreBtn) moreBtn.setAttribute("aria-expanded", "false");
+      }
+
+      const category = item.getAttribute("data-category");
+      renderCatalog(category);
+      scrollToCatalogProducts();
+    });
+  });
+
+  // Fecha o dropdown ao clicar fora ou pressionar ESC (configurado uma única vez)
+  if (!window._filterDropdownEventsInitialized) {
+    window._filterDropdownEventsInitialized = true;
+    document.addEventListener("click", (e) => {
+      const activeMoreWrapper = document.getElementById("filter-more-wrapper");
+      const activeMoreDropdown = document.getElementById("filter-more-dropdown");
+      const activeMoreBtn = document.getElementById("filter-btn-more");
+      if (activeMoreWrapper && !activeMoreWrapper.contains(e.target)) {
+        activeMoreWrapper.classList.remove("open");
+        if (activeMoreDropdown) activeMoreDropdown.classList.remove("open");
+        if (activeMoreBtn) activeMoreBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const activeMoreWrapper = document.getElementById("filter-more-wrapper");
+        const activeMoreDropdown = document.getElementById("filter-more-dropdown");
+        const activeMoreBtn = document.getElementById("filter-btn-more");
+        if (activeMoreWrapper && activeMoreWrapper.classList.contains("open")) {
+          activeMoreWrapper.classList.remove("open");
+          if (activeMoreDropdown) activeMoreDropdown.classList.remove("open");
+          if (activeMoreBtn) activeMoreBtn.setAttribute("aria-expanded", "false");
+        }
+      }
+    });
+
+    // Redimensionamento responsivo para recalcular abas visíveis vs dropdown "Mais"
+    let resizeTimer = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const currentActive = document.querySelector("#filter-tabs-container .filter-btn.active, #filter-tabs-container .filter-dropdown-item.active");
+        const activeCategory = currentActive ? currentActive.getAttribute("data-category") : "all";
+        renderFilterTabs(activeCategory);
+      }, 150);
+    });
+  }
 }
 
 /**
- * Rola a janela perfeitamente para o topo dos produtos e da barra de filtros
+ * Rola a janela perfeitamente para o topo dos produtos e da barra de filtros fixa
  */
 function scrollToCatalogProducts() {
   const catalogSection = document.getElementById("catalogo");
@@ -803,9 +967,9 @@ function scrollToCatalogProducts() {
   const sectionHeader = catalogSection.querySelector(".section-header");
   const headerHeight = sectionHeader ? sectionHeader.offsetHeight : 0;
   
-  const isDesktop = window.innerWidth >= 768;
-  // Posiciona a barra de filtros no topo e os produtos logo abaixo
-  const targetY = currentScrollY + catalogRect.top + headerHeight - (isDesktop ? 14 : 0);
+  const isDesktopNavbar = window.innerWidth >= 992;
+  const navOffset = isDesktopNavbar ? 82 : (window.innerWidth >= 768 ? 14 : 0);
+  const targetY = currentScrollY + catalogRect.top + headerHeight - navOffset;
 
   window.scrollTo({
     top: Math.max(0, Math.round(targetY)),

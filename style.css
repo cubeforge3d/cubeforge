@@ -2005,6 +2005,8 @@ button {
   -webkit-overflow-scrolling: touch;
   padding: 4px 24px;
   align-items: center;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
 }
 
 .filter-tabs::-webkit-scrollbar {
@@ -2026,6 +2028,8 @@ button {
   transition: all var(--transition-smooth);
   cursor: pointer;
   flex-shrink: 0;
+  font-family: var(--font-family);
+  user-select: none;
 }
 
 .filter-btn:hover {
@@ -2046,24 +2050,27 @@ button {
   transform: scale(0.96);
 }
 
-/* Versão Computador (PC / Desktop): Flutuante e Centralizada */
-@media (min-width: 768px) {
+/* Versão Tablet (768px a 991px): Barra Flutuante Fixa no Topo sem Navbar */
+@media (min-width: 768px) and (max-width: 991px) {
   .filter-sticky-wrapper {
+    position: sticky;
+    top: 12px;
+    z-index: 150;
     margin: 0 auto 32px auto;
     padding: 8px 14px;
     border-radius: var(--radius-pill);
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(12, 18, 32, 0.88);
     max-width: fit-content;
-    top: 14px;
     box-shadow: 
       var(--glass-specular),
       0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: visible;
   }
 
   .filter-tabs {
     justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap !important;
     overflow-x: visible;
     padding: 0;
     gap: 10px;
@@ -2073,6 +2080,164 @@ button {
     font-size: 0.86rem;
     padding: 9px 18px;
   }
+}
+
+/* Versão Computador / PC (Monitores >= 992px): Flutuante Fixa Logo Abaixo do Desktop Navbar */
+@media (min-width: 992px) {
+  .filter-sticky-wrapper {
+    position: sticky;
+    top: 82px;
+    z-index: 120;
+    margin: 0 auto 32px auto;
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(12, 18, 32, 0.88);
+    max-width: fit-content;
+    box-shadow: 
+      var(--glass-specular),
+      0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: visible;
+  }
+
+  .filter-tabs {
+    justify-content: center;
+    flex-wrap: nowrap !important;
+    overflow-x: visible;
+    padding: 0;
+    gap: 10px;
+  }
+
+  .filter-btn {
+    font-size: 0.86rem;
+    padding: 9px 18px;
+  }
+}
+
+/* ==========================================================================
+   Dropdown Popover "Mais ⌄" (Estilo AliExpress para Desktop)
+   Aparece quando há muitas categorias mantendo tudo em estritamente 1 linha
+   ========================================================================== */
+.filter-more-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.filter-btn-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.filter-btn-more .more-chevron {
+  font-size: 0.72rem;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.85;
+}
+
+.filter-more-wrapper.open .filter-btn-more .more-chevron {
+  transform: rotate(180deg);
+}
+
+.filter-more-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 210px;
+  background: rgba(12, 17, 30, 0.96);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 
+    0 18px 40px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    var(--glass-specular);
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 250;
+  transform-origin: top right;
+}
+
+/* Caret sutil apontando para o botão Mais (estilo AliExpress) */
+.filter-more-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 24px;
+  width: 10px;
+  height: 10px;
+  background: rgba(12, 17, 30, 0.96);
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.filter-more-dropdown.open {
+  display: flex;
+  animation: filterDropdownIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes filterDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.filter-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  width: 100%;
+}
+
+.filter-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateX(2px);
+}
+
+.filter-dropdown-item.active {
+  background: rgba(255, 106, 0, 0.16);
+  border-color: rgba(255, 106, 0, 0.4);
+  color: #ff914d;
+  font-weight: 700;
+}
+
+.filter-dropdown-item .dropdown-item-check {
+  font-size: 0.76rem;
+  color: #ff6a00;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.filter-dropdown-item.active .dropdown-item-check {
+  opacity: 1;
 }
 
 /* Animação Suave ao Trocar de Filtro */
