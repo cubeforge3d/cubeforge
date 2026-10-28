@@ -45,7 +45,7 @@
     "disponivel": true,
     "destaque": true,
     "somente_encomenda": true,
-    "estoque": 2
+    "estoque": 0
   },
   {
     "id": 5,
