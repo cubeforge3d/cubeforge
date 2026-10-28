@@ -634,8 +634,11 @@ button {
    Separação Estrita de Experiências (Mobile vs Desktop)
    ========================================================================== */
 .hero-mobile-content {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
+  text-align: center;
 }
 
 .hero-desktop-content {
@@ -1091,6 +1094,22 @@ button {
     .desktop-btn-instagram {
       flex: 0.85 0 auto;
       min-width: fit-content;
+    }
+  }
+
+  @media (min-width: 992px) and (max-width: 1140px) {
+    .desktop-actions-row {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .desktop-btn-whatsapp {
+      flex: 1 1 100%;
+    }
+    .desktop-btn-primary {
+      flex: 1 1 calc(50% - 4px);
+    }
+    .desktop-btn-instagram {
+      flex: 1 1 calc(50% - 4px);
     }
   }
 
@@ -1603,9 +1622,26 @@ button {
 .brand-bio {
   font-size: 0.94rem;
   color: var(--text-secondary);
-  max-width: 480px;
-  line-height: 1.5;
-  margin-bottom: 20px;
+  max-width: 500px;
+  line-height: 1.55;
+  margin: 0 auto 20px auto;
+  text-align: center;
+  text-wrap: balance;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bio-line-highlight {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.bio-line-desc {
+  font-weight: 600;
+  color: var(--text-primary);
+  text-wrap: balance;
 }
 
 .brand-bio strong {
@@ -2092,8 +2128,81 @@ button {
   transform: scale(0.96);
 }
 
-/* Versão Tablet (768px a 991px): Barra Flutuante Fixa no Topo sem Navbar */
+/* Versão Tablet (768px a 991px): Otimização Completa de Hero, Textos, Botões e Barra Flutuante */
 @media (min-width: 768px) and (max-width: 991px) {
+  .hero-container {
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 24px;
+  }
+
+  .hero-mobile-content {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-emblem-img {
+    width: 114px;
+    height: 114px;
+  }
+
+  .brand-name {
+    font-size: 2.35rem;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
+  .brand-handle {
+    font-size: 1rem;
+    margin: 0 auto 14px auto;
+    text-align: center;
+  }
+
+  .brand-bio {
+    max-width: 540px;
+    font-size: 1.02rem;
+    line-height: 1.6;
+    margin: 0 auto 24px auto;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .trust-tags {
+    max-width: 580px;
+    margin: 0 auto 28px auto;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .trust-tags .tag {
+    font-size: 0.82rem;
+    padding: 7px 16px;
+  }
+
+  .action-buttons-group {
+    max-width: 520px;
+    width: 100%;
+    gap: 14px;
+    margin: 0 auto;
+  }
+
+  .btn {
+    padding: 13px 22px 13px 16px;
+  }
+
+  .btn-title {
+    font-size: 1.04rem;
+  }
+
+  .btn-subtitle {
+    font-size: 0.82rem;
+  }
+
   .filter-sticky-wrapper {
     position: sticky;
     top: 12px;
@@ -4233,6 +4342,77 @@ button {
 
 /* Otimização especial para celulares no modo paisagem (Landscape / Baixa altura de tela) */
 @media (max-width: 991px) and (orientation: landscape), (max-height: 520px) {
+  .hero-section {
+    padding: 14px 0 16px;
+  }
+
+  .hero-mobile-avatar {
+    margin: 0 auto 8px;
+  }
+
+  .hero-emblem-img {
+    width: 64px;
+    height: 64px;
+  }
+
+  .brand-name {
+    font-size: 1.65rem;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+
+  .brand-handle {
+    font-size: 0.82rem;
+    margin: 0 auto 6px auto;
+    text-align: center;
+  }
+
+  .brand-bio {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    max-width: 600px;
+    margin: 0 auto 10px auto;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .trust-tags {
+    margin-bottom: 12px;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .trust-tags .tag {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+  }
+
+  .action-buttons-group {
+    max-width: 480px;
+    width: 100%;
+    gap: 8px;
+    margin: 0 auto;
+  }
+
+  .btn {
+    padding: 8px 14px 8px 12px;
+  }
+
+  .btn-icon-box {
+    width: 32px;
+    height: 32px;
+    font-size: 0.95rem;
+    margin-right: 10px;
+  }
+
+  .btn-title {
+    font-size: 0.88rem;
+  }
+
+  .btn-subtitle {
+    font-size: 0.72rem;
+  }
+
   .mobile-cart-float-container {
     bottom: 12px;
     left: 14px;
