@@ -576,23 +576,64 @@ function applyMaintenanceMode(isActive) {
 
 async function loadProductsData() {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
-    const response = await fetch('./produtos.json', { cache: 'default', signal: controller.signal });
-    clearTimeout(timeoutId);
-    if (!response.ok) {
-      throw new Error(`Status ${response.status}`);
-    }
-    const data = await response.json();
-    if (Array.isArray(data) && data.length > 0) {
-      ALL_PRODUCTS = data.map((item, idx) => normalizeProduct(item, idx));
-CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel).sort((a, b) => (a.ordem ?? 10) - (b.ordem ?? 10));
+    const fetchJson = async (fileName) => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        const res = await fetch(`./${fileName}`, { cache: 'default', signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          return Array.isArray(data) ? data : [];
+        }
+      } catch (e) {
+        // Arquivo opcional ou erro silencioso
+      }
+      return [];
+    };
+
+    const [activeList, orderList, pausedList] = await Promise.all([
+      fetchJson('produtos.json'),
+      fetchJson('produtos_encomenda.json'),
+      fetchJson('produtos_pausados.json')
+    ]);
+
+    // Peças em produtos_encomenda.json: sob encomenda garantida
+    orderList.forEach(item => {
+      if (item && item.somente_encomenda === undefined) {
+        item.somente_encomenda = true;
+      }
+    });
+
+    // Peças em produtos_pausados.json: pausadas por padrão, a menos que o usuário ative no CMS
+    pausedList.forEach(item => {
+      if (item && item.disponivel === undefined) {
+        item.disponivel = false;
+      }
+    });
+
+    const rawCombined = [...activeList, ...orderList, ...pausedList];
+
+    if (rawCombined.length > 0) {
+      // Deduplica por ID caso o item apareça em mais de um arquivo
+      const uniqueMap = new Map();
+      rawCombined.forEach((item, idx) => {
+        const key = item.id !== undefined && item.id !== null ? `id_${item.id}` : `idx_${idx}`;
+        if (!uniqueMap.has(key)) {
+          uniqueMap.set(key, item);
+        }
+      });
+      const uniqueList = Array.from(uniqueMap.values());
+      ALL_PRODUCTS = uniqueList.map((item, idx) => normalizeProduct(item, idx));
+      CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel).sort((a, b) => (a.ordem ?? 10) - (b.ordem ?? 10));
+    } else {
+      throw new Error("Nenhum produto encontrado nos arquivos de catálogo");
     }
   } catch (err) {
-    console.warn("Aviso: fetch de produtos.json não completou, usando catálogo fallback local:", err);
+    console.warn("Aviso: fetch de produtos não completou, usando catálogo fallback local:", err);
     if (!CATALOG_ITEMS || CATALOG_ITEMS.length === 0) {
       ALL_PRODUCTS = FALLBACK_CATALOG_ITEMS.map((item, idx) => normalizeProduct(item, idx));
-CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel).sort((a, b) => (a.ordem ?? 10) - (b.ordem ?? 10));
+      CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel).sort((a, b) => (a.ordem ?? 10) - (b.ordem ?? 10));
     }
   }
 
@@ -2594,16 +2635,19 @@ function initCatalogSearch() {
   const clearBtn = document.getElementById("catalog-search-clear");
   if (!searchInput) return;
 
-  // Ajusta placeholder dinamicamente conforme tamanho de tela
+  // Ajusta placeholder dinamicamente: no celular vertical deve ser exatamente "Buscar modelo"
   const updatePlaceholder = () => {
-    if (window.innerWidth < 480) {
-      searchInput.placeholder = "Buscar modelo ou ideia...";
+    const isMobilePortrait = window.matchMedia("(max-width: 600px) and (orientation: portrait)").matches || 
+                             (window.innerWidth <= 480);
+    if (isMobilePortrait) {
+      searchInput.placeholder = "Buscar modelo";
     } else {
       searchInput.placeholder = "Buscar por modelo, categoria ou ideia... (ex: vaso, headset, anime)";
     }
   };
   updatePlaceholder();
   window.addEventListener("resize", updatePlaceholder, { passive: true });
+  window.addEventListener("orientationchange", updatePlaceholder, { passive: true });
 
   searchInput.addEventListener("input", (e) => {
     currentCatalogSearch = e.target.value.trim();
