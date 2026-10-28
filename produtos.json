@@ -8,8 +8,8 @@
     "imagem": "./assets/img/produtos/item1.jpg",
     "disponivel": true,
     "destaque": true,
-    "estoque": 2,
-    "somente_encomenda": false
+    "somente_encomenda": false,
+    "estoque": 2
   },
   {
     "id": 2,
@@ -20,8 +20,8 @@
     "imagem": "./assets/img/produtos/item2.jpg",
     "disponivel": true,
     "destaque": true,
-    "estoque": 0,
-    "somente_encomenda": false
+    "somente_encomenda": false,
+    "estoque": 0
   },
   {
     "id": 3,
@@ -32,8 +32,8 @@
     "imagem": "./assets/img/produtos/item3.jpg",
     "disponivel": true,
     "destaque": true,
-    "estoque": 1,
-    "somente_encomenda": false
+    "somente_encomenda": false,
+    "estoque": 1
   },
   {
     "id": 4,
@@ -44,8 +44,8 @@
     "imagem": "./assets/img/produtos/item4.jpg",
     "disponivel": true,
     "destaque": true,
-    "estoque": 0,
-    "somente_encomenda": true
+    "somente_encomenda": true,
+    "estoque": 2
   },
   {
     "id": 5,
@@ -56,8 +56,8 @@
     "imagem": "./assets/img/produtos/item5.jpg",
     "disponivel": true,
     "destaque": true,
-    "estoque": 4,
-    "somente_encomenda": false
+    "somente_encomenda": false,
+    "estoque": 4
   },
   {
     "id": 6,
@@ -68,7 +68,7 @@
     "imagem": "./assets/img/produtos/item6.jpg",
     "disponivel": true,
     "destaque": true,
-    "estoque": 0,
-    "somente_encomenda": false
+    "somente_encomenda": false,
+    "estoque": 0
   }
 ]
