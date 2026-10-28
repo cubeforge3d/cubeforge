@@ -1760,8 +1760,18 @@ function setCartStep(step) {
 
   if (step === 1) {
     if (backBtn) backBtn.style.display = "none";
-    if (pill1) pill1.classList.add("active");
-    if (pill2) pill2.classList.remove("active");
+    if (pill1) {
+      pill1.classList.add("active");
+      pill1.setAttribute("aria-selected", "true");
+      const badge1 = pill1.querySelector(".step-badge");
+      if (badge1) badge1.textContent = "1";
+    }
+    if (pill2) {
+      pill2.classList.remove("active");
+      pill2.setAttribute("aria-selected", "false");
+      const badge2 = pill2.querySelector(".step-badge");
+      if (badge2) badge2.textContent = "2";
+    }
     if (titleText) titleText.textContent = "Meu Carrinho";
     if (btnHeaderClean) btnHeaderClean.style.display = (cart && cart.length > 0) ? "inline-block" : "none";
   } else {
@@ -1770,8 +1780,18 @@ function setCartStep(step) {
       return;
     }
     if (backBtn) backBtn.style.display = "inline-flex";
-    if (pill1) pill1.classList.remove("active");
-    if (pill2) pill2.classList.add("active");
+    if (pill1) {
+      pill1.classList.remove("active");
+      pill1.setAttribute("aria-selected", "false");
+      const badge1 = pill1.querySelector(".step-badge");
+      if (badge1) badge1.innerHTML = '<i class="fa-solid fa-check"></i>';
+    }
+    if (pill2) {
+      pill2.classList.add("active");
+      pill2.setAttribute("aria-selected", "true");
+      const badge2 = pill2.querySelector(".step-badge");
+      if (badge2) badge2.textContent = "2";
+    }
     if (titleText) titleText.textContent = "Pagamento";
     if (btnHeaderClean) btnHeaderClean.style.display = "none";
     

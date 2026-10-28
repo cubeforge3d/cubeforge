@@ -474,27 +474,36 @@
       
       <!-- Cabeçalho do Carrinho com Navegação entre Etapas -->
       <div class="cart-header">
-        <div class="cart-header-left">
-          <button class="cart-back-btn" id="cart-back-step-btn" aria-label="Voltar para itens" style="display: none;">
-            <i class="fa-solid fa-arrow-left"></i>
-          </button>
-          <div class="cart-header-title">
-            <i class="fa-solid fa-cart-shopping" id="cart-header-icon"></i>
-            <h3 id="cart-header-title-text">Meu Carrinho</h3>
-            <span class="cart-count-pill" id="cart-header-count">(0)</span>
+        <div class="cart-header-top">
+          <div class="cart-header-left">
+            <button class="cart-back-btn" id="cart-back-step-btn" aria-label="Voltar para itens" style="display: none;">
+              <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div class="cart-header-title">
+              <i class="fa-solid fa-cart-shopping" id="cart-header-icon"></i>
+              <h3 id="cart-header-title-text">Meu Carrinho</h3>
+              <span class="cart-count-pill" id="cart-header-count">(0)</span>
+            </div>
+          </div>
+
+          <div class="cart-header-right">
+            <button type="button" class="btn-header-clean" id="btn-header-clean" title="Limpar carrinho">Limpar</button>
+            <button class="cart-close-btn" id="cart-close-btn" aria-label="Fechar carrinho"><i class="fa-solid fa-xmark"></i></button>
           </div>
         </div>
         
-        <!-- Stepper Visual Discreto (1 Itens -> 2 Pagamento) -->
-        <div class="cart-stepper">
-          <button type="button" class="cart-step-pill active" id="cart-step-pill-1" title="Ir para itens"><span class="step-num">1</span> <span class="step-label">Itens</span></button>
-          <i class="fa-solid fa-chevron-right cart-step-divider"></i>
-          <button type="button" class="cart-step-pill" id="cart-step-pill-2" title="Ir para pagamento"><span class="step-num">2</span> <span class="step-label">Pagamento</span></button>
-        </div>
-
-        <div class="cart-header-right">
-          <button type="button" class="btn-header-clean" id="btn-header-clean" title="Limpar carrinho">Limpar</button>
-          <button class="cart-close-btn" id="cart-close-btn" aria-label="Fechar carrinho"><i class="fa-solid fa-xmark"></i></button>
+        <!-- Stepper Visual Reformulado e Proporcional (Segmented Control Estilo App) -->
+        <div class="cart-stepper-bar">
+          <div class="cart-stepper" role="tablist">
+            <button type="button" class="cart-step-pill active" id="cart-step-pill-1" role="tab" aria-selected="true" title="Ver itens do carrinho">
+              <span class="step-badge">1</span>
+              <span class="step-label">Itens</span>
+            </button>
+            <button type="button" class="cart-step-pill" id="cart-step-pill-2" role="tab" aria-selected="false" title="Ir para pagamento">
+              <span class="step-badge">2</span>
+              <span class="step-label">Pagamento</span>
+            </button>
+          </div>
         </div>
       </div>
 

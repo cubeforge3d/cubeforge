@@ -3655,35 +3655,41 @@ button {
 }
 
 .cart-header {
-  padding: 20px 22px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  padding: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
+  flex-shrink: 0;
 }
 
 .cart-header-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  white-space: nowrap !important;
 }
 
 .cart-header-title i {
   color: var(--accent-orange-bright);
-  font-size: 1.25rem;
+  font-size: 1.2rem;
+  flex-shrink: 0;
 }
 
 .cart-header-title h3 {
-  font-size: 1.15rem;
+  font-size: 1.12rem;
   font-weight: 800;
   color: #ffffff;
+  margin: 0;
+  white-space: nowrap !important;
+  line-height: 1.2;
 }
 
 .cart-count-pill {
-  font-size: 0.85rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--text-secondary);
+  white-space: nowrap !important;
 }
 
 .cart-close-btn {
@@ -5095,35 +5101,80 @@ button {
 /* ==========================================================================
    ESTRUTURA DE 2 ETAPAS DO CARRINHO (ESTILO IFOOD / MULTI-STEP)
    ========================================================================== */
+.cart-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 10px 20px;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .cart-header-left {
   display: flex;
   align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.cart-header-title {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  white-space: nowrap !important;
+}
+
+.cart-header-title i {
+  color: var(--accent-orange-bright);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.cart-header-title h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  white-space: nowrap !important;
+  line-height: 1.2;
+}
+
+.cart-count-pill {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  white-space: nowrap !important;
 }
 
 .cart-header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
 .btn-header-clean {
-  background: transparent;
-  border: none;
-  color: #ff4d6d;
-  font-size: 0.84rem;
+  background: rgba(255, 77, 109, 0.08);
+  border: 1px solid rgba(255, 77, 109, 0.22);
+  color: #ff6b8b;
+  font-size: 0.82rem;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: var(--radius-xs);
-  transition: all var(--transition-smooth);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  transition: all var(--transition-fast);
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .btn-header-clean:hover {
-  color: #ff758f;
-  background: rgba(255, 77, 109, 0.12);
+  color: #ffffff;
+  background: rgba(255, 77, 109, 0.25);
+  border-color: rgba(255, 77, 109, 0.5);
+  transform: translateY(-1px);
 }
 
 .cart-back-btn {
@@ -5136,9 +5187,9 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: all var(--transition-smooth);
+  transition: all var(--transition-fast);
   flex-shrink: 0;
 }
 
@@ -5147,90 +5198,153 @@ button {
   transform: translateX(-2px);
 }
 
-.cart-stepper {
+.cart-close-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 3px 6px;
-  border-radius: var(--radius-pill);
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  color: #ffffff;
+  cursor: pointer;
+  line-height: 1;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.cart-close-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: scale(1.06);
+}
+
+/* --------------------------------------------------------------------------
+   Barra do Stepper Proporcional (Segmented Control 50% / 50%)
+   -------------------------------------------------------------------------- */
+.cart-stepper-bar {
+  padding: 0 18px 12px 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cart-stepper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .cart-step-pill {
-  background: none;
-  border: none;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #94a3b8;
-  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
   border-radius: var(--radius-pill);
-  transition: all var(--transition-smooth);
-  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 700;
   font-family: inherit;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0 12px;
+  user-select: none;
+}
+
+.cart-step-pill:not(.active):hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+}
+
+.cart-step-pill:active {
+  transform: scale(0.98);
 }
 
 .cart-step-pill.active {
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: #ffffff;
-  background: rgba(0, 210, 255, 0.22);
-  border: 1px solid rgba(0, 210, 255, 0.45);
-  box-shadow: 0 0 10px rgba(0, 210, 255, 0.25);
+  box-shadow: 
+    0 2px 10px rgba(0, 0, 0, 0.35),
+    var(--glass-specular);
 }
 
-.cart-step-divider {
-  font-size: 0.58rem;
-  color: rgba(255, 255, 255, 0.25);
+.step-badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  transition: all 0.22s;
+  flex-shrink: 0;
+}
+
+.step-badge i {
+  font-size: 0.65rem;
+  color: #4ade80;
+}
+
+.cart-step-pill.active .step-badge {
+  background: linear-gradient(135deg, #ff6a00 0%, #ff8c42 100%);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 106, 0, 0.55);
+}
+
+.step-label {
+  white-space: nowrap;
 }
 
 @media (max-width: 480px) {
-  .cart-header {
-    padding: 12px 14px;
-    gap: 6px;
+  .cart-header-top {
+    padding: 14px 16px 8px 16px;
   }
-  .cart-header-left {
-    gap: 6px;
-  }
-  .cart-header-title {
-    gap: 6px;
+  .cart-stepper-bar {
+    padding: 0 14px 10px 14px;
   }
   .cart-header-title h3 {
-    font-size: 0.96rem;
-  }
-  .cart-header-title i {
     font-size: 1.05rem;
   }
-  .cart-count-pill {
-    font-size: 0.78rem;
-  }
-  .cart-back-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 0.76rem;
-  }
-  .cart-close-btn {
-    width: 30px;
-    height: 30px;
-    font-size: 0.85rem;
-    flex-shrink: 0;
-  }
-  .btn-header-clean {
-    font-size: 0.78rem;
-    padding: 3px 6px;
-  }
-  .cart-stepper {
-    padding: 2px 4px;
-    gap: 3px;
-    flex-shrink: 0;
+  .cart-header-title i {
+    font-size: 1.15rem;
   }
   .cart-step-pill {
+    height: 34px;
+    font-size: 0.8rem;
+    gap: 6px;
+  }
+  .step-badge {
+    width: 18px;
+    height: 18px;
     font-size: 0.68rem;
-    padding: 2px 6px;
   }
 }
 
-@media (max-width: 395px) {
-  .cart-step-pill .step-label {
-    display: none;
+@media (max-height: 520px) {
+  .cart-header-top {
+    padding: 8px 14px 4px 14px;
+  }
+  .cart-stepper-bar {
+    padding: 0 14px 6px 14px;
+  }
+  .cart-step-pill {
+    height: 30px;
+    font-size: 0.76rem;
   }
 }
 
