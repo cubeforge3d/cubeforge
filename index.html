@@ -32,6 +32,14 @@
     <div class="ambient-orb orb-orange-bottom"></div>
   </div>
 
+  <!-- Top Announcement Bar (Configurável via Pages CMS) -->
+  <div class="top-announcement-bar" id="top-announcement-bar" style="display: none;">
+    <div class="container announcement-container">
+      <span class="announcement-badge"><i class="fa-solid fa-bullhorn"></i> Aviso</span>
+      <span class="announcement-text" id="announcement-text"></span>
+    </div>
+  </div>
+
   <!-- Desktop Navbar (Exibida apenas em computadores/telas grandes) -->
   <nav class="desktop-navbar">
     <div class="container navbar-container">
@@ -241,6 +249,20 @@
         <span class="section-tag">O que você quer criar?</span>
         <h2 class="section-title">Vitrine de Inspiração</h2>
         <p class="section-subtitle">Toque em qualquer modelo para pedir o seu no WhatsApp</p>
+      </div>
+
+      <!-- Barra de Busca Rápida (Buscar por Modelo, Categoria ou Ideia) -->
+      <div class="catalog-search-wrapper" id="catalog-search-wrapper">
+        <div class="catalog-search-box">
+          <i class="fa-solid fa-magnifying-glass catalog-search-icon"></i>
+          <input type="text" id="catalog-search-input" class="catalog-search-input" placeholder="Buscar por modelo, categoria ou ideia... (ex: vaso, headset, anime)" autocomplete="off" spellcheck="false">
+          <button type="button" id="catalog-search-clear" class="catalog-search-clear" aria-label="Limpar pesquisa" title="Limpar pesquisa" style="display: none;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="catalog-search-stats" id="catalog-search-stats">
+          <span class="catalog-count-badge" id="catalog-count-badge">6 peças</span>
+        </div>
       </div>
 
       <!-- Sticky Filter Tabs Container -->

@@ -3,54 +3,37 @@ media:
   output: ./assets/img/produtos
 
 content:
-  - name: configuracoes
-    label: "⚙️ Modo de Manutenção"
-    type: file
-    path: configuracoes.json
-    fields:
-      - name: modo_manutencao
-        label: "Ativar Modo de Manutenção (Desativar Site & Vendas)"
-        type: boolean
-        default: false
-        description: "Ligue este interruptor para pausar o site temporariamente. O site exibirá um aviso elegante de manutenção informando que volta em breve, pausando as vendas e oferecendo botões diretos de contato via WhatsApp e Instagram."
-      - name: titulo_manutencao
-        label: Título do Aviso
-        type: string
-        default: "Estamos em Manutenção"
-        description: "Título principal na tela de manutenção."
-      - name: subtitulo_manutencao
-        label: Subtítulo
-        type: string
-        default: "Voltamos em breve com novidades!"
-        description: "Frase de apoio abaixo do título."
-      - name: mensagem_manutencao
-        label: Mensagem para os Clientes
-        type: text
-        default: "Estamos realizando ajustes em nossos equipamentos, estoque e catálogo para trazer peças exclusivas com a máxima qualidade. Nossas compras online voltam em breve!\n\nEnquanto isso, você pode encomendar, orçar ou tirar dúvidas diretamente pelo nosso WhatsApp ou Instagram."
-        description: "Texto explicativo detalhado exibido para os clientes durante a pausa."
-      - name: previsao_retorno
-        label: Previsão de Retorno (Tag em Destaque)
-        type: string
-        default: "Voltamos em breve!"
-        description: "Ex: 'Voltamos em breve!', 'Retorno hoje às 19h', 'Previsão: amanhã cedo'."
-
+  # ==========================================================================
+  # 1. Catálogo Completo de Produtos (Gerenciamento Ágil)
+  # ==========================================================================
   - name: produtos
-    label: Catálogo de Produtos
+    label: "🛍️ Catálogo de Produtos"
     type: file
     path: produtos.json
     list: true
+    view:
+      primary: nome
+      fields: [imagem, nome, preco, categoria, estoque, somente_encomenda, destaque, disponivel]
+      sort: [ordem, nome, categoria, preco, estoque, somente_encomenda]
+      search: [nome, categoria, descricao, tags, preco]
+      default:
+        sort: ordem
+        order: asc
     fields:
       - name: id
-        label: ID
+        label: ID do Produto
         type: number
+        description: "Identificador numérico único do produto."
       - name: nome
-        label: Nome
+        label: Nome do Produto
         type: string
         required: true
+        description: "Nome principal exibido na vitrine e nos orçamentos."
       - name: preco
-        label: Preço
+        label: Preço / Faixa de Preço
         type: string
         required: true
+        description: "Ex: 'R$ 35,00', 'R$ 49,90' ou 'A partir de R$ 30'."
       - name: categoria
         label: Categoria
         type: select
@@ -75,38 +58,120 @@ content:
               label: "🎭 Cosplay & Acessórios"
             - name: miniaturas
               label: "🎲 Miniaturas & RPG"
+            - name: sob-encomenda
+              label: "📦 Peças Sob Encomenda"
             - name: nova
               label: "✨ Criar Nova Categoria (digitar abaixo)"
       - name: nova_categoria
         label: Criar Nova Categoria (Nome)
         type: string
-        description: "Selecione 'Criar Nova Categoria' acima e digite o nome aqui (ex: Canecas, Vasos, Chaveiros). Ela aparecerá automaticamente nos filtros do site!"
+        description: "Selecione 'Criar Nova Categoria' acima e digite o nome aqui (ex: Canecas, Vasos, Chaveiros). Ela aparecerá automaticamente nos filtros e na busca do site!"
       - name: categoria_icone
-        label: Emoji da Categoria (Opcional)
+        label: Emoji ou Ícone da Categoria (Opcional)
         type: string
         description: "Emoji para o botão de filtro (ex: 🏆, ☕, 💎, 🐉). Se vazio, o site escolhe um ícone inteligente."
+      - name: tags
+        label: "Palavras-chave para Busca (Tags de Pesquisa)"
+        type: string
+        description: "Termos adicionais separados por vírgula (ex: anime, naruto, presente, suporte, celular, quarto, gamer). Ajuda os clientes a acharem a peça rapidamente na barra de busca do site!"
+      - name: selo_personalizado
+        label: "Selo Especial / Badge (Opcional)"
+        type: string
+        description: "Texto de destaque no topo da foto (ex: '🔥 Mais Vendido', '⭐ Novidade', '💎 Sob Medida', '🚀 Lançamento')."
+      - name: ordem
+        label: "Ordem de Exibição (Número)"
+        type: number
+        default: 10
+        description: "Defina a posição no catálogo: números menores aparecem primeiro (ex: 1, 2, 3)."
       - name: descricao
-        label: Descrição
+        label: Descrição do Produto
         type: text
+        description: "Breve explicação sobre os detalhes da peça, materiais e aplicações."
       - name: imagem
-        label: Foto
+        label: Foto do Produto
         type: image
-      - name: disponivel
-        label: Disponível no Catálogo
-        type: boolean
-        default: true
-      - name: destaque
-        label: Exibir nos Destaques (Vitrine do Topo)
-        type: boolean
-        default: true
-        description: "Ative este botão para exibir este produto no carrossel de destaques no topo do site (Showroom). Se desativado, ele continua visível no catálogo abaixo, mas não aparece nos destaques."
+        description: "Imagem da peça já impressa ou render de alta qualidade."
       - name: somente_encomenda
-        label: Somente sob Encomenda
+        label: "📦 Fabricação Somente sob Encomenda"
         type: boolean
         default: false
-        description: "Ative este botão para produtos que são fabricados exclusivamente sob encomenda. Ele continuará aparecendo no catálogo e no carrinho com o selo '📦 Somente sob Encomenda', a compra online fica desativada e o cliente tem a opção de encomendar diretamente pelo WhatsApp."
+        description: "Ative este botão para peças fabricadas exclusivamente sob encomenda. O produto ganha o selo '📦 Somente sob Encomenda', a compra online é direcionada para orçamento no WhatsApp, e ele aparece automaticamente na guia/filtro '📦 Sob Encomenda' do site!"
       - name: estoque
-        label: Estoque a Pronta Entrega (Qtd)
+        label: "⚡ Estoque a Pronta Entrega (Qtd)"
         type: number
         default: 0
-        description: "Quantidade de peças já impressas prontas para envio imediato. Se for 1 ou mais, o site ativa o selo de urgência '⚡ Pronta Entrega'. Deixe 0 se a peça for apenas sob encomenda."
+        description: "Quantidade de peças já impressas para envio imediato. Se for 1 ou mais, o site ativa o selo de urgência '⚡ Pronta Entrega' e adiciona o produto ao filtro de pronta entrega. Deixe 0 se a peça for apenas sob encomenda."
+      - name: destaque
+        label: "⭐ Exibir nos Destaques (Showroom do Topo)"
+        type: boolean
+        default: true
+        description: "Ative para exibir este produto no carrossel de destaques no topo do site para PC. Se desativado, ele continua visível no catálogo abaixo, mas não aparece nos destaques."
+      - name: disponivel
+        label: "Disponível no Catálogo (Ativo / Inativo)"
+        type: boolean
+        default: true
+        description: "Desmarque este interruptor caso queira ocultar este produto temporariamente da loja sem precisar apagá-lo."
+
+  # ==========================================================================
+  # 2. Configurações da Loja, Contatos & Manutenção
+  # ==========================================================================
+  - name: configuracoes
+    label: "⚙️ Configurações da Loja & Avisos"
+    type: file
+    path: configuracoes.json
+    fields:
+      - name: whatsapp_numero
+        label: "Número de WhatsApp da Loja"
+        type: string
+        default: "5527936183114"
+        description: "Número completo com DDI e DDD, apenas números. Ex: 5527936183114."
+      - name: whatsapp_display
+        label: "WhatsApp Visível no Rodapé"
+        type: string
+        default: "(27) 93618-3114"
+        description: "Texto formatado do WhatsApp exibido para o público."
+      - name: instagram_user
+        label: "Usuário do Instagram (sem @)"
+        type: string
+        default: "cubeforge3d"
+        description: "Usuário do Instagram para links e redirecionamentos."
+      - name: chave_pix
+        label: "Chave Pix para Pagamentos"
+        type: string
+        default: "pix@cubeforge.com.br"
+        description: "Chave Pix exibida na etapa de pagamento do carrinho."
+      - name: banner_alerta_ativo
+        label: "Ativar Faixa de Aviso no Topo do Site"
+        type: boolean
+        default: false
+        description: "Ative para exibir uma faixa destacada no topo com recados especiais, promoções ou avisos de novos filamentos."
+      - name: banner_alerta
+        label: "Mensagem da Faixa de Aviso"
+        type: string
+        default: "🚀 Peças exclusivas em 3D de alta resolução sob encomenda e a pronta entrega!"
+        description: "Texto da faixa de aviso que aparecerá no topo do site quando ativada."
+      - name: modo_manutencao
+        label: "Ativar Modo de Manutenção (Desativar Site & Vendas)"
+        type: boolean
+        default: false
+        description: "Ligue este interruptor para pausar o site temporariamente. O site exibirá um aviso elegante de manutenção informando que volta em breve, pausando as vendas e oferecendo botões diretos de contato via WhatsApp e Instagram."
+      - name: titulo_manutencao
+        label: "Título do Aviso de Manutenção"
+        type: string
+        default: "Estamos em Manutenção"
+        description: "Título principal na tela de manutenção."
+      - name: subtitulo_manutencao
+        label: "Subtítulo da Manutenção"
+        type: string
+        default: "Voltamos em breve com novidades!"
+        description: "Frase de apoio abaixo do título."
+      - name: mensagem_manutencao
+        label: "Mensagem de Manutenção para os Clientes"
+        type: text
+        default: "Estamos realizando ajustes em nossos equipamentos, estoque e catálogo para trazer peças exclusivas com a máxima qualidade. Nossas compras online voltam em breve!\n\nEnquanto isso, você pode encomendar, orçar ou tirar dúvidas diretamente pelo nosso WhatsApp ou Instagram."
+        description: "Texto explicativo detalhado exibido para os clientes durante a pausa."
+      - name: previsao_retorno
+        label: "Previsão de Retorno (Tag em Destaque)"
+        type: string
+        default: "Voltamos em breve!"
+        description: "Ex: 'Voltamos em breve!', 'Retorno hoje às 19h', 'Previsão: amanhã cedo'."

@@ -8,8 +8,11 @@
     "imagem": "./assets/img/produtos/item1.jpg",
     "disponivel": true,
     "destaque": true,
+    "estoque": 2,
     "somente_encomenda": false,
-    "estoque": 2
+    "ordem": 1,
+    "tags": "anime, goku, naruto, boneco, marvel, geek, nerd, action figure, colecionavel, miniatura",
+    "selo_personalizado": "🔥 Mais Vendido"
   },
   {
     "id": 2,
@@ -20,8 +23,11 @@
     "imagem": "./assets/img/produtos/item2.jpg",
     "disponivel": true,
     "destaque": true,
+    "estoque": 0,
     "somente_encomenda": false,
-    "estoque": 0
+    "ordem": 2,
+    "tags": "vaso, decoracao, planta, suculenta, mesa, sala, escritorio, geometrico, minimalista, moderno",
+    "selo_personalizado": ""
   },
   {
     "id": 3,
@@ -32,8 +38,11 @@
     "imagem": "./assets/img/produtos/item3.jpg",
     "disponivel": true,
     "destaque": true,
+    "estoque": 1,
     "somente_encomenda": false,
-    "estoque": 1
+    "ordem": 3,
+    "tags": "headset, fone, suporte, gamer, setup, celular, smartphone, organizador, mesa, ergonomico",
+    "selo_personalizado": ""
   },
   {
     "id": 4,
@@ -44,8 +53,11 @@
     "imagem": "./assets/img/produtos/item4.jpg",
     "disponivel": true,
     "destaque": true,
+    "estoque": 0,
     "somente_encomenda": true,
-    "estoque": 0
+    "ordem": 4,
+    "tags": "luminaria, foto, presente, casal, pet, familia, litofania, luz, abajur, encomenda, personalizado",
+    "selo_personalizado": "💎 Sob Medida"
   },
   {
     "id": 5,
@@ -56,8 +68,11 @@
     "imagem": "./assets/img/produtos/item5.jpg",
     "disponivel": true,
     "destaque": true,
+    "estoque": 4,
     "somente_encomenda": false,
-    "estoque": 4
+    "ordem": 5,
+    "tags": "chaveiro, lembrancinha, nome, presente, logo, brindes, personalizado, gamer",
+    "selo_personalizado": ""
   },
   {
     "id": 6,
@@ -68,7 +83,10 @@
     "imagem": "./assets/img/produtos/item6.jpg",
     "disponivel": true,
     "destaque": true,
+    "estoque": 0,
     "somente_encomenda": false,
-    "estoque": 0
+    "ordem": 6,
+    "tags": "controle, ps5, xbox, switch, gamer, suporte, setup, videogame, organizador",
+    "selo_personalizado": ""
   }
 ]
