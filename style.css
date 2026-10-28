@@ -299,6 +299,7 @@ body {
 .desktop-navbar,
 .hero-section,
 .section,
+.footer,
 .site-footer,
 .floating-whatsapp-container {
   position: relative;
@@ -1531,8 +1532,11 @@ button {
 }
 
 .brand-cube {
-  color: #ffffff;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
   text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+  display: inline-block;
+  vertical-align: baseline;
 }
 
 .brand-forge {
@@ -1540,6 +1544,8 @@ button {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 2px 10px rgba(255, 106, 0, 0.4));
+  display: inline-block;
+  vertical-align: baseline;
 }
 
 .brand-handle {
@@ -2976,6 +2982,8 @@ button {
    Footer
    ========================================================================== */
 .footer {
+  position: relative;
+  z-index: 2;
   border-top: 1px solid var(--glass-border);
   padding: 28px 0;
   text-align: center;
@@ -3002,7 +3010,31 @@ button {
   color: #ffffff;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
+}
+
+#footer-brand-name {
+  display: inline-block;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+}
+
+#footer-brand-name .brand-cube {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-weight: 800;
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+#footer-brand-name .brand-forge {
+  background: linear-gradient(135deg, #ff8533 0%, #ff5500 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 800;
+  display: inline-block;
+  vertical-align: baseline;
 }
 
 .footer-emblem-img {
