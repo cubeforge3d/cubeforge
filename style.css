@@ -3811,29 +3811,28 @@ button {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  border-radius: var(--radius-md);
+  background: rgba(239, 68, 68, 0.15);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.35);
   box-sizing: border-box;
   max-height: 0;
   opacity: 0;
   overflow: hidden;
-  padding: 0 14px;
-  margin-bottom: 0;
-  transform: translateY(-6px) scale(0.97);
-  transition: max-height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-              padding 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              margin 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0 16px;
+  margin: 0;
+  transform: translateY(-8px);
+  transition: max-height 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              padding 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  z-index: 5;
 }
 
 .cart-clear-confirm-bar.active {
   max-height: 140px;
   opacity: 1;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  transform: translateY(0) scale(1);
+  padding: 12px 18px 14px;
+  transform: translateY(0);
 }
 
 .confirm-bar-text {
@@ -4864,6 +4863,31 @@ button {
   gap: 8px;
 }
 
+.cart-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-header-clean {
+  background: transparent;
+  border: none;
+  color: #ff4d6d;
+  font-size: 0.84rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  transition: all var(--transition-smooth);
+}
+
+.btn-header-clean:hover {
+  color: #ff758f;
+  background: rgba(255, 77, 109, 0.12);
+}
+
 .cart-back-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -4951,6 +4975,10 @@ button {
     font-size: 0.85rem;
     flex-shrink: 0;
   }
+  .btn-header-clean {
+    font-size: 0.78rem;
+    padding: 3px 6px;
+  }
   .cart-stepper {
     padding: 2px 4px;
     gap: 3px;
@@ -5000,33 +5028,250 @@ button {
   box-sizing: border-box;
 }
 
-/* Botão Continuar para Pagamento da Etapa 1 */
-.btn-cart-continue-step {
+/* --------------------------------------------------------------------------
+   ETAPA 1: Itens e Resumo com Rolagem Natural Unificada (Estilo iFood)
+   -------------------------------------------------------------------------- */
+.cart-step-items {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.cart-step1-scroll-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 12px;
+}
+
+.cart-step1-scroll-area .cart-body {
+  flex: 0 0 auto;
+  overflow-y: visible;
+  padding: 12px 16px 6px;
+}
+
+.cart-step1-bottom-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Botão "+ Adicionar mais itens" estilo iFood */
+.btn-cart-add-more {
+  width: calc(100% - 32px);
+  margin: 6px 16px 14px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  color: #e2e8f0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all var(--transition-smooth);
+}
+
+.btn-cart-add-more:hover {
+  background: rgba(255, 106, 0, 0.08);
+  border-color: rgba(255, 106, 0, 0.45);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-cart-add-more i {
+  color: var(--accent-orange-bright);
+}
+
+.cart-step1-bottom-content .cart-notes-wrapper {
+  padding: 0 16px 14px;
+  box-sizing: border-box;
+}
+
+.cart-step1-bottom-content .cart-notes-wrapper input {
   width: 100%;
-  padding: 13px 18px;
+  box-sizing: border-box;
+}
+
+/* Resumo de Valores Integrado à Rolagem (Estilo iFood) */
+.cart-scroll-summary {
+  margin: 2px 16px 14px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-section-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.summary-section-title i {
+  color: var(--accent-orange-bright);
+}
+
+.summary-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  color: #94a3b8;
+}
+
+.summary-free-tag {
+  color: #38bdf8;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.summary-line-total {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  font-size: 0.95rem;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.summary-total-value {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--accent-orange-bright);
+}
+
+.summary-installments-note {
+  font-size: 0.74rem;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.cart-step1-bottom-content .cart-secondary-actions {
+  padding: 0 16px 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-cart-clear {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--transition-smooth);
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+}
+
+.btn-cart-clear:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   Rodapé Fixo Slim da Etapa 1 (Único Elemento Fixo - Estilo iFood)
+   -------------------------------------------------------------------------- */
+.cart-fixed-bottom-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px 14px;
+  background: rgba(10, 16, 28, 0.98);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.fixed-bottom-total-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fixed-total-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.fixed-total-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.fixed-total-amount {
+  font-size: 1.18rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+.fixed-total-count {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Botão Continuar Fixo da Etapa 1 */
+.btn-cart-continue-step {
+  padding: 12px 22px;
+  min-width: 128px;
   background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-orange-bright) 100%);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   color: #ffffff;
-  font-size: 0.94rem;
+  font-size: 0.92rem;
   font-weight: 800;
   font-family: inherit;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  box-shadow: 0 8px 24px rgba(255, 106, 0, 0.38);
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(255, 106, 0, 0.38);
   transition: all var(--transition-smooth);
+  flex-shrink: 0;
 }
 
 .btn-cart-continue-step:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(255, 106, 0, 0.55);
+  box-shadow: 0 8px 24px rgba(255, 106, 0, 0.55);
 }
 
 .btn-cart-continue-step i {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   transition: transform 0.25s ease;
 }
 

@@ -1473,15 +1473,34 @@ function updateCartUI() {
     headerCount.textContent = `(${totalCount})`;
   }
 
-  // Total Estimado
+  // Total Estimado no cabeçalho e resumos
   const totalDisplay = document.getElementById("cart-total-display");
   if (totalDisplay) {
     totalDisplay.textContent = formatBRL(totalPrice);
   }
 
+  // Rodapé Fixo Slim Estilo iFood (Total e Quantidade)
+  const fixedTotalDisplay = document.getElementById("cart-fixed-total-display");
+  if (fixedTotalDisplay) {
+    fixedTotalDisplay.textContent = formatBRL(totalPrice);
+  }
+
+  const fixedCountDisplay = document.getElementById("cart-fixed-count-display");
+  if (fixedCountDisplay) {
+    fixedCountDisplay.textContent = `/ ${totalCount} ${totalCount === 1 ? "item" : "itens"}`;
+  }
+
+  // Resumo de Valores Integrado à Rolagem
+  const scrollSummaryTotal = document.getElementById("scroll-summary-items-total");
+  if (scrollSummaryTotal) {
+    scrollSummaryTotal.textContent = formatBRL(totalPrice);
+  }
+
   // Lista de itens no corpo do carrinho
   const container = document.getElementById("cart-items-container");
   const footerPanel = document.getElementById("cart-footer-panel");
+  const step1BottomContent = document.getElementById("cart-step1-bottom-content");
+  const btnHeaderClean = document.getElementById("btn-header-clean");
 
   if (!container) return;
 
@@ -1498,8 +1517,14 @@ function updateCartUI() {
       </div>
     `;
     if (footerPanel) footerPanel.style.display = "none";
+    if (step1BottomContent) step1BottomContent.style.display = "none";
+    if (btnHeaderClean) btnHeaderClean.style.display = "none";
   } else {
     if (footerPanel) footerPanel.style.display = "flex";
+    if (step1BottomContent) step1BottomContent.style.display = "flex";
+    if (btnHeaderClean) {
+      btnHeaderClean.style.display = (currentCartStep === 1) ? "inline-block" : "none";
+    }
 
     container.innerHTML = cart.map(item => {
       const imgContent = item.image 
@@ -1563,6 +1588,7 @@ function setCartStep(step) {
   const pill1 = document.getElementById("cart-step-pill-1");
   const pill2 = document.getElementById("cart-step-pill-2");
   const titleText = document.getElementById("cart-header-title-text");
+  const btnHeaderClean = document.getElementById("btn-header-clean");
 
   if (drawer) {
     drawer.setAttribute("data-current-step", String(step));
@@ -1573,6 +1599,7 @@ function setCartStep(step) {
     if (pill1) pill1.classList.add("active");
     if (pill2) pill2.classList.remove("active");
     if (titleText) titleText.textContent = "Meu Carrinho";
+    if (btnHeaderClean) btnHeaderClean.style.display = (cart && cart.length > 0) ? "inline-block" : "none";
   } else {
     if (!cart || cart.length === 0) {
       setCartStep(1);
@@ -1582,6 +1609,7 @@ function setCartStep(step) {
     if (pill1) pill1.classList.remove("active");
     if (pill2) pill2.classList.add("active");
     if (titleText) titleText.textContent = "Pagamento";
+    if (btnHeaderClean) btnHeaderClean.style.display = "none";
     
     renderCartStep2();
   }
@@ -1629,28 +1657,45 @@ function renderCartStep2() {
     const hasNotes = notesInput ? (notesInput.value.trim().length > 0) : false;
     const hasOrderOnly = cart.some(item => Boolean(item.somente_encomenda));
 
+    let html = "";
     if (hasOrderOnly) {
-      conditionsBox.innerHTML = `
-        <div class="payment-condition-box alert-order-only">
-          <div class="payment-condition-header">
-            <i class="fa-solid fa-box-archive"></i>
-            <span>Pedido com Peça Somente sob Encomenda</span>
+      html += `
+        <div class="cart-order-only-warning active" id="cart-order-only-warning" role="alert" aria-live="polite">
+          <div class="cart-order-only-warning-header">
+            <div class="cart-order-only-warning-icon">
+              <i class="fa-solid fa-box-archive"></i>
+            </div>
+            <span class="cart-order-only-warning-title">Item Somente sob Encomenda no Carrinho</span>
           </div>
-          <p>Seu carrinho contém produto(s) fabricados exclusivamente sob encomenda. Para combinar cores e prazo, a finalização e o pagamento são feitos diretamente pelo <strong>WhatsApp</strong>.</p>
+          <p class="cart-order-only-warning-text">
+            Seu carrinho contém produto(s) <strong>somente sob encomenda</strong>. Para comprar online, remova o item sob encomenda, ou finalize seu pedido diretamente pelo <strong>WhatsApp</strong>.
+          </p>
+          <div class="cart-order-only-warning-pill">
+            <i class="fa-solid fa-lock"></i> Compra online indisponível para encomendas
+          </div>
         </div>
       `;
-    } else if (hasNotes) {
-      conditionsBox.innerHTML = `
-        <div class="payment-condition-box alert-notes">
-          <div class="payment-condition-header">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <span>Pedido com Observações Personalizadas</span>
+    }
+    if (hasNotes) {
+      html += `
+        <div class="cart-notes-warning active" id="cart-notes-warning" role="alert" aria-live="polite">
+          <div class="cart-notes-warning-header">
+            <div class="cart-notes-warning-icon">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <span class="cart-notes-warning-title">Atenção para Pedidos Personalizados</span>
           </div>
-          <p>Como você adicionou observações de personalização (cores, nomes ou detalhes), seu pedido deve ser alinhado diretamente pelo <strong>WhatsApp</strong>.</p>
+          <p class="cart-notes-warning-text">
+            Como seu pedido contém <strong>observações personalizadas</strong>, ele deve ser alinhado diretamente pelo <strong>WhatsApp</strong> para combinarmos cores, nomes e acabamentos.
+          </p>
+          <div class="cart-notes-warning-pill">
+            <i class="fa-solid fa-lock"></i> Compra online desativada temporariamente
+          </div>
         </div>
       `;
-    } else {
-      conditionsBox.innerHTML = `
+    }
+    if (!hasOrderOnly && !hasNotes) {
+      html += `
         <div class="payment-condition-box alert-ready">
           <div class="payment-condition-header">
             <i class="fa-solid fa-circle-check"></i>
@@ -1660,6 +1705,7 @@ function renderCartStep2() {
         </div>
       `;
     }
+    conditionsBox.innerHTML = html;
   }
 }
 window.setCartStep = setCartStep;
@@ -2174,17 +2220,22 @@ function setupCartListeners() {
   // Atualiza validação inicial
   updateCartNotesValidation();
 
-  // Esvaziar carrinho com barra de confirmação segura
+  // Esvaziar carrinho com barra de confirmação segura (via botão no rodapé ou no topo do carrinho)
   const clearBtn = document.getElementById("btn-clear-cart");
+  const btnHeaderClean = document.getElementById("btn-header-clean");
   const confirmBar = document.getElementById("cart-clear-confirm-bar");
   const confirmYesBtn = document.getElementById("btn-confirm-clear-yes");
   const confirmNoBtn = document.getElementById("btn-confirm-clear-no");
 
-  if (clearBtn && confirmBar) {
-    clearBtn.addEventListener("click", () => {
+  const openClearConfirm = () => {
+    if (confirmBar) {
       confirmBar.classList.add("active");
-    });
-  }
+      confirmBar.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  };
+
+  if (clearBtn) clearBtn.addEventListener("click", openClearConfirm);
+  if (btnHeaderClean) btnHeaderClean.addEventListener("click", openClearConfirm);
 
   if (confirmNoBtn && confirmBar) {
     confirmNoBtn.addEventListener("click", () => {

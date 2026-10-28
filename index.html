@@ -492,85 +492,93 @@
           <button type="button" class="cart-step-pill" id="cart-step-pill-2" title="Ir para pagamento"><span class="step-num">2</span> <span class="step-label">Pagamento</span></button>
         </div>
 
-        <button class="cart-close-btn" id="cart-close-btn" aria-label="Fechar carrinho"><i class="fa-solid fa-xmark"></i></button>
+        <div class="cart-header-right">
+          <button type="button" class="btn-header-clean" id="btn-header-clean" title="Limpar carrinho">Limpar</button>
+          <button class="cart-close-btn" id="cart-close-btn" aria-label="Fechar carrinho"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+
+      <!-- Barra de Confirmação Flutuante/Topo para Esvaziar Carrinho -->
+      <div class="cart-clear-confirm-bar" id="cart-clear-confirm-bar">
+        <div class="confirm-bar-text">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>Deseja realmente esvaziar o carrinho?</span>
+        </div>
+        <div class="confirm-bar-actions">
+          <button id="btn-confirm-clear-yes" class="btn-confirm-yes" type="button">
+            <i class="fa-solid fa-trash-can"></i> Sim, esvaziar
+          </button>
+          <button id="btn-confirm-clear-no" class="btn-confirm-no" type="button">Cancelar</button>
+        </div>
       </div>
 
       <!-- Container Deslizante das Etapas (Slider Suave) -->
       <div class="cart-steps-track" id="cart-steps-track">
         
-        <!-- ETAPA 1: Lista de Itens, Observações e Total -->
+        <!-- ETAPA 1: Lista de Itens, Observações e Total Integrados com Rodapé Fixo Slim (Estilo iFood) -->
         <div class="cart-step-panel cart-step-items" id="cart-step-1">
-          <div class="cart-body" id="cart-items-container">
-            <!-- Inserido dinamicamente via JS -->
+          <!-- Área de Rolagem Natural 100% Livre para os Itens -->
+          <div class="cart-step1-scroll-area" id="cart-step1-scroll-area">
+            <div class="cart-body" id="cart-items-container">
+              <!-- Inserido dinamicamente via JS -->
+            </div>
+
+            <!-- Conteúdo Integrado à Rolagem (Abaixo dos Itens) -->
+            <div class="cart-step1-bottom-content" id="cart-step1-bottom-content">
+              <!-- Botão Adicionar Mais Itens Estilo iFood -->
+              <button type="button" class="btn-cart-add-more" onclick="closeCart(); scrollToCatalogProducts();">
+                <i class="fa-solid fa-plus"></i> Adicionar mais itens
+              </button>
+
+              <!-- Observações do Pedido no fluxo de rolagem -->
+              <div class="cart-notes-wrapper">
+                <label for="cart-custom-notes"><i class="fa-solid fa-pen-to-square"></i> Observações do Pedido:</label>
+                <input type="text" id="cart-custom-notes" placeholder="Ex: Cores desejadas, nomes ou detalhes...">
+              </div>
+
+              <!-- Resumo de Valores Integrado à Rolagem (Estilo iFood) -->
+              <div class="cart-scroll-summary" id="cart-scroll-summary">
+                <div class="summary-section-title">
+                  <i class="fa-solid fa-receipt"></i> Resumo de valores
+                </div>
+                <div class="summary-line">
+                  <span>Total dos itens</span>
+                  <span id="scroll-summary-items-total">R$ 0,00</span>
+                </div>
+                <div class="summary-line">
+                  <span>Entrega / Retirada</span>
+                  <span class="summary-free-tag">A combinar no WhatsApp</span>
+                </div>
+                <div class="summary-line summary-line-total">
+                  <span>Total</span>
+                  <strong class="summary-total-value" id="cart-total-display">R$ 0,00</strong>
+                </div>
+                <div class="summary-installments-note">
+                  <i class="fa-solid fa-credit-card"></i> Em até 12x no cartão ou Pix na próxima etapa
+                </div>
+              </div>
+
+              <div class="cart-secondary-actions" id="cart-secondary-actions">
+                <button id="btn-clear-cart" class="btn-cart-clear"><i class="fa-solid fa-trash-can"></i> Esvaziar carrinho</button>
+              </div>
+            </div>
           </div>
 
-          <div class="cart-footer" id="cart-footer-panel">
-            <div class="cart-notes-wrapper">
-              <label for="cart-custom-notes"><i class="fa-solid fa-pen-to-square"></i> Observações do Pedido:</label>
-              <input type="text" id="cart-custom-notes" placeholder="Ex: Cores desejadas, nomes ou detalhes...">
-              
-              <!-- Aviso Original de Pedido Personalizado -->
-              <div class="cart-notes-warning" id="cart-notes-warning" role="alert" aria-live="polite">
-                <div class="cart-notes-warning-header">
-                  <div class="cart-notes-warning-icon">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                  </div>
-                  <span class="cart-notes-warning-title">Atenção para Pedidos Personalizados</span>
-                </div>
-                <p class="cart-notes-warning-text">
-                  Como seu pedido contém <strong>observações personalizadas</strong>, ele deve ser alinhado diretamente pelo <strong>WhatsApp</strong> para combinarmos cores, nomes e acabamentos.
-                </p>
-                <div class="cart-notes-warning-pill">
-                  <i class="fa-solid fa-lock"></i> Compra online desativada temporariamente
-                </div>
-              </div>
-
-              <!-- Aviso Original para Item Somente sob Encomenda -->
-              <div class="cart-order-only-warning" id="cart-order-only-warning" role="alert" aria-live="polite">
-                <div class="cart-order-only-warning-header">
-                  <div class="cart-order-only-warning-icon">
-                    <i class="fa-solid fa-box-archive"></i>
-                  </div>
-                  <span class="cart-order-only-warning-title">Item Somente sob Encomenda no Carrinho</span>
-                </div>
-                <p class="cart-order-only-warning-text">
-                  Seu carrinho contém produto(s) <strong>somente sob encomenda</strong>. Para comprar online, remova o item sob encomenda, ou finalize seu pedido diretamente pelo <strong>WhatsApp</strong>.
-                </p>
-                <div class="cart-order-only-warning-pill">
-                  <i class="fa-solid fa-lock"></i> Compra online indisponível para encomendas
-                </div>
+          <!-- Rodapé Fixo e Compacto da Etapa 1 (ÚNICO elemento fixo estilo iFood) -->
+          <div class="cart-fixed-bottom-bar" id="cart-footer-panel">
+            <div class="fixed-bottom-total-col">
+              <span class="fixed-total-label">Total estimado</span>
+              <div class="fixed-total-row">
+                <strong class="fixed-total-amount" id="cart-fixed-total-display">R$ 0,00</strong>
+                <span class="fixed-total-count" id="cart-fixed-count-display">/ 0 itens</span>
               </div>
             </div>
 
-            <div class="cart-total-row">
-              <span class="total-label">Total Estimado:</span>
-              <span class="total-value" id="cart-total-display">R$ 0,00</span>
-            </div>
-
-            <!-- Botão Continuar para Pagamento Estilo iFood -->
+            <!-- Botão Continuar Fixo -->
             <button type="button" id="btn-cart-goto-payment" class="btn-cart-continue-step">
-              <span>Continuar para Pagamento</span>
+              <span>Continuar</span>
               <i class="fa-solid fa-arrow-right"></i>
             </button>
-
-            <!-- Barra de Confirmação para Esvaziar Carrinho -->
-            <div class="cart-clear-confirm-bar" id="cart-clear-confirm-bar">
-              <div class="confirm-bar-text">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <span>Deseja realmente esvaziar o carrinho?</span>
-              </div>
-              <div class="confirm-bar-actions">
-                <button id="btn-confirm-clear-yes" class="btn-confirm-yes" type="button">
-                  <i class="fa-solid fa-trash-can"></i> Sim, esvaziar
-                </button>
-                <button id="btn-confirm-clear-no" class="btn-confirm-no" type="button">Cancelar</button>
-              </div>
-            </div>
-
-            <div class="cart-secondary-actions" id="cart-secondary-actions">
-              <button id="btn-clear-cart" class="btn-cart-clear"><i class="fa-solid fa-trash-can"></i> Esvaziar</button>
-              <button id="btn-continue-shopping" class="btn-cart-continue">Continuar Escolhendo</button>
-            </div>
           </div>
         </div>
 
