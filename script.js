@@ -1311,7 +1311,7 @@ function parseItemPrice(priceStr) {
 }
 
 function formatBRL(value) {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }).replace(/\u00a0/g, " ");
 }
 
 function syncCartWithCatalog() {
@@ -2064,32 +2064,26 @@ function checkoutCartWhatsApp() {
   const notesInput = document.getElementById("cart-custom-notes");
   const notesText = notesInput ? notesInput.value.trim() : "";
   const totalStr = formatBRL(getCartTotal());
+  const totalCount = getCartCount();
+  const hasCustom = cart.some(item => Boolean(item.somente_encomenda)) || Boolean(notesText);
 
-  let message = `🛒 *NOVO PEDIDO - ${SITE_CONFIG.brandName.toUpperCase()}* 🛒\n`;
-  message += `--------------------------------\n`;
-  message += `Olá! Gostaria de encomendar os seguintes itens do meu carrinho:\n\n`;
+  let message = `*Pedido - ${SITE_CONFIG.brandName}* 🛒\n\n`;
+  message += totalCount === 1 
+    ? `Olá! Gostaria de pedir o seguinte item:\n\n` 
+    : `Olá! Gostaria de pedir os seguintes itens:\n\n`;
 
   cart.forEach(item => {
     const subtotal = formatBRL(item.numericPrice * item.quantity);
-    let stockTag = "";
-    if (item.somente_encomenda) {
-      stockTag = " [📦 Somente sob Encomenda]";
-    } else if (item.estoque > 0) {
-      stockTag = " [⚡ Pronta Entrega]";
-    } else {
-      stockTag = " [🛠️ Sob Encomenda]";
-    }
-    message += `• *${item.quantity}x* ${item.title} (${item.price} cada) = ${subtotal}${stockTag}\n`;
+    message += `• ${item.quantity}x ${item.title} - ${subtotal}\n`;
   });
 
-  message += `\n💰 *Total Estimado:* ${totalStr}\n`;
+  message += `\n💰 *Total:* ${totalStr}\n`;
 
   if (notesText) {
-    message += `📝 *Observações / Personalização:* ${notesText}\n`;
+    message += `📝 *Observações:* ${notesText}\n`;
   }
 
-  message += `--------------------------------\n`;
-  message += `Poderiam me confirmar a disponibilidade e o prazo de produção para estas peças?`;
+  message += `\n${hasCustom ? "Poderiam me confirmar a disponibilidade e o prazo de produção?" : "Poderiam me confirmar a disponibilidade e o prazo de entrega?"}`;
 
   const url = createWhatsappUrl(SITE_CONFIG.whatsappNumber, message);
   window.open(url, "_blank");
