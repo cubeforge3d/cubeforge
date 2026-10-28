@@ -1196,14 +1196,15 @@ button {
     text-align: center;
   }
 
-  /* Viewport e Track do Carrossel Panorâmico */
+  /* Viewport e Track do Carrossel Panorâmico (Cards 100% flutuantes sem corte de sombra ou linhas no fundo) */
   .showroom-cards-viewport {
     position: relative;
     width: 100%;
     min-width: 0;
     max-width: 100%;
     overflow: hidden;
-    border-radius: var(--radius-lg);
+    padding: 12px 0 34px;
+    margin: -12px 0 -34px;
   }
 
   .showroom-cards-track {
@@ -1229,7 +1230,7 @@ button {
     border: 1px solid rgba(255, 255, 255, 0.10);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
     transition: all var(--transition-smooth);
     cursor: pointer;
   }
@@ -1245,7 +1246,7 @@ button {
   .showroom-product-card:hover {
     transform: translateY(-5px);
     border-color: rgba(255, 255, 255, 0.22);
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.65);
   }
 
   .showroom-card-media {
