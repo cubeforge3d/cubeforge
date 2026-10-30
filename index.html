@@ -719,7 +719,7 @@
               <div class="address-details-wrapper" id="address-details-wrapper">
                 <div class="address-autofill-badge">
                   <i class="fa-solid fa-map-location-dot"></i>
-                  <span id="address-sync-status-text">Endereço de Entrega (digite o CEP ou preencha abaixo):</span>
+                  <span id="address-sync-status-text">Endereço de Entrega (Cidade/UF preenchidas automaticamente pelo CEP):</span>
                 </div>
                 <div class="address-grid">
                   <div class="form-group-field col-full">
@@ -743,8 +743,11 @@
                   </div>
 
                   <div class="form-group-field col-half">
-                    <label for="checkout-cust-city">Cidade - UF <span class="req">*</span></label>
-                    <input type="text" id="checkout-cust-city" class="checkout-input" placeholder="Ex: Vila Velha - ES" required>
+                    <label for="checkout-cust-city">
+                      <i class="fa-solid fa-lock" style="font-size: 0.72rem; color: #94a3b8; margin-right: 3px;" title="Bloqueado para alteração manual"></i>
+                      Cidade - UF <span class="req">*</span>
+                    </label>
+                    <input type="text" id="checkout-cust-city" class="checkout-input input-readonly" placeholder="Preenchido via CEP" readonly required tabindex="-1" title="A cidade e estado são definidos automaticamente pelo CEP digitado">
                   </div>
                 </div>
               </div>

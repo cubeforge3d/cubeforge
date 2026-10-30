@@ -808,7 +808,7 @@ function renderCatalog(filterCategory = "all") {
           <button class="btn-card-direct" onclick="openProductModal(${item.id})" aria-label="Pedir ${item.title} direto no WhatsApp">
             <i class="fa-brands fa-whatsapp"></i> Pedir Direto
           </button>
-          <button type="button" class="btn-card-buy-online" onclick="buySingleProductOnline(${item.id}, event)" aria-label="Comprar ${item.title} online no Pix ou Cartão em até 12x" title="Ir direto para o checkout da InfinitePay">
+          <button type="button" class="btn-card-buy-online" onclick="buySingleProductOnline(${item.id}, event)" aria-label="Comprar ${item.title} online no Pix ou Cartão em até 12x" title="Comprar no Cartão ou Pix • Até 12x">
             <i class="fa-solid fa-credit-card"></i> <span>Comprar Online • Até 12x no Cartão</span>
           </button>
         </div>
@@ -1830,8 +1830,6 @@ function setCartStep(step) {
 let selectedShippingOption = null;
 let lastCalculatedQuotes = [];
 let isCalculatingShipping = false;
-let isSyncingAddress = false;
-let reverseAddressTimeout = null;
 
 /**
  * Tabela Oficial de Frete Correios (SEDEX e PAC)
@@ -2036,6 +2034,7 @@ async function calculateShippingForCart(targetCep, autoTriggered = false) {
   const spinner = btnCalc ? btnCalc.querySelector(".btn-cep-spinner") : null;
   const icon = btnCalc ? btnCalc.querySelector(".btn-cep-icon") : null;
   const btnText = btnCalc ? btnCalc.querySelector(".btn-cep-text") : null;
+  const cityInput = document.getElementById("checkout-cust-city");
 
   if (cleanCep.length !== 8) {
     if (!autoTriggered && feedbackEl) {
@@ -2043,6 +2042,10 @@ async function calculateShippingForCart(targetCep, autoTriggered = false) {
       feedbackEl.className = "cep-feedback-msg error";
       feedbackEl.textContent = "Digite o CEP completo com 8 números.";
     }
+    if (cityInput) cityInput.value = "";
+    if (optionsWrapper) optionsWrapper.style.display = "none";
+    selectedShippingOption = null;
+    renderCartStep3();
     return;
   }
 
@@ -2055,51 +2058,61 @@ async function calculateShippingForCart(targetCep, autoTriggered = false) {
   if (feedbackEl) {
     feedbackEl.style.display = "block";
     feedbackEl.className = "cep-feedback-msg loading";
-    feedbackEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Localizando endereço e calculando fretes...';
+    feedbackEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Localizando cidade e calculando frete Correios...';
   }
 
   try {
-    // 1. Consulta ViaCEP para endereço e validação oficial
+    // 1. Consulta ViaCEP para obter Cidade, Estado e validação oficial
     const viaCepRes = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
     if (!viaCepRes.ok) throw new Error("Erro ao consultar CEP");
     const addressData = await viaCepRes.json();
+
+    const streetInput = document.getElementById("checkout-cust-street");
+    const bairroInput = document.getElementById("checkout-cust-bairro");
+    const numberInput = document.getElementById("checkout-cust-number");
+    const syncStatusText = document.getElementById("address-sync-status-text");
 
     if (addressData.erro) {
       if (feedbackEl) {
         feedbackEl.style.display = "block";
         feedbackEl.className = "cep-feedback-msg error";
-        feedbackEl.textContent = "CEP não encontrado. Por favor, verifique os números digitados.";
+        feedbackEl.textContent = "CEP não encontrado. Por favor, confira os números digitados.";
       }
+      if (cityInput) cityInput.value = "";
       if (optionsWrapper) optionsWrapper.style.display = "none";
-      if (addressWrapper) addressWrapper.style.display = "none";
       selectedShippingOption = null;
       renderCartStep3();
       return;
     }
 
-    // Preenche campos de endereço automaticamente com proteção de sincronização bidirecional
-    isSyncingAddress = true;
-    const streetInput = document.getElementById("checkout-cust-street");
-    const bairroInput = document.getElementById("checkout-cust-bairro");
-    const cityInput = document.getElementById("checkout-cust-city");
-    const numberInput = document.getElementById("checkout-cust-number");
-    const syncStatusText = document.getElementById("address-sync-status-text");
+    // Preenche Cidade e Estado (UF) e BLOQUEIA para alteração manual conforme solicitado
+    if (cityInput) {
+      cityInput.value = `${addressData.localidade} - ${addressData.uf}`;
+      cityInput.readOnly = true;
+      cityInput.setAttribute("readonly", "readonly");
+    }
 
-    if (streetInput && addressData.logradouro) streetInput.value = addressData.logradouro;
-    if (bairroInput && addressData.bairro) bairroInput.value = addressData.bairro;
-    if (cityInput) cityInput.value = `${addressData.localidade} - ${addressData.uf}`;
-    if (syncStatusText) syncStatusText.textContent = "Endereço preenchido automaticamente pelo CEP:";
-    isSyncingAddress = false;
+    // Preenche Rua e Bairro como sugestão automática, mantendo-os 100% editáveis pelo cliente
+    if (streetInput && addressData.logradouro) {
+      streetInput.value = addressData.logradouro;
+    }
+    if (bairroInput && addressData.bairro) {
+      bairroInput.value = addressData.bairro;
+    }
+
+    if (syncStatusText) {
+      syncStatusText.textContent = "Endereço localizado pelo CEP (Cidade e Estado definidos automaticamente):";
+    }
 
     if (addressWrapper) addressWrapper.style.display = "block";
 
     if (feedbackEl) {
       feedbackEl.style.display = "block";
       feedbackEl.className = "cep-feedback-msg success";
-      feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${addressData.localidade}/${addressData.uf} localizado com sucesso!`;
+      feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>${addressData.localidade} - ${addressData.uf}</strong> localizado com sucesso!`;
     }
 
-    // 2. Calcula opções de frete (API Melhor Envio filtrada por Correios com fallback Correios)
+    // 2. Calcula opções de frete exclusivas dos Correios (SEDEX e PAC)
     let quotes = await requestMelhorEnvioApi(cleanCep, addressData);
     if (!quotes || quotes.length === 0) {
       quotes = getRegionalShippingQuotes(cleanCep, addressData);
@@ -2108,9 +2121,12 @@ async function calculateShippingForCart(targetCep, autoTriggered = false) {
     lastCalculatedQuotes = quotes;
     renderShippingOptionsList(quotes);
 
-    // Se o número estiver em branco, dá foco suave
+    // Salva dados no localStorage
+    saveCustomerDeliveryData(getCustomerDeliveryData());
+
+    // Se o número ainda estiver em branco, move foco suave para o campo de número
     if (numberInput && !numberInput.value.trim()) {
-      setTimeout(() => numberInput.focus(), 300);
+      setTimeout(() => numberInput.focus(), 250);
     }
   } catch (err) {
     console.warn("Erro no cálculo do frete:", err);
@@ -2272,128 +2288,11 @@ function loadSavedCustomerData() {
   } catch (e) {}
 }
 
-/**
- * Busca reversa de CEP a partir do endereço digitado (Rua e Cidade - UF) via API oficial ViaCEP.
- * Sincronização bidirecional inteligente: se o cliente digitar ou alterar a rua/cidade,
- * localiza o CEP e atualiza os campos e o frete Correios automaticamente.
- */
-async function lookupCepFromAddress() {
-  if (isSyncingAddress) return;
-
-  const streetInput = document.getElementById("checkout-cust-street");
-  const cityInput = document.getElementById("checkout-cust-city");
-  const cepInput = document.getElementById("checkout-cust-cep");
-  const bairroInput = document.getElementById("checkout-cust-bairro");
-  const feedbackEl = document.getElementById("cep-feedback-msg");
-  const syncStatusText = document.getElementById("address-sync-status-text");
-
-  const street = streetInput ? streetInput.value.trim() : "";
-  const cityRaw = cityInput ? cityInput.value.trim() : "";
-  const bairroVal = bairroInput ? bairroInput.value.trim() : "";
-
-  // Precisa de pelo menos 3 caracteres na rua para pesquisar
-  if (street.length < 3) return;
-
-  // Extrai Cidade e UF do campo "Cidade - UF" (ex: "Vila Velha - ES", "Colatina / ES", "São Paulo, SP")
-  let uf = "";
-  let city = "";
-
-  const ufMatch = cityRaw.match(/[-/,\s]\s*([a-zA-Z]{2})$/);
-  if (ufMatch) {
-    uf = ufMatch[1].toUpperCase();
-    city = cityRaw.replace(/[-/,\s]\s*([a-zA-Z]{2})$/, "").trim();
-  } else {
-    city = cityRaw.trim();
-    if (city.length >= 3) {
-      uf = "ES"; // Padrão de estado da loja Cube Forge
-    }
-  }
-
-  if (city.length < 3 || uf.length !== 2) return;
-
-  // Limpa prefixos de logradouro para melhorar a precisão do ViaCEP
-  const searchStreet = street.replace(/^(rua|av|avenida|travessa|alameda|rodovia|praça)\s+/i, "").trim() || street;
-  if (searchStreet.length < 3) return;
-
-  try {
-    if (feedbackEl) {
-      feedbackEl.style.display = "block";
-      feedbackEl.className = "cep-feedback-msg loading";
-      feedbackEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Localizando CEP pelo endereço...';
-    }
-
-    const encodedUf = encodeURIComponent(uf);
-    const encodedCity = encodeURIComponent(city);
-    const encodedStreet = encodeURIComponent(searchStreet);
-
-    const res = await fetch(`https://viacep.com.br/ws/${encodedUf}/${encodedCity}/${encodedStreet}/json/`);
-    if (!res.ok) throw new Error("Status " + res.status);
-    const list = await res.json();
-
-    if (Array.isArray(list) && list.length > 0) {
-      const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
-      const streetNorm = norm(street);
-      const searchNorm = norm(searchStreet);
-
-      // 1. Prioriza correspondência com Bairro se fornecido
-      let match = bairroVal ? list.find(item => norm(item.bairro).includes(norm(bairroVal))) : null;
-
-      // 2. Prioriza correspondência exata do logradouro (ex: "Rua das Flores")
-      if (!match) {
-        match = list.find(item => norm(item.logradouro) === streetNorm || norm(item.logradouro) === searchNorm);
-      }
-
-      // 3. Prioriza correspondência por palavras inteiras
-      if (!match) {
-        match = list.find(item => {
-          const itemWords = norm(item.logradouro).split(/\s+/);
-          return searchNorm.split(/\s+/).every(w => itemWords.includes(w));
-        });
-      }
-
-      // 4. Fallback de substring ou primeiro resultado
-      if (!match) {
-        match = list.find(item => norm(item.logradouro).includes(searchNorm)) || list[0];
-      }
-
-      if (match && match.cep) {
-        isSyncingAddress = true;
-        if (cepInput) {
-          cepInput.value = match.cep;
-        }
-        if (bairroInput && match.bairro && !bairroInput.value.trim()) {
-          bairroInput.value = match.bairro;
-        }
-        if (syncStatusText) {
-          syncStatusText.textContent = `CEP ${match.cep} localizado automaticamente pelo endereço:`;
-        }
-        isSyncingAddress = false;
-
-        if (feedbackEl) {
-          feedbackEl.style.display = "block";
-          feedbackEl.className = "cep-feedback-msg success";
-          feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> CEP <strong>${match.cep}</strong> localizado! Calculando frete Correios...`;
-        }
-
-        // Calcula frete Correios imediatamente
-        const cleanCep = match.cep.replace(/\D/g, "");
-        if (cleanCep.length === 8) {
-          calculateShippingForCart(cleanCep, true);
-        }
-      }
-    }
-  } catch (err) {
-    console.warn("Aviso na busca reversa de CEP por endereço:", err);
-  }
-}
-
 function initDeliveryAndShippingEvents() {
   const phoneInput = document.getElementById("checkout-cust-phone");
   const cepInput = document.getElementById("checkout-cust-cep");
   const btnCalcCep = document.getElementById("btn-calc-cep");
-  const streetInput = document.getElementById("checkout-cust-street");
   const cityInput = document.getElementById("checkout-cust-city");
-  const bairroInput = document.getElementById("checkout-cust-bairro");
 
   if (phoneInput) {
     phoneInput.addEventListener("input", (e) => {
@@ -2411,9 +2310,9 @@ function initDeliveryAndShippingEvents() {
     });
   }
 
+  // O CEP é obrigatório e preenche automaticamente Cidade e Estado (que ficam bloqueadas)
   if (cepInput) {
     cepInput.addEventListener("input", (e) => {
-      if (isSyncingAddress) return;
       let v = e.target.value.replace(/\D/g, "");
       if (v.length > 8) v = v.slice(0, 8);
       if (v.length > 5) {
@@ -2422,7 +2321,16 @@ function initDeliveryAndShippingEvents() {
         e.target.value = v;
       }
 
-      // Ao completar 8 dígitos, calcula frete Correios e preenche endereço instantaneamente
+      // Se o usuário apagar o CEP, limpa a cidade bloqueada e as opções de frete
+      if (v.length < 8) {
+        if (cityInput) cityInput.value = "";
+        const shippingWrapper = document.getElementById("shipping-options-wrapper");
+        if (shippingWrapper) shippingWrapper.style.display = "none";
+        selectedShippingOption = null;
+        renderCartStep3();
+      }
+
+      // Ao completar 8 dígitos, busca cidade/estado e calcula frete Correios imediatamente
       if (v.length === 8) {
         calculateShippingForCart(v, true);
       }
@@ -2442,36 +2350,25 @@ function initDeliveryAndShippingEvents() {
     });
   }
 
-  // Sincronização reversa inteligente: ao alterar Rua, Cidade ou Bairro, busca CEP
-  const triggerDebouncedReverseLookup = () => {
-    if (isSyncingAddress) return;
-    if (reverseAddressTimeout) clearTimeout(reverseAddressTimeout);
-    reverseAddressTimeout = setTimeout(() => {
-      lookupCepFromAddress();
-    }, 650);
-  };
-
-  if (streetInput) {
-    streetInput.addEventListener("input", triggerDebouncedReverseLookup);
-    streetInput.addEventListener("change", triggerDebouncedReverseLookup);
-  }
+  // Se o cliente clicar no campo de Cidade bloqueado sem CEP, orienta amigavelmente
   if (cityInput) {
-    cityInput.addEventListener("input", triggerDebouncedReverseLookup);
-    cityInput.addEventListener("change", triggerDebouncedReverseLookup);
-  }
-  if (bairroInput) {
-    bairroInput.addEventListener("input", triggerDebouncedReverseLookup);
+    cityInput.addEventListener("click", () => {
+      if (!cityInput.value.trim()) {
+        showCartToast("Digite o CEP acima para preencher a Cidade e Estado", "remove");
+        if (cepInput) cepInput.focus();
+      }
+    });
   }
 
-  // Auto-salva informações e remove alerta visual ao digitar
+  // Auto-salva informações e remove alerta visual ao digitar nos campos editáveis
+  // (Rua, Número, Complemento, Bairro continuam 100% editáveis pelo cliente)
   const monitoredFields = [
     "checkout-cust-name",
     "checkout-cust-phone",
     "checkout-cust-street",
     "checkout-cust-number",
     "checkout-cust-comp",
-    "checkout-cust-bairro",
-    "checkout-cust-city"
+    "checkout-cust-bairro"
   ];
   monitoredFields.forEach((id) => {
     const el = document.getElementById(id);
@@ -2750,13 +2647,19 @@ function updateCartValidation() {
 window.updateCartNotesValidation = updateCartValidation;
 
 /**
- * Gera dinamicamente o link de checkout para um único produto na InfinitePay
- * e abre direto a tela de pagamento.
+ * Ao clicar em 'Comprar Online / Cartão' direto na tela inicial da página (ou modal/showroom),
+ * adiciona o produto ao carrinho e direciona imediatamente para a tela de solicitação de dados,
+ * endereço com Cidade/UF bloqueadas pelo CEP, frete Correios e checkout na InfinitePay.
  */
-window.buySingleProductOnline = async function(productId, e) {
+window.buySingleProductOnline = function(productId, e) {
   if (e) {
     e.preventDefault();
     e.stopPropagation();
+  }
+
+  if (SITE_SETTINGS.modo_manutencao) {
+    applyMaintenanceMode(true);
+    return;
   }
 
   const product = CATALOG_ITEMS.find(p => p.id === productId) || ALL_PRODUCTS.find(p => p.id === productId);
@@ -2768,89 +2671,63 @@ window.buySingleProductOnline = async function(productId, e) {
     return;
   }
 
-  const checkoutWindow = window.open("", "_blank");
-  if (checkoutWindow) {
-    checkoutWindow.document.write(`
-      <!DOCTYPE html>
-      <html lang="pt-BR">
-        <head>
-          <meta charset="utf-8">
-          <title>Conectando ao Checkout - Cube Forge</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <style>
-            body {
-              margin: 0;
-              min-height: 100vh;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              background: #080d18;
-              color: #ffffff;
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-              text-align: center;
-              padding: 24px;
-              box-sizing: border-box;
-            }
-            .spinner {
-              width: 48px;
-              height: 48px;
-              border: 3px solid rgba(56, 189, 248, 0.15);
-              border-top-color: #38bdf8;
-              border-radius: 50%;
-              animation: spin 0.8s linear infinite;
-              margin-bottom: 22px;
-            }
-            @keyframes spin { to { transform: rotate(360deg); } }
-            h2 { font-size: 1.25rem; font-weight: 700; margin: 0 0 8px; color: #f8fafc; }
-            p { font-size: 0.9rem; color: #94a3b8; margin: 0; line-height: 1.4; }
-          </style>
-        </head>
-        <body>
-          <div class="spinner"></div>
-          <h2>Conectando ao Checkout Seguro</h2>
-          <p>Preparando seu pedido na InfinitePay...</p>
-        </body>
-      </html>
-    `);
+  // Fecha o modal de detalhes do produto se estiver aberto
+  if (typeof closeProductModal === "function") {
+    closeProductModal();
   }
 
-  try {
-    const unitCents = Math.round((product.numericPrice || 0) * 100);
-    const response = await fetch("https://api.checkout.infinitepay.io/links", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        handle: SITE_CONFIG.infinitePayHandle || "cubeforge",
-        redirect_url: window.location.href.split("?")[0],
-        items: [
-          {
-            quantity: 1,
-            price: unitCents > 0 ? unitCents : 1000,
-            description: product.title
-          }
-        ]
-      })
+  // Remove eventuais itens sob encomenda do carrinho para não bloquear o checkout online
+  cart = cart.filter(item => !item.somente_encomenda);
+
+  // Garante que o produto clicado está presente no carrinho
+  const existing = cart.find(item => item.id === productId);
+  if (!existing) {
+    cart.push({
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      numericPrice: parseItemPrice(product.price),
+      image: product.image,
+      icon: product.icon,
+      categoryName: product.categoryName,
+      estoque: product.estoque || 0,
+      somente_encomenda: false,
+      quantity: 1
     });
-
-    if (!response.ok) throw new Error(`InfinitePay API Status ${response.status}`);
-    const data = await response.json();
-    if (data && data.url) {
-      if (checkoutWindow) {
-        checkoutWindow.location.href = data.url;
-      } else {
-        window.location.href = data.url;
-      }
-    } else {
-      throw new Error("URL de checkout não retornada");
-    }
-  } catch (err) {
-    console.warn("Erro ao gerar checkout do produto:", err);
-    if (checkoutWindow) {
-      checkoutWindow.close();
-    }
-    alert("Não foi possível conectar ao checkout online no momento. Por favor, tente novamente ou nos chame no WhatsApp!");
   }
+
+  saveCart();
+  updateCartUI();
+  animateCartBadges();
+
+  // Abre o drawer do carrinho
+  const overlay = document.getElementById("cart-overlay");
+  if (overlay) {
+    overlay.classList.add("active");
+    document.body.style.overflow = "hidden";
+  }
+
+  // Direciona imediatamente para a Etapa 3: Dados do Cliente, Endereço e Frete Correios
+  setCartStep(3);
+
+  // Rola o corpo da tela de entrega para o topo
+  const deliveryBody = document.querySelector(".cart-delivery-body");
+  if (deliveryBody) deliveryBody.scrollTop = 0;
+
+  // Foco inteligente no primeiro campo obrigatório pendente
+  setTimeout(() => {
+    const nameInput = document.getElementById("checkout-cust-name");
+    const cepInput = document.getElementById("checkout-cust-cep");
+    const numberInput = document.getElementById("checkout-cust-number");
+
+    if (nameInput && !nameInput.value.trim()) {
+      nameInput.focus();
+    } else if (cepInput && !cepInput.value.trim()) {
+      cepInput.focus();
+    } else if (numberInput && !numberInput.value.trim()) {
+      numberInput.focus();
+    }
+  }, 220);
 };
 
 /**

@@ -6857,7 +6857,14 @@ body.body-maintenance {
   background: rgba(255, 255, 255, 0.035);
   color: #94a3b8;
   border-color: rgba(255, 255, 255, 0.08);
-  cursor: default;
+  cursor: not-allowed;
+  user-select: none;
+}
+
+.checkout-input.input-readonly:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
 }
 
 .cep-input-wrapper {
