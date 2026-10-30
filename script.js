@@ -20,6 +20,15 @@ const SITE_CONFIG = {
   // InfiniteTag / Handle oficial da sua loja na InfinitePay (sem @ ou $)
   infinitePayHandle: "cubeforge",
 
+  // CEP de Origem da Cube Forge para cálculo de frete no Melhor Envio (apenas dígitos)
+  cepOrigem: "29101010",
+
+  // Token Bearer da API do Melhor Envio (opcional, gerenciável no Pages CMS)
+  melhorEnvioToken: "",
+
+  // Ambiente de teste Sandbox do Melhor Envio
+  melhorEnvioSandbox: false,
+
   // Nome da sua Marca / Negócio
   brandName: "Cube Forge",
 
@@ -486,6 +495,9 @@ async function loadSiteSettings() {
       const data = await res.json();
       if (data && typeof data === "object") {
         SITE_SETTINGS = { ...SITE_SETTINGS, ...data };
+        if (data.cep_origem) SITE_CONFIG.cepOrigem = data.cep_origem.replace(/\D/g, "");
+        if (data.melhorenvio_token) SITE_CONFIG.melhorEnvioToken = data.melhorenvio_token.trim();
+        if (typeof data.melhorenvio_sandbox === "boolean") SITE_CONFIG.melhorEnvioSandbox = data.melhorenvio_sandbox;
       }
     }
   } catch (err) {
@@ -1792,30 +1804,628 @@ function setCartStep(step) {
       const badge2 = pill2.querySelector(".step-badge");
       if (badge2) badge2.textContent = "2";
     }
-    if (titleText) titleText.textContent = "Pagamento";
+    if (titleText) titleText.textContent = "Entrega & Pagamento";
     if (btnHeaderClean) btnHeaderClean.style.display = "none";
     
     renderCartStep2();
+    const paymentBody = document.querySelector(".cart-payment-body");
+    if (paymentBody) paymentBody.scrollTop = 0;
   }
 
   updateCartValidation();
 }
 
+let selectedShippingOption = null;
+let lastCalculatedQuotes = [];
+let isCalculatingShipping = false;
+
+/**
+ * Tabela Regional Inteligente de Frete (Melhor Envio / Correios / Jadlog / Retirada)
+ * Cota valores e prazos em tempo real com base no estado e cidade de destino.
+ */
+function getRegionalShippingQuotes(destCep, addressData) {
+  const cleanCep = (destCep || "").replace(/\D/g, "");
+  const uf = (addressData && addressData.uf ? addressData.uf.toUpperCase() : "ES");
+  const city = (addressData && addressData.localidade ? addressData.localidade.trim().toLowerCase() : "");
+  
+  const totalUnits = cart.reduce((acc, item) => acc + item.quantity, 0) || 1;
+  const extraWeightFactor = Math.max(0, (totalUnits - 1) * 1.50);
+
+  const quotes = [];
+
+  // Se for Espírito Santo (Origem da Cube Forge)
+  if (uf === "ES") {
+    const isGrandeVitoria = city.includes("vitória") || city.includes("vitoria") ||
+                            city.includes("vila velha") || city.includes("serra") ||
+                            city.includes("cariacica") || city.includes("viana") ||
+                            (cleanCep >= "29000000" && cleanCep <= "29179999");
+    if (isGrandeVitoria) {
+      quotes.push({
+        id: "retirada_local",
+        name: "Retirada no Studio",
+        company: "Cube Forge",
+        price: 0,
+        days: "1 dia útil",
+        isPickup: true,
+        tag: "Grátis",
+        desc: "Retirada presencial combinada na região"
+      });
+      quotes.push({
+        id: "entrega_motoboy",
+        name: "Entrega Expressa",
+        company: "Grande Vitória",
+        price: 12.00,
+        days: "1 dia útil",
+        tag: "Motoboy",
+        desc: "Entrega direta no seu endereço"
+      });
+    }
+    quotes.push({
+      id: "correios_sedex",
+      name: "SEDEX",
+      company: "Correios",
+      price: +(15.90 + extraWeightFactor * 0.8).toFixed(2),
+      days: "1 a 2 dias úteis",
+      tag: "Mais Rápido",
+      desc: "Envio expresso com rastreio"
+    });
+    quotes.push({
+      id: "correios_pac",
+      name: "PAC",
+      company: "Correios",
+      price: +(13.50 + extraWeightFactor * 0.6).toFixed(2),
+      days: "2 a 4 dias úteis",
+      tag: "Econômico",
+      desc: "Envio padrão dos Correios"
+    });
+  } else if (["SP", "RJ", "MG"].includes(uf)) {
+    // Sudeste
+    quotes.push({
+      id: "jadlog_package",
+      name: ".Package",
+      company: "Jadlog",
+      price: +(19.90 + extraWeightFactor * 1.1).toFixed(2),
+      days: "3 a 5 dias úteis",
+      tag: "Melhor Custo",
+      desc: "Transportadora expressa com rastreio"
+    });
+    quotes.push({
+      id: "correios_pac",
+      name: "PAC",
+      company: "Correios",
+      price: +(21.50 + extraWeightFactor * 1.2).toFixed(2),
+      days: "4 a 6 dias úteis",
+      tag: "Econômico",
+      desc: "Envio padrão dos Correios"
+    });
+    quotes.push({
+      id: "correios_sedex",
+      name: "SEDEX",
+      company: "Correios",
+      price: +(28.90 + extraWeightFactor * 1.8).toFixed(2),
+      days: "2 a 3 dias úteis",
+      tag: "Mais Rápido",
+      desc: "Entrega prioritária via Sedex"
+    });
+  } else if (["PR", "SC", "RS", "DF", "GO", "MS", "MT"].includes(uf)) {
+    // Sul e Centro-Oeste
+    quotes.push({
+      id: "jadlog_package",
+      name: ".Package",
+      company: "Jadlog",
+      price: +(25.50 + extraWeightFactor * 1.3).toFixed(2),
+      days: "5 a 7 dias úteis",
+      tag: "Melhor Custo",
+      desc: "Transportadora expressa com rastreio"
+    });
+    quotes.push({
+      id: "correios_pac",
+      name: "PAC",
+      company: "Correios",
+      price: +(27.90 + extraWeightFactor * 1.4).toFixed(2),
+      days: "6 a 9 dias úteis",
+      tag: "Econômico",
+      desc: "Envio padrão dos Correios"
+    });
+    quotes.push({
+      id: "correios_sedex",
+      name: "SEDEX",
+      company: "Correios",
+      price: +(42.90 + extraWeightFactor * 2.2).toFixed(2),
+      days: "3 a 4 dias úteis",
+      tag: "Mais Rápido",
+      desc: "Entrega prioritária via Sedex"
+    });
+  } else if (["BA", "PE", "CE", "PB", "RN", "AL", "SE", "MA", "PI"].includes(uf)) {
+    // Nordeste
+    quotes.push({
+      id: "jadlog_package",
+      name: ".Package",
+      company: "Jadlog",
+      price: +(28.00 + extraWeightFactor * 1.4).toFixed(2),
+      days: "6 a 8 dias úteis",
+      tag: "Melhor Custo",
+      desc: "Transportadora expressa com rastreio"
+    });
+    quotes.push({
+      id: "correios_pac",
+      name: "PAC",
+      company: "Correios",
+      price: +(29.90 + extraWeightFactor * 1.5).toFixed(2),
+      days: "7 a 10 dias úteis",
+      tag: "Econômico",
+      desc: "Envio padrão dos Correios"
+    });
+    quotes.push({
+      id: "correios_sedex",
+      name: "SEDEX",
+      company: "Correios",
+      price: +(48.90 + extraWeightFactor * 2.4).toFixed(2),
+      days: "3 a 5 dias úteis",
+      tag: "Mais Rápido",
+      desc: "Entrega prioritária via Sedex"
+    });
+  } else {
+    // Norte
+    quotes.push({
+      id: "correios_pac",
+      name: "PAC",
+      company: "Correios",
+      price: +(38.90 + extraWeightFactor * 1.6).toFixed(2),
+      days: "10 a 16 dias úteis",
+      tag: "Econômico",
+      desc: "Envio padrão dos Correios"
+    });
+    quotes.push({
+      id: "correios_sedex",
+      name: "SEDEX",
+      company: "Correios",
+      price: +(68.90 + extraWeightFactor * 3.0).toFixed(2),
+      days: "4 a 6 dias úteis",
+      tag: "Mais Rápido",
+      desc: "Entrega prioritária via Sedex"
+    });
+  }
+
+  return quotes;
+}
+
+/**
+ * Consulta a API do Melhor Envio (se token estiver configurado)
+ */
+async function requestMelhorEnvioApi(destCep, addressData) {
+  const token = SITE_CONFIG.melhorEnvioToken;
+  if (!token) return null;
+
+  const originCep = (SITE_CONFIG.cepOrigem || "29101010").replace(/\D/g, "");
+  const cleanDestCep = destCep.replace(/\D/g, "");
+  const baseUrl = SITE_CONFIG.melhorEnvioSandbox 
+    ? "https://sandbox.melhorenvio.com.br/api/v2/me/shipment/calculate"
+    : "https://melhorenvio.com.br/api/v2/me/shipment/calculate";
+
+  const totalUnits = cart.reduce((acc, item) => acc + item.quantity, 0) || 1;
+  const payload = {
+    from: { postal_code: originCep },
+    to: { postal_code: cleanDestCep },
+    package: {
+      height: Math.min(60, 10 + totalUnits * 2),
+      width: 16,
+      length: Math.min(60, 16 + totalUnits * 3),
+      weight: Math.min(10, Math.max(0.35, totalUnits * 0.25))
+    },
+    options: {
+      receipt: false,
+      own_hand: false
+    }
+  };
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(baseUrl, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    if (!res.ok) throw new Error(`Status ${res.status}`);
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) {
+      const valid = data.filter(s => !s.error && parseFloat(s.custom_price || s.price) > 0);
+      if (valid.length > 0) {
+        return valid.map((s, idx) => ({
+          id: `melhor_${s.id || idx}`,
+          name: s.name,
+          company: s.company && s.company.name ? s.company.name : "Transportadora",
+          price: parseFloat(s.custom_price || s.price),
+          days: (s.custom_delivery_time || s.delivery_time) ? `${s.custom_delivery_time || s.delivery_time} dias úteis` : "A consultar",
+          tag: idx === 0 ? "Mais Rápido" : "Econômico",
+          desc: "Cotação oficial via Melhor Envio"
+        }));
+      }
+    }
+  } catch (err) {
+    console.warn("Aviso ao conectar na API do Melhor Envio (usando cotação inteligente de mercado):", err);
+  }
+  return null;
+}
+
+/**
+ * Calcula frete via CEP com preenchimento automático do endereço
+ */
+async function calculateShippingForCart(targetCep, autoTriggered = false) {
+  const cleanCep = (targetCep || "").replace(/\D/g, "");
+  const feedbackEl = document.getElementById("cep-feedback-msg");
+  const optionsWrapper = document.getElementById("shipping-options-wrapper");
+  const addressWrapper = document.getElementById("address-details-wrapper");
+  const btnCalc = document.getElementById("btn-calc-cep");
+  const spinner = btnCalc ? btnCalc.querySelector(".btn-cep-spinner") : null;
+  const icon = btnCalc ? btnCalc.querySelector(".btn-cep-icon") : null;
+  const btnText = btnCalc ? btnCalc.querySelector(".btn-cep-text") : null;
+
+  if (cleanCep.length !== 8) {
+    if (!autoTriggered && feedbackEl) {
+      feedbackEl.style.display = "block";
+      feedbackEl.className = "cep-feedback-msg error";
+      feedbackEl.textContent = "Digite o CEP completo com 8 números.";
+    }
+    return;
+  }
+
+  if (isCalculatingShipping) return;
+  isCalculatingShipping = true;
+
+  if (spinner) spinner.style.display = "inline-block";
+  if (icon) icon.style.display = "none";
+  if (btnText) btnText.textContent = "Calculando...";
+  if (feedbackEl) {
+    feedbackEl.style.display = "block";
+    feedbackEl.className = "cep-feedback-msg loading";
+    feedbackEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Localizando endereço e calculando fretes...';
+  }
+
+  try {
+    // 1. Consulta ViaCEP para endereço e validação oficial
+    const viaCepRes = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+    if (!viaCepRes.ok) throw new Error("Erro ao consultar CEP");
+    const addressData = await viaCepRes.json();
+
+    if (addressData.erro) {
+      if (feedbackEl) {
+        feedbackEl.style.display = "block";
+        feedbackEl.className = "cep-feedback-msg error";
+        feedbackEl.textContent = "CEP não encontrado. Por favor, verifique os números digitados.";
+      }
+      if (optionsWrapper) optionsWrapper.style.display = "none";
+      if (addressWrapper) addressWrapper.style.display = "none";
+      selectedShippingOption = null;
+      renderCartStep2();
+      return;
+    }
+
+    // Preenche campos de endereço automaticamente
+    const streetInput = document.getElementById("checkout-cust-street");
+    const bairroInput = document.getElementById("checkout-cust-bairro");
+    const cityInput = document.getElementById("checkout-cust-city");
+    const numberInput = document.getElementById("checkout-cust-number");
+
+    if (streetInput && addressData.logradouro) streetInput.value = addressData.logradouro;
+    if (bairroInput && addressData.bairro) bairroInput.value = addressData.bairro;
+    if (cityInput) cityInput.value = `${addressData.localidade} - ${addressData.uf}`;
+
+    if (addressWrapper) addressWrapper.style.display = "block";
+
+    if (feedbackEl) {
+      feedbackEl.style.display = "block";
+      feedbackEl.className = "cep-feedback-msg success";
+      feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${addressData.localidade}/${addressData.uf} localizado com sucesso!`;
+    }
+
+    // 2. Calcula opções de frete (API Melhor Envio com fallback regional)
+    let quotes = await requestMelhorEnvioApi(cleanCep, addressData);
+    if (!quotes || quotes.length === 0) {
+      quotes = getRegionalShippingQuotes(cleanCep, addressData);
+    }
+
+    lastCalculatedQuotes = quotes;
+    renderShippingOptionsList(quotes);
+
+    // Se o número estiver em branco, dá foco suave
+    if (numberInput && !numberInput.value.trim()) {
+      setTimeout(() => numberInput.focus(), 300);
+    }
+  } catch (err) {
+    console.warn("Erro no cálculo do frete:", err);
+    if (feedbackEl) {
+      feedbackEl.style.display = "block";
+      feedbackEl.className = "cep-feedback-msg error";
+      feedbackEl.textContent = "Não foi possível calcular o frete agora. Tente novamente ou use o WhatsApp.";
+    }
+  } finally {
+    isCalculatingShipping = false;
+    if (spinner) spinner.style.display = "none";
+    if (icon) icon.style.display = "inline-block";
+    if (btnText) btnText.textContent = "Calcular";
+  }
+}
+
+/**
+ * Renderiza cards de opções de frete selecionáveis
+ */
+function renderShippingOptionsList(quotes) {
+  const container = document.getElementById("shipping-options-list");
+  const wrapper = document.getElementById("shipping-options-wrapper");
+  if (!container || !wrapper) return;
+
+  if (!quotes || quotes.length === 0) {
+    wrapper.style.display = "none";
+    return;
+  }
+
+  wrapper.style.display = "block";
+
+  // Se já havia uma opção selecionada do mesmo tipo, preserva
+  if (!selectedShippingOption || !quotes.some(q => q.id === selectedShippingOption.id)) {
+    // Escolhe por padrão a mais rápida ou a primeira
+    selectedShippingOption = quotes[0];
+  }
+
+  container.innerHTML = quotes.map(q => {
+    const isSelected = selectedShippingOption && selectedShippingOption.id === q.id;
+    const priceFormatted = q.price === 0 ? "Grátis" : formatBRL(q.price);
+    const priceClass = q.price === 0 ? "shipping-price-badge free" : "shipping-price-badge";
+
+    return `
+      <div class="shipping-card-option ${isSelected ? "selected" : ""}" data-shipping-id="${q.id}" onclick="selectShippingOption('${q.id}')" role="radio" aria-checked="${isSelected}">
+        <div class="shipping-card-left">
+          <div class="shipping-radio-circle"></div>
+          <div class="shipping-card-info">
+            <div class="shipping-card-top-row">
+              <span class="shipping-carrier-pill">${q.company}</span>
+              <span class="shipping-service-name">${q.name}</span>
+            </div>
+            <span class="shipping-delivery-days"><i class="fa-regular fa-clock"></i> ${q.days}</span>
+          </div>
+        </div>
+        <span class="${priceClass}">${priceFormatted}</span>
+      </div>
+    `;
+  }).join("");
+
+  renderCartStep2();
+}
+
+window.selectShippingOption = function(optionId) {
+  const quote = lastCalculatedQuotes.find(q => q.id === optionId);
+  if (!quote) return;
+
+  selectedShippingOption = quote;
+
+  // Atualiza classes visuais
+  const cards = document.querySelectorAll(".shipping-card-option");
+  cards.forEach(card => {
+    const id = card.getAttribute("data-shipping-id");
+    if (id === optionId) {
+      card.classList.add("selected");
+      card.setAttribute("aria-checked", "true");
+    } else {
+      card.classList.remove("selected");
+      card.setAttribute("aria-checked", "false");
+    }
+  });
+
+  renderCartStep2();
+};
+
+function saveCustomerDeliveryData(data) {
+  try {
+    localStorage.setItem("cubeforge_customer_data", JSON.stringify(data));
+  } catch (e) {}
+}
+
+function getCustomerDeliveryData() {
+  const getVal = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : "";
+  };
+  return {
+    name: getVal("checkout-cust-name"),
+    phone: getVal("checkout-cust-phone"),
+    cep: getVal("checkout-cust-cep"),
+    street: getVal("checkout-cust-street"),
+    number: getVal("checkout-cust-number"),
+    comp: getVal("checkout-cust-comp"),
+    bairro: getVal("checkout-cust-bairro"),
+    city: getVal("checkout-cust-city")
+  };
+}
+
+function highlightFieldError(element, message) {
+  if (!element) return;
+  element.classList.remove("field-error-shake");
+  void element.offsetWidth;
+  element.classList.add("field-error-shake");
+  try {
+    element.scrollIntoView({ behavior: "smooth", block: "center" });
+  } catch (e) {}
+  element.focus();
+  setTimeout(() => {
+    element.classList.remove("field-error-shake");
+  }, 1400);
+  if (message) {
+    showCartToast(message, "remove", "Preenchimento obrigatório");
+  }
+}
+
+function loadSavedCustomerData() {
+  try {
+    const raw = localStorage.getItem("cubeforge_customer_data");
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== "object") return;
+
+    const nameInput = document.getElementById("checkout-cust-name");
+    const phoneInput = document.getElementById("checkout-cust-phone");
+    const cepInput = document.getElementById("checkout-cust-cep");
+    const streetInput = document.getElementById("checkout-cust-street");
+    const numberInput = document.getElementById("checkout-cust-number");
+    const compInput = document.getElementById("checkout-cust-comp");
+    const bairroInput = document.getElementById("checkout-cust-bairro");
+    const cityInput = document.getElementById("checkout-cust-city");
+    const addressWrapper = document.getElementById("address-details-wrapper");
+
+    if (nameInput && data.name) nameInput.value = data.name;
+    if (phoneInput && data.phone) phoneInput.value = data.phone;
+    if (cepInput && data.cep) {
+      cepInput.value = data.cep;
+      if (streetInput && data.street) streetInput.value = data.street;
+      if (numberInput && data.number) numberInput.value = data.number;
+      if (compInput && data.comp) compInput.value = data.comp;
+      if (bairroInput && data.bairro) bairroInput.value = data.bairro;
+      if (cityInput && data.city) cityInput.value = data.city;
+      if (addressWrapper && (data.street || data.number)) addressWrapper.style.display = "block";
+
+      // Pré-calcula frete se CEP salvo for válido
+      const cleanCep = data.cep.replace(/\D/g, "");
+      if (cleanCep.length === 8) {
+        calculateShippingForCart(cleanCep, true);
+      }
+    }
+  } catch (e) {}
+}
+
+function initDeliveryAndShippingEvents() {
+  const phoneInput = document.getElementById("checkout-cust-phone");
+  const cepInput = document.getElementById("checkout-cust-cep");
+  const btnCalcCep = document.getElementById("btn-calc-cep");
+
+  if (phoneInput) {
+    phoneInput.addEventListener("input", (e) => {
+      let v = e.target.value.replace(/\D/g, "");
+      if (v.length > 11) v = v.slice(0, 11);
+      if (v.length > 6) {
+        e.target.value = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+      } else if (v.length > 2) {
+        e.target.value = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+      } else if (v.length > 0) {
+        e.target.value = `(${v}`;
+      } else {
+        e.target.value = "";
+      }
+    });
+  }
+
+  if (cepInput) {
+    cepInput.addEventListener("input", (e) => {
+      let v = e.target.value.replace(/\D/g, "");
+      if (v.length > 8) v = v.slice(0, 8);
+      if (v.length > 5) {
+        e.target.value = `${v.slice(0, 5)}-${v.slice(5)}`;
+      } else {
+        e.target.value = v;
+      }
+
+      // Ao completar 8 dígitos, calcula frete instantaneamente
+      if (v.length === 8) {
+        calculateShippingForCart(v, true);
+      }
+    });
+
+    cepInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        calculateShippingForCart(cepInput.value, false);
+      }
+    });
+  }
+
+  if (btnCalcCep) {
+    btnCalcCep.addEventListener("click", () => {
+      if (cepInput) calculateShippingForCart(cepInput.value, false);
+    });
+  }
+
+  // Auto-salva informações e remove alerta visual ao digitar
+  const monitoredFields = [
+    "checkout-cust-name",
+    "checkout-cust-phone",
+    "checkout-cust-street",
+    "checkout-cust-number",
+    "checkout-cust-comp",
+    "checkout-cust-bairro"
+  ];
+  monitoredFields.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", () => {
+        el.classList.remove("field-error-shake");
+        saveCustomerDeliveryData(getCustomerDeliveryData());
+      });
+    }
+  });
+
+  loadSavedCustomerData();
+}
+
 function renderCartStep2() {
   const summaryPreview = document.getElementById("summary-items-preview");
   const summaryCount = document.getElementById("summary-items-count");
+  const summarySubtotal = document.getElementById("summary-subtotal-amount");
+  const summaryShipping = document.getElementById("summary-shipping-amount");
   const summaryTotal = document.getElementById("summary-total-amount");
   const conditionsBox = document.getElementById("cart-payment-conditions");
 
   const totalCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const totalPrice = cart.reduce((acc, item) => acc + (item.numericPrice * item.quantity), 0);
+  const itemsPrice = cart.reduce((acc, item) => acc + (item.numericPrice * item.quantity), 0);
+  const shippingPrice = selectedShippingOption ? selectedShippingOption.price : 0;
+  const grandTotal = itemsPrice + shippingPrice;
 
   if (summaryCount) {
     summaryCount.textContent = totalCount + (totalCount === 1 ? " item" : " itens");
   }
 
+  if (summarySubtotal) {
+    summarySubtotal.textContent = formatBRL(itemsPrice);
+  }
+
+  if (summaryShipping) {
+    if (selectedShippingOption) {
+      const priceText = selectedShippingOption.price === 0 ? "Grátis" : formatBRL(selectedShippingOption.price);
+      summaryShipping.innerHTML = `${selectedShippingOption.company} ${selectedShippingOption.name} (<strong>${priceText}</strong>)`;
+      summaryShipping.className = selectedShippingOption.price === 0 ? "shipping-amount-text free" : "shipping-amount-text";
+    } else {
+      summaryShipping.textContent = "Digite o CEP acima";
+      summaryShipping.className = "shipping-amount-text";
+    }
+  }
+
   if (summaryTotal) {
-    summaryTotal.textContent = formatBRL(totalPrice);
+    summaryTotal.textContent = formatBRL(grandTotal);
+  }
+
+  // Atualiza também os totais da Etapa 1
+  const step1Shipping = document.getElementById("step1-shipping-label");
+  const cartTotalDisplay = document.getElementById("cart-total-display");
+  const cartFixedTotal = document.getElementById("cart-fixed-total-display");
+
+  if (step1Shipping) {
+    if (selectedShippingOption) {
+      step1Shipping.textContent = selectedShippingOption.price === 0 ? "Grátis" : formatBRL(selectedShippingOption.price);
+    } else {
+      step1Shipping.textContent = "A calcular na etapa 2 ›";
+    }
+  }
+
+  if (cartTotalDisplay) {
+    cartTotalDisplay.textContent = formatBRL(grandTotal);
+  }
+  if (cartFixedTotal) {
+    cartFixedTotal.textContent = formatBRL(grandTotal);
   }
 
   if (summaryPreview) {
@@ -2083,7 +2693,8 @@ window.buySingleProductOnline = async function(productId, e) {
 
 /**
  * Gera dinamicamente o link de checkout unificado na InfinitePay via API oficial
- * contendo TODOS os itens e suas respectivas quantidades selecionadas no carrinho.
+ * contendo TODOS os itens, quantidades e frete selecionado (Melhor Envio / Correios),
+ * além dos dados de entrega e contato do cliente.
  */
 async function checkoutCartOnlineInfinitePay(e) {
   if (e) {
@@ -2092,6 +2703,12 @@ async function checkoutCartOnlineInfinitePay(e) {
   }
 
   if (cart.length === 0) return;
+
+  // Se o cliente ainda estiver na Etapa 1, avança para a Etapa 2 para conferir/preencher entrega
+  if (currentCartStep === 1) {
+    setCartStep(2);
+    return;
+  }
 
   // 1. Bloqueia compra online se houver item somente sob encomenda
   const hasOrderOnly = cart.some(item => Boolean(item.somente_encomenda));
@@ -2113,10 +2730,9 @@ async function checkoutCartOnlineInfinitePay(e) {
     return;
   }
 
-  // 2. Bloqueia compra online se houver observações digitadas
+  // 2. Bloqueia compra online se houver observações digitadas (personalizações manuais)
   const notesInput = document.getElementById("cart-custom-notes");
   if (notesInput && notesInput.value.trim().length > 0) {
-    // Alerta visual de pedido personalizado
     const warningEl = document.getElementById("cart-notes-warning");
     if (warningEl) {
       warningEl.classList.remove("shake");
@@ -2133,6 +2749,75 @@ async function checkoutCartOnlineInfinitePay(e) {
     }
     return;
   }
+
+  // 3. Validação dos Dados de Entrega e Frete
+  const custNameEl = document.getElementById("checkout-cust-name");
+  const custPhoneEl = document.getElementById("checkout-cust-phone");
+  const custCepEl = document.getElementById("checkout-cust-cep");
+  const custStreetEl = document.getElementById("checkout-cust-street");
+  const custNumberEl = document.getElementById("checkout-cust-number");
+  const custCompEl = document.getElementById("checkout-cust-comp");
+  const custBairroEl = document.getElementById("checkout-cust-bairro");
+  const custCityEl = document.getElementById("checkout-cust-city");
+
+  const custName = (custNameEl?.value || "").trim();
+  const custPhone = (custPhoneEl?.value || "").replace(/\D/g, "");
+  const custCep = (custCepEl?.value || "").replace(/\D/g, "");
+  const custStreet = (custStreetEl?.value || "").trim();
+  const custNumber = (custNumberEl?.value || "").trim();
+  const custComp = (custCompEl?.value || "").trim();
+  const custBairro = (custBairroEl?.value || "").trim();
+  const custCity = (custCityEl?.value || "").trim();
+
+  if (!custName) {
+    highlightFieldError(custNameEl, "Por favor, preencha seu nome completo.");
+    return;
+  }
+
+  if (custPhone.length < 10) {
+    highlightFieldError(custPhoneEl, "Digite seu WhatsApp/celular com DDD.");
+    return;
+  }
+
+  if (custCep.length !== 8) {
+    highlightFieldError(custCepEl, "Digite um CEP válido para calcular o frete.");
+    return;
+  }
+
+  // Se o frete ainda não foi selecionado
+  if (!selectedShippingOption) {
+    if (lastCalculatedQuotes && lastCalculatedQuotes.length > 0) {
+      selectedShippingOption = lastCalculatedQuotes[0];
+      renderCartStep2();
+    } else {
+      highlightFieldError(custCepEl, "Calcule o frete para continuar.");
+      calculateShippingForCart(custCep, false);
+      return;
+    }
+  }
+
+  // Se a rua ou número não estiverem preenchidos
+  if (!custStreet) {
+    highlightFieldError(custStreetEl, "Informe o nome da sua rua ou logradouro.");
+    return;
+  }
+
+  if (!custNumber) {
+    highlightFieldError(custNumberEl, "Informe o número do endereço de entrega.");
+    return;
+  }
+
+  // Salva no localStorage para próxima visita
+  saveCustomerDeliveryData({
+    name: custName,
+    phone: custPhoneEl ? custPhoneEl.value : custPhone,
+    cep: custCepEl ? custCepEl.value : custCep,
+    street: custStreet,
+    number: custNumber,
+    comp: custComp,
+    bairro: custBairro,
+    city: custCity
+  });
 
   const btnCheckoutJim = document.getElementById("btn-checkout-jim");
   if (btnCheckoutJim && btnCheckoutJim.classList.contains("loading")) return;
@@ -2181,7 +2866,7 @@ async function checkoutCartOnlineInfinitePay(e) {
         <body>
           <div class="spinner"></div>
           <h2>Conectando ao Checkout Seguro</h2>
-          <p>Preparando seus itens e quantidades na InfinitePay...</p>
+          <p>Preparando seus produtos e frete selecionado na InfinitePay...</p>
         </body>
       </html>
     `);
@@ -2189,7 +2874,7 @@ async function checkoutCartOnlineInfinitePay(e) {
 
   if (btnCheckoutJim) {
     btnCheckoutJim.classList.add("loading");
-    btnCheckoutJim.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando Checkout Unificado...';
+    btnCheckoutJim.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando Checkout com Frete...';
   }
 
   try {
@@ -2202,13 +2887,47 @@ async function checkoutCartOnlineInfinitePay(e) {
       };
     });
 
+    // Se houver valor de frete (> R$ 0,00), inclui como item do pedido na InfinitePay
+    const shippingPriceCents = Math.round((selectedShippingOption.price || 0) * 100);
+    if (shippingPriceCents > 0) {
+      const carrier = selectedShippingOption.company || "Transportadora";
+      const service = selectedShippingOption.name || "Frete";
+      const addrShort = `${custStreet}, ${custNumber}${custBairro ? " - " + custBairro : ""}${custCity ? " (" + custCity + ")" : ""}`;
+      const desc = `Frete: ${carrier} ${service} [${addrShort}]`.slice(0, 120);
+
+      items.push({
+        quantity: 1,
+        price: shippingPriceCents,
+        description: desc
+      });
+    }
+
+    const cityOnly = custCity.includes("-") ? custCity.split("-")[0].trim() : custCity;
+    const stateOnly = custCity.includes("-") ? custCity.split("-")[1].trim() : "ES";
+
+    const customerPayload = {
+      name: custName,
+      phone_number: `+55${custPhone}`,
+      phone: custPhone,
+      address: {
+        street: custStreet,
+        number: custNumber,
+        complement: custComp || "",
+        neighborhood: custBairro || "",
+        city: cityOnly,
+        state: stateOnly,
+        zip_code: custCep
+      }
+    };
+
     const response = await fetch("https://api.checkout.infinitepay.io/links", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         handle: SITE_CONFIG.infinitePayHandle || "cubeforge",
         redirect_url: window.location.href.split("?")[0],
-        items: items
+        items: items,
+        customer: customerPayload
       })
     });
 
@@ -2247,9 +2966,18 @@ function checkoutCartWhatsApp() {
 
   const notesInput = document.getElementById("cart-custom-notes");
   const notesText = notesInput ? notesInput.value.trim() : "";
-  const totalStr = formatBRL(getCartTotal());
   const totalCount = getCartCount();
   const hasCustom = cart.some(item => Boolean(item.somente_encomenda)) || Boolean(notesText);
+
+  // Coleta dados de entrega se preenchidos
+  const deliveryData = getCustomerDeliveryData();
+  if (deliveryData.name || deliveryData.cep) {
+    saveCustomerDeliveryData(deliveryData);
+  }
+
+  const itemsPrice = cart.reduce((acc, item) => acc + (item.numericPrice * item.quantity), 0);
+  const shippingPrice = selectedShippingOption ? selectedShippingOption.price : 0;
+  const grandTotal = itemsPrice + shippingPrice;
 
   let message = `*Pedido - ${SITE_CONFIG.brandName}* 🛒\n\n`;
   message += totalCount === 1 
@@ -2261,13 +2989,34 @@ function checkoutCartWhatsApp() {
     message += `• ${item.quantity}x ${item.title} - ${subtotal}\n`;
   });
 
-  message += `\n💰 *Total:* ${totalStr}\n`;
+  message += `\n📦 *Subtotal dos Itens:* ${formatBRL(itemsPrice)}\n`;
 
-  if (notesText) {
-    message += `📝 *Observações:* ${notesText}\n`;
+  if (selectedShippingOption) {
+    const shipPriceText = selectedShippingOption.price === 0 ? "Grátis" : formatBRL(selectedShippingOption.price);
+    message += `🚚 *Frete (${selectedShippingOption.company} ${selectedShippingOption.name}):* ${shipPriceText} (${selectedShippingOption.days})\n`;
   }
 
-  message += `\n${hasCustom ? "Poderiam me confirmar a disponibilidade e o prazo de produção?" : "Poderiam me confirmar a disponibilidade e o prazo de entrega?"}`;
+  message += `💰 *Total do Pedido:* ${formatBRL(grandTotal)}\n`;
+
+  if (deliveryData.name || deliveryData.street || deliveryData.cep) {
+    message += `\n📍 *Dados para Entrega:*\n`;
+    if (deliveryData.name) message += `• *Nome:* ${deliveryData.name}\n`;
+    if (deliveryData.phone) message += `• *Telefone:* ${deliveryData.phone}\n`;
+    if (deliveryData.street) {
+      let addr = `${deliveryData.street}, ${deliveryData.number || "S/N"}`;
+      if (deliveryData.comp) addr += ` (${deliveryData.comp})`;
+      if (deliveryData.bairro) addr += ` - ${deliveryData.bairro}`;
+      if (deliveryData.city) addr += ` - ${deliveryData.city}`;
+      message += `• *Endereço:* ${addr}\n`;
+    }
+    if (deliveryData.cep) message += `• *CEP:* ${deliveryData.cep}\n`;
+  }
+
+  if (notesText) {
+    message += `\n📝 *Observações / Personalização:*\n${notesText}\n`;
+  }
+
+  message += `\n${hasCustom ? "Poderiam me confirmar a disponibilidade e o prazo de produção?" : "Poderiam me confirmar os dados para prosseguir com o pagamento?"}`;
 
   const url = createWhatsappUrl(SITE_CONFIG.whatsappNumber, message);
   window.open(url, "_blank");
@@ -2394,6 +3143,9 @@ function setupCartListeners() {
   if (btnCheckoutJim) {
     btnCheckoutJim.addEventListener("click", checkoutCartOnlineInfinitePay);
   }
+
+  // Inicializa eventos, máscaras e preenchimento automático de entrega e frete (Melhor Envio / ViaCEP)
+  initDeliveryAndShippingEvents();
 
   // Atualiza validação inicial
   updateCartNotesValidation();

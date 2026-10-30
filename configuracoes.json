@@ -1,4 +1,13 @@
 {
+  "whatsapp_numero": "5527936183114",
+  "whatsapp_display": "(27) 93618-3114",
+  "instagram_user": "cubeforge3d",
+  "chave_pix": "27936183114",
+  "cep_origem": "29101010",
+  "melhorenvio_token": "",
+  "melhorenvio_sandbox": false,
+  "banner_alerta_ativo": false,
+  "banner_alerta": "🚀 Peças exclusivas em 3D de alta resolução sob encomenda e a pronta entrega!",
   "modo_manutencao": true,
   "titulo_manutencao": "Estamos em Manutenção",
   "subtitulo_manutencao": "Voltamos em breve com novidades!",

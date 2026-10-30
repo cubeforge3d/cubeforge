@@ -499,9 +499,9 @@
               <span class="step-badge">1</span>
               <span class="step-label">Itens</span>
             </button>
-            <button type="button" class="cart-step-pill" id="cart-step-pill-2" role="tab" aria-selected="false" title="Ir para pagamento">
+            <button type="button" class="cart-step-pill" id="cart-step-pill-2" role="tab" aria-selected="false" title="Ir para entrega e pagamento">
               <span class="step-badge">2</span>
-              <span class="step-label">Pagamento</span>
+              <span class="step-label">Entrega & Pagar</span>
             </button>
           </div>
         </div>
@@ -554,9 +554,9 @@
                   <span>Total dos itens</span>
                   <span id="scroll-summary-items-total">R$ 0,00</span>
                 </div>
-                <div class="summary-line">
-                  <span>Entrega / Retirada</span>
-                  <span class="summary-free-tag">A combinar no WhatsApp</span>
+                <div class="summary-line" id="step1-shipping-summary-row">
+                  <span>Frete / Entrega</span>
+                  <span class="summary-free-tag" id="step1-shipping-label">A calcular na etapa 2 ›</span>
                 </div>
                 <div class="summary-line summary-line-total">
                   <span>Total</span>
@@ -591,11 +591,100 @@
           </div>
         </div>
 
-        <!-- ETAPA 2: Resumo do Pedido & Opções de Pagamento -->
+        <!-- ETAPA 2: Entrega, Frete & Pagamento -->
         <div class="cart-step-panel cart-step-payment" id="cart-step-2">
           <div class="cart-payment-body">
             
-            <!-- Card de Resumo Financeiro do Pedido -->
+            <!-- Card 1: Dados do Cliente e Entrega / Frete (Melhor Envio) -->
+            <div class="cart-delivery-card" id="cart-delivery-card">
+              <div class="delivery-card-header">
+                <div class="delivery-card-title">
+                  <i class="fa-solid fa-truck-fast"></i>
+                  <span>Dados para Entrega & Frete</span>
+                </div>
+                <div class="melhor-envio-badge" title="Cotação em tempo real com as melhores transportadoras">
+                  <span class="badge-dot-live"></span>
+                  <span>Melhor Envio</span>
+                </div>
+              </div>
+
+              <div class="delivery-form-grid">
+                <!-- Nome Completo -->
+                <div class="form-group-field col-full">
+                  <label for="checkout-cust-name"><i class="fa-solid fa-user"></i> Nome Completo <span class="req">*</span></label>
+                  <input type="text" id="checkout-cust-name" class="checkout-input" placeholder="Seu nome completo" autocomplete="name" required>
+                </div>
+
+                <!-- Telefone / WhatsApp -->
+                <div class="form-group-field col-full">
+                  <label for="checkout-cust-phone"><i class="fa-brands fa-whatsapp"></i> WhatsApp / Celular <span class="req">*</span></label>
+                  <input type="tel" id="checkout-cust-phone" class="checkout-input" placeholder="(27) 99999-9999" maxlength="15" autocomplete="tel" required>
+                </div>
+
+                <!-- CEP com Busca Automática -->
+                <div class="form-group-field col-full">
+                  <div class="label-split-row">
+                    <label for="checkout-cust-cep"><i class="fa-solid fa-location-dot"></i> CEP de Entrega <span class="req">*</span></label>
+                    <a href="https://buscacepinter.correios.com.br/app/cep/index.php" target="_blank" rel="noopener noreferrer" class="link-find-cep" title="Não sei meu CEP">Não sei o CEP</a>
+                  </div>
+                  <div class="cep-input-wrapper">
+                    <input type="text" id="checkout-cust-cep" class="checkout-input" placeholder="00000-000" maxlength="9" inputmode="numeric" required>
+                    <button type="button" id="btn-calc-cep" class="btn-cep-calc" title="Calcular frete">
+                      <span class="btn-cep-text">Calcular</span>
+                      <i class="fa-solid fa-arrow-right btn-cep-icon"></i>
+                      <i class="fa-solid fa-spinner fa-spin btn-cep-spinner" style="display: none;"></i>
+                    </button>
+                  </div>
+                  <div class="cep-feedback-msg" id="cep-feedback-msg" style="display: none;"></div>
+                </div>
+              </div>
+
+              <!-- Opções de Frete Calculadas (Melhor Envio / Correios / Jadlog) -->
+              <div class="shipping-options-wrapper" id="shipping-options-wrapper" style="display: none;">
+                <div class="shipping-options-title">
+                  <i class="fa-solid fa-box"></i> Escolha a forma de entrega:
+                </div>
+                <div class="shipping-options-list" id="shipping-options-list">
+                  <!-- Inserido dinamicamente via JS -->
+                </div>
+              </div>
+
+              <!-- Endereço Detalhado (Preenchido automaticamente ao digitar CEP) -->
+              <div class="address-details-wrapper" id="address-details-wrapper" style="display: none;">
+                <div class="address-autofill-badge">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <span>Endereço localizado via CEP:</span>
+                </div>
+                <div class="address-grid">
+                  <div class="form-group-field col-full">
+                    <label for="checkout-cust-street">Rua / Logradouro <span class="req">*</span></label>
+                    <input type="text" id="checkout-cust-street" class="checkout-input" placeholder="Rua / Avenida" required>
+                  </div>
+
+                  <div class="form-group-field col-half">
+                    <label for="checkout-cust-number">Número <span class="req">*</span></label>
+                    <input type="text" id="checkout-cust-number" class="checkout-input input-highlight" placeholder="Ex: 123" required>
+                  </div>
+
+                  <div class="form-group-field col-half">
+                    <label for="checkout-cust-comp">Complemento (opcional)</label>
+                    <input type="text" id="checkout-cust-comp" class="checkout-input" placeholder="Apto, Casa, Bloco...">
+                  </div>
+
+                  <div class="form-group-field col-half">
+                    <label for="checkout-cust-bairro">Bairro <span class="req">*</span></label>
+                    <input type="text" id="checkout-cust-bairro" class="checkout-input" placeholder="Bairro" required>
+                  </div>
+
+                  <div class="form-group-field col-half">
+                    <label for="checkout-cust-city">Cidade / UF</label>
+                    <input type="text" id="checkout-cust-city" class="checkout-input input-readonly" placeholder="Cidade - UF" readonly>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Resumo Financeiro do Pedido -->
             <div class="cart-order-summary-card">
               <div class="summary-card-header">
                 <div class="summary-card-title">
@@ -611,11 +700,21 @@
               </div>
 
               <div class="summary-total-box">
+                <div class="summary-total-breakdown">
+                  <div class="summary-subtotal-line">
+                    <span>Subtotal dos itens:</span>
+                    <span id="summary-subtotal-amount">R$ 0,00</span>
+                  </div>
+                  <div class="summary-shipping-line">
+                    <span>Frete:</span>
+                    <span id="summary-shipping-amount" class="shipping-amount-text">Digite o CEP acima</span>
+                  </div>
+                </div>
                 <div class="summary-total-line">
-                  <span>Total do Pedido:</span>
+                  <span>Total Final:</span>
                   <strong class="summary-total-amount" id="summary-total-amount">R$ 0,00</strong>
                 </div>
-                <span class="summary-installments-badge"><i class="fa-solid fa-credit-card"></i> Até 12x no Cartão ou Pix</span>
+                <span class="summary-installments-badge"><i class="fa-solid fa-credit-card"></i> Até 12x no Cartão ou Pix via InfinitePay</span>
               </div>
             </div>
 

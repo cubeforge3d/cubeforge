@@ -4,10 +4,24 @@ media:
 
 content:
   - name: configuracoes
-    label: "⚙️ Modo de Manutenção"
+    label: "⚙️ Configurações da Loja & Frete"
     type: file
     path: configuracoes.json
     fields:
+      - name: cep_origem
+        label: "CEP de Origem da Loja (Cálculo de Frete)"
+        type: string
+        default: "29101010"
+        description: "CEP de onde saem os envios da Cube Forge (ex: 29101010 - Vila Velha/ES)."
+      - name: melhorenvio_token
+        label: "Token da API do Melhor Envio (Opcional)"
+        type: string
+        description: "Cole seu token Bearer da API do Melhor Envio para cotar na sua conta. Se vazio, o site usa cálculo inteligente de mercado."
+      - name: melhorenvio_sandbox
+        label: "Usar Sandbox do Melhor Envio (Testes)"
+        type: boolean
+        default: false
+        description: "Marque se estiver usando um token do ambiente de testes sandbox do Melhor Envio."
       - name: modo_manutencao
         label: "Ativar Modo de Manutenção (Desativar Site & Vendas)"
         type: boolean
