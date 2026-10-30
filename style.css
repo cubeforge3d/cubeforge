@@ -5413,7 +5413,7 @@ button {
 
 .cart-stepper {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 4px;
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -5438,7 +5438,7 @@ button {
   font-family: inherit;
   cursor: pointer;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 0 12px;
+  padding: 0 10px;
   user-select: none;
 }
 
@@ -5495,23 +5495,24 @@ button {
     padding: 14px 16px 8px 16px;
   }
   .cart-stepper-bar {
-    padding: 0 14px 10px 14px;
+    padding: 0 10px 8px 10px;
   }
   .cart-header-title h3 {
-    font-size: 1.05rem;
+    font-size: 1.02rem;
   }
   .cart-header-title i {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
   }
   .cart-step-pill {
-    height: 34px;
-    font-size: 0.8rem;
-    gap: 6px;
+    height: 32px;
+    font-size: 0.72rem;
+    gap: 4px;
+    padding: 0 4px;
   }
   .step-badge {
-    width: 18px;
-    height: 18px;
-    font-size: 0.68rem;
+    width: 17px;
+    height: 17px;
+    font-size: 0.65rem;
   }
 }
 
@@ -5520,11 +5521,12 @@ button {
     padding: 8px 14px 4px 14px;
   }
   .cart-stepper-bar {
-    padding: 0 14px 6px 14px;
+    padding: 0 10px 4px 10px;
   }
   .cart-step-pill {
-    height: 30px;
-    font-size: 0.76rem;
+    height: 28px;
+    font-size: 0.7rem;
+    padding: 0 3px;
   }
 }
 
@@ -5536,7 +5538,7 @@ button {
 
 .cart-steps-track {
   display: flex;
-  width: 200%;
+  width: 300%;
   flex: 1 1 auto;
   min-height: 0;
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
@@ -5547,11 +5549,15 @@ button {
 }
 
 .cart-drawer[data-current-step="2"] .cart-steps-track {
-  transform: translateX(-50%);
+  transform: translateX(-33.333333%);
+}
+
+.cart-drawer[data-current-step="3"] .cart-steps-track {
+  transform: translateX(-66.666667%);
 }
 
 .cart-step-panel {
-  width: 50%;
+  width: 33.333333%;
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -5811,8 +5817,9 @@ button {
   transform: translateX(3px);
 }
 
-/* Etapa 2: Pagamento & Resumo */
-.cart-payment-body {
+/* Etapas 2 & 3: Corpos com Rolagem Suave */
+.cart-payment-body,
+.cart-delivery-body {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -7108,6 +7115,66 @@ body.body-maintenance {
 
 .shipping-amount-text.free {
   color: #4ade80;
+}
+
+/* Selo Correios */
+.correios-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 204, 0, 0.12);
+  border: 1px solid rgba(255, 204, 0, 0.35);
+  color: #facc15;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.correios-badge i {
+  font-size: 0.75rem;
+  color: #facc15;
+}
+
+/* Informações da Etapa 2 */
+.payment-step-info-badge {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(56, 189, 248, 0.06);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: var(--radius-sm);
+  color: #94a3b8;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.payment-step-info-badge i {
+  color: var(--color-cyan);
+  margin-top: 2px;
+  font-size: 0.85rem;
+}
+
+.whatsapp-direct-note {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  text-align: center;
+  margin-top: -6px;
+  display: block;
+}
+
+.whatsapp-direct-note i {
+  color: #25d366;
+}
+
+.delivery-checkout-action-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 @media (max-width: 480px) {
