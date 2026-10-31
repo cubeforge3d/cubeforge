@@ -7689,13 +7689,14 @@ body.body-maintenance > *:not(#maintenance-overlay):not(script) {
 
 
 /* ==========================================================================
-   Abertura Cinemática Fluida e Leve (Cube Forge 3D)
-   Otimizada para 60-120 FPS no Mobile e PC (Zero Jank, Zero Lag)
+   Abertura Cinemática: Glow Neon no Vidro Fosco & Revelação Fluida (Cube Forge 3D)
+   Luzes neon orgânicas no vidro fosco acrílico e entrada suave dos itens flutuantes
    ========================================================================== */
 body.intro-active {
   overflow: hidden !important;
 }
 
+/* Base Sólida da Abertura: Impede vazamento visual antes da hora */
 .site-intro-loader {
   position: fixed;
   inset: 0;
@@ -7709,153 +7710,158 @@ body.intro-active {
   -webkit-user-select: none;
   cursor: pointer;
   transform: translate3d(0, 0, 0);
-  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              visibility 0.45s;
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.55s;
   will-change: opacity, transform;
 }
 
+.site-intro-loader.intro-revealing {
+  opacity: 0 !important;
+  transform: scale(1.05) translate3d(0, 0, 0) !important;
+  pointer-events: none !important;
+}
+
 .site-intro-loader.intro-hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translate3d(0, 0, 0) scale(1.04);
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
-.intro-loader-bg {
+/* Luzes Glow Neon no Fundo (Ciano, Laranja e Roxo) */
+.intro-neon-aurora {
   position: absolute;
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-}
-
-/* Brilhos suaves usando radial-gradient puro (SEM filter: blur) para máxima velocidade */
-.intro-light-glow {
-  position: absolute;
-  width: 440px;
-  height: 440px;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0.4;
-  transform: translate3d(0, 0, 0);
-}
-
-.intro-light-glow.glow-cyan {
-  top: -60px;
-  left: -60px;
-  background: radial-gradient(circle, rgba(0, 210, 255, 0.35) 0%, rgba(0, 210, 255, 0.12) 40%, transparent 70%);
-}
-
-.intro-light-glow.glow-orange {
-  bottom: -60px;
-  right: -60px;
-  background: radial-gradient(circle, rgba(255, 106, 0, 0.35) 0%, rgba(255, 106, 0, 0.12) 40%, transparent 70%);
-}
-
-/* Container das ondas fluidas de luz neon */
-.intro-fluid-wave-container {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 1;
 }
 
-.fluid-light-wave {
+.intro-glow-orb {
   position: absolute;
   border-radius: 50%;
+  filter: blur(52px);
+  opacity: 0.75;
   pointer-events: none;
-  transform: translate3d(0, 0, 0) scale(0);
-  opacity: 0;
+  animation: introOrbPulse 3.5s ease-in-out infinite alternate;
   will-change: transform, opacity;
 }
 
-/* Onda 1: Pulso de luz Ciano */
-.fluid-light-wave.wave-1 {
-  width: 260px;
-  height: 260px;
-  background: radial-gradient(circle, rgba(0, 210, 255, 0.75) 0%, rgba(0, 210, 255, 0.35) 45%, transparent 70%);
-  border: 2px solid rgba(0, 210, 255, 0.6);
+.intro-glow-orb.orb-cyan-top {
+  width: 360px;
+  height: 360px;
+  top: -60px;
+  left: -40px;
+  background: radial-gradient(circle, #00d2ff 0%, rgba(0, 210, 255, 0.45) 50%, transparent 75%);
+  animation-delay: 0s;
 }
 
-/* Onda 2: Pulso de luz Laranja */
-.fluid-light-wave.wave-2 {
-  width: 280px;
-  height: 280px;
-  background: radial-gradient(circle, rgba(255, 106, 0, 0.75) 0%, rgba(255, 106, 0, 0.35) 45%, transparent 70%);
-  border: 2px solid rgba(255, 106, 0, 0.6);
+.intro-glow-orb.orb-orange-mid {
+  width: 380px;
+  height: 380px;
+  top: 30%;
+  right: -70px;
+  background: radial-gradient(circle, #ff6a00 0%, rgba(255, 106, 0, 0.5) 45%, transparent 75%);
+  animation-delay: 0.7s;
 }
 
-/* Onda 3: Expansão final envolvente */
-.fluid-light-wave.wave-3 {
+.intro-glow-orb.orb-violet-center {
   width: 320px;
   height: 320px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, rgba(0, 210, 255, 0.25) 50%, transparent 75%);
+  top: 40%;
+  left: 10%;
+  background: radial-gradient(circle, #9d4edd 0%, rgba(157, 78, 221, 0.4) 45%, transparent 70%);
+  animation-delay: 1.4s;
 }
 
-/* Disparo da revelação fluida (100% acelerada pela GPU) */
-.site-intro-loader.intro-revealing .fluid-light-wave.wave-1 {
-  animation: fluidWaveExpand 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.intro-glow-orb.orb-cyan-bottom {
+  width: 340px;
+  height: 340px;
+  bottom: -60px;
+  left: 5%;
+  background: radial-gradient(circle, #00d2ff 0%, rgba(0, 210, 255, 0.4) 50%, transparent 75%);
+  animation-delay: 2s;
 }
 
-.site-intro-loader.intro-revealing .fluid-light-wave.wave-2 {
-  animation: fluidWaveExpand 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.05s forwards;
+.intro-glow-orb.orb-orange-bottom {
+  width: 300px;
+  height: 300px;
+  bottom: 10%;
+  right: 5%;
+  background: radial-gradient(circle, #ff6a00 0%, rgba(255, 106, 0, 0.38) 45%, transparent 75%);
+  animation-delay: 2.5s;
 }
 
-.site-intro-loader.intro-revealing .fluid-light-wave.wave-3 {
-  animation: fluidWaveExpand 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.08s forwards;
-}
-
-.site-intro-loader.intro-revealing .intro-emblem-img {
-  transform: translate3d(0, 0, 0) scale(1.1);
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.site-intro-loader.intro-revealing .intro-brand-reveal {
-  transform: translate3d(0, 0, 0) scale(1.04);
-  opacity: 0.95;
-  transition: transform 0.4s ease, opacity 0.4s ease;
-}
-
-/* Keyframe de alta performance: Apenas transform e opacity */
-@keyframes fluidWaveExpand {
+@keyframes introOrbPulse {
   0% {
-    transform: translate3d(0, 0, 0) scale(0.2);
-    opacity: 0.95;
-  }
-  60% {
+    transform: scale(0.92) translate3d(0, 0, 0);
     opacity: 0.65;
   }
   100% {
-    transform: translate3d(0, 0, 0) scale(5.5);
-    opacity: 0;
+    transform: scale(1.15) translate3d(10px, -10px, 0);
+    opacity: 0.90;
   }
 }
 
-/* Conteúdo Central */
-.intro-loader-center {
-  position: relative;
+/* Camada Geral de Vidro Fosco Acrílico (Frosted Backdrop) */
+.intro-frosted-backdrop {
+  position: absolute;
+  inset: 0;
   z-index: 2;
+  pointer-events: none;
+  background: rgba(8, 13, 24, 0.45);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+}
+
+/* Placa Central de Vidro Fosco Cristalino */
+.intro-frosted-panel {
+  position: relative;
+  z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 20px;
-  max-width: 90vw;
-  transform: translate3d(0, 0, 0);
+  padding: 36px 30px 30px;
+  max-width: 360px;
+  width: 90%;
+  border-radius: 30px;
+  background: rgba(14, 21, 38, 0.65);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 
+    0 28px 70px rgba(0, 0, 0, 0.75),
+    0 0 40px rgba(0, 210, 255, 0.22),
+    0 0 50px rgba(255, 106, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  animation: introPanelFloat 3.2s ease-in-out infinite alternate;
 }
 
-/* Logotipo BEM GRANDE */
+@keyframes introPanelFloat {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(0, -6px, 0) scale(1.015);
+  }
+}
+
+.intro-frosted-specular {
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  border-radius: 50%;
+}
+
 .intro-emblem-wrap {
   position: relative;
-  width: 220px;
-  height: 220px;
-  margin-bottom: 20px;
-  perspective: 900px;
-  transform-style: preserve-3d;
+  width: 145px;
+  height: 145px;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7863,64 +7869,44 @@ body.intro-active {
 
 .intro-emblem-halo {
   position: absolute;
-  width: 200px;
-  height: 200px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 210, 255, 0.4) 0%, rgba(255, 106, 0, 0.25) 50%, transparent 75%);
-  pointer-events: none;
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.5) 0%, rgba(255, 106, 0, 0.4) 50%, transparent 75%);
+  filter: blur(16px);
   animation: introHaloPulse 2.4s ease-in-out infinite alternate;
 }
 
-.intro-emblem-ring {
-  position: absolute;
-  inset: -12px;
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.intro-emblem-ring.ring-1 {
-  border: 2px solid rgba(0, 210, 255, 0.65);
-  border-top-color: #00d2ff;
-  border-bottom-color: transparent;
-  transform: rotateX(68deg) rotateZ(0deg);
-  animation: introSpinRing1 2.4s linear infinite;
-}
-
-.intro-emblem-ring.ring-2 {
-  border: 2px solid rgba(255, 106, 0, 0.65);
-  border-left-color: #ff6a00;
-  border-right-color: transparent;
-  transform: rotateY(68deg) rotateZ(0deg);
-  animation: introSpinRing2 2.8s linear infinite;
+@keyframes introHaloPulse {
+  0% { transform: scale(0.92); opacity: 0.5; }
+  100% { transform: scale(1.18); opacity: 0.85; }
 }
 
 .intro-emblem-img {
-  width: 175px;
-  height: 175px;
+  width: 124px;
+  height: 124px;
   object-fit: contain;
   position: relative;
   z-index: 3;
-  animation: introEmblemFloat 2.4s ease-in-out infinite;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
+  animation: introEmblemFloat 2.6s ease-in-out infinite;
+  filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 24px rgba(255, 106, 0, 0.45));
 }
 
-/* Tipografia */
-.intro-brand-reveal {
-  margin-bottom: 0;
-  animation: introTextReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+@keyframes introEmblemFloat {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -6px, 0) scale(1.03); }
 }
 
 .intro-brand-title {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-family: var(--font-main, 'Plus Jakarta Sans', sans-serif);
-  font-size: 2.5rem;
+  font-size: 2.15rem;
   font-weight: 900;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.12em;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   text-transform: uppercase;
   line-height: 1;
 }
@@ -7939,49 +7925,199 @@ body.intro-active {
 
 .intro-word-3d {
   display: inline-block;
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 800;
-  padding: 3px 9px;
+  padding: 3px 8px;
   border-radius: 6px;
-  background: rgba(0, 210, 255, 0.14);
-  border: 1px solid rgba(0, 210, 255, 0.55);
+  background: rgba(0, 210, 255, 0.16);
+  border: 1px solid rgba(0, 210, 255, 0.65);
   color: #00d2ff;
   letter-spacing: 0.08em;
 }
 
 .intro-brand-tagline {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.82);
 }
 
-/* Keyframes de animação sem repainting */
-@keyframes introHaloPulse {
-  0% { transform: scale(0.94); opacity: 0.35; }
-  100% { transform: scale(1.08); opacity: 0.65; }
+/* =====================================================================
+   Cascata de Revelação Suave do Site e Entrada dos Itens Flutuantes
+   ===================================================================== */
+/* Enquanto a introdução estiver ativa, itens flutuantes ficam preparados em offset */
+body.intro-active .hero-mobile-avatar,
+body.intro-active .brand-name,
+body.intro-active .brand-handle,
+body.intro-active .brand-bio,
+body.intro-active .trust-tags .tag,
+body.intro-active .action-buttons-group .btn,
+body.intro-active .mobile-cart-float-container,
+body.intro-active .floating-whatsapp-container,
+body.intro-active .desktop-navbar,
+body.intro-active .desktop-hero-left,
+body.intro-active .desktop-hero-right {
+  opacity: 0;
+  pointer-events: none;
 }
 
-@keyframes introSpinRing1 {
-  0% { transform: rotateX(68deg) rotateZ(0deg); }
-  100% { transform: rotateX(68deg) rotateZ(360deg); }
+/* Mobile: Cascata de entrada fluida dos itens flutuantes */
+body.site-revealed .hero-mobile-avatar {
+  animation: floatEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.04s forwards;
 }
 
-@keyframes introSpinRing2 {
-  0% { transform: rotateY(68deg) rotateZ(0deg); }
-  100% { transform: rotateY(68deg) rotateZ(360deg); }
+body.site-revealed .brand-name,
+body.site-revealed .brand-handle {
+  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.10s forwards;
 }
 
-@keyframes introEmblemFloat {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(0, -6px, 0) scale(1.03); }
+body.site-revealed .brand-bio {
+  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.16s forwards;
 }
 
-@keyframes introTextReveal {
-  0% { opacity: 0; transform: translate3d(0, 10px, 0); }
+body.site-revealed .trust-tags .tag:nth-child(1) {
+  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.20s forwards;
+}
+body.site-revealed .trust-tags .tag:nth-child(2) {
+  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+}
+body.site-revealed .trust-tags .tag:nth-child(3) {
+  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.30s forwards;
+}
+body.site-revealed .trust-tags .tag:nth-child(4) {
+  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
+}
+
+body.site-revealed .action-buttons-group .btn:nth-child(1) {
+  animation: floatEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.40s forwards;
+}
+body.site-revealed .action-buttons-group .btn:nth-child(2) {
+  animation: floatEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.46s forwards;
+}
+body.site-revealed .action-buttons-group .btn:nth-child(3) {
+  animation: floatEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.52s forwards;
+}
+
+body.site-revealed .mobile-cart-float-container {
+  animation: floatEntranceBottom 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.56s forwards;
+}
+body.site-revealed .floating-whatsapp-container {
+  animation: floatEntranceBottom 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.56s forwards;
+}
+
+/* Desktop: Entrada suave da navbar e colunas hero */
+@media (min-width: 992px) {
+  .intro-frosted-panel {
+    max-width: 480px;
+    padding: 44px 40px 36px;
+    border-radius: 34px;
+  }
+
+  .intro-emblem-wrap {
+    width: 170px;
+    height: 170px;
+  }
+
+  .intro-emblem-img {
+    width: 148px;
+    height: 148px;
+  }
+
+  .intro-brand-title {
+    font-size: 2.6rem;
+  }
+
+  .intro-brand-tagline {
+    font-size: 0.84rem;
+  }
+
+  body.site-revealed .desktop-navbar {
+    animation: floatNavbar 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.04s forwards;
+  }
+
+  body.site-revealed .desktop-hero-left {
+    animation: floatHeroLeft 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.10s forwards;
+  }
+
+  body.site-revealed .desktop-hero-right {
+    animation: floatHeroRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.16s forwards;
+  }
+}
+
+@keyframes floatEntrance {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0) scale(0.96);
+  }
+  65% {
+    opacity: 0.95;
+    transform: translate3d(0, -2px, 0) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes floatEntranceBottom {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 38px, 0) scale(0.92);
+  }
+  70% {
+    opacity: 0.95;
+    transform: translate3d(0, -3px, 0) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes floatNavbar {
+  0% { opacity: 0; transform: translate3d(0, -22px, 0); }
   100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes floatHeroLeft {
+  0% { opacity: 0; transform: translate3d(-24px, 0, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes floatHeroRight {
+  0% { opacity: 0; transform: translate3d(24px, 0, 0) scale(0.97); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.intro-active .hero-mobile-avatar,
+  body.intro-active .brand-name,
+  body.intro-active .brand-handle,
+  body.intro-active .brand-bio,
+  body.intro-active .trust-tags .tag,
+  body.intro-active .action-buttons-group .btn,
+  body.intro-active .mobile-cart-float-container,
+  body.intro-active .floating-whatsapp-container,
+  body.intro-active .desktop-navbar,
+  body.intro-active .desktop-hero-left,
+  body.intro-active .desktop-hero-right,
+  body.site-revealed .hero-mobile-avatar,
+  body.site-revealed .brand-name,
+  body.site-revealed .brand-handle,
+  body.site-revealed .brand-bio,
+  body.site-revealed .trust-tags .tag,
+  body.site-revealed .action-buttons-group .btn,
+  body.site-revealed .mobile-cart-float-container,
+  body.site-revealed .floating-whatsapp-container,
+  body.site-revealed .desktop-navbar,
+  body.site-revealed .desktop-hero-left,
+  body.site-revealed .desktop-hero-right {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
 }
 
 /* Responsividade Mobile para Abertura */

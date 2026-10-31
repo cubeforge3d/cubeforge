@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <!-- CSS -->
-  <link rel="stylesheet" href="./style.css?v=2.8.0">
+  <link rel="stylesheet" href="./style.css?v=2.9.0">
 </head>
 <body>
 
@@ -27,27 +27,27 @@
        Inspirado no Mana Yerba Maté - Abertura fluida com tinta de luz neon e logo imponente
        ===================================================================== -->
     <div id="site-intro-loader" class="site-intro-loader" aria-hidden="false">
-    <!-- Fundo de Luz Ambiente Leve (Sem filtros pesados de blur) -->
-    <div class="intro-loader-bg">
-      <div class="intro-light-glow glow-cyan"></div>
-      <div class="intro-light-glow glow-orange"></div>
+    <!-- 1. Camada de Luzes Glow Neon Profundas no Fundo (Ciano, Laranja e Roxo) -->
+    <div class="intro-neon-aurora" aria-hidden="true">
+      <div class="intro-glow-orb orb-cyan-top"></div>
+      <div class="intro-glow-orb orb-orange-mid"></div>
+      <div class="intro-glow-orb orb-violet-center"></div>
+      <div class="intro-glow-orb orb-cyan-bottom"></div>
+      <div class="intro-glow-orb orb-orange-bottom"></div>
     </div>
 
-    <!-- Onda Fluida de Luz Neon Líquida (100% GPU / Transform) -->
-    <div class="intro-fluid-wave-container" aria-hidden="true">
-      <div class="fluid-light-wave wave-1"></div>
-      <div class="fluid-light-wave wave-2"></div>
-      <div class="fluid-light-wave wave-3"></div>
-    </div>
+    <!-- 2. Camada de Vidro Fosco Acrílico Geral (Frosted Backdrop) -->
+    <div class="intro-frosted-backdrop" aria-hidden="true"></div>
 
-    <!-- Logotipo BEM GRANDE e Tipografia Imponente -->
-    <div class="intro-loader-center">
+    <!-- 3. Placa Central de Vidro Fosco com Specular e Brilho Neon -->
+    <div class="intro-frosted-panel">
+      <div class="intro-frosted-specular"></div>
+      
       <div class="intro-emblem-wrap">
         <div class="intro-emblem-halo"></div>
-        <div class="intro-emblem-ring ring-1"></div>
-        <div class="intro-emblem-ring ring-2"></div>
         <img src="./logo-emblem.png" alt="Cube Forge Logo" class="intro-emblem-img">
       </div>
+
       <div class="intro-brand-reveal">
         <h1 class="intro-brand-title">
           <span class="intro-word-cube">CUBE</span>
@@ -1122,6 +1122,6 @@
   </div>
 
   <!-- JavaScript -->
-  <script src="./script.js?v=2.8.0"></script>
+  <script src="./script.js?v=2.9.0"></script>
 </body>
 </html>

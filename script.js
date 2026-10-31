@@ -1534,6 +1534,7 @@ function setupSiteIntroLoader() {
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (prefersReducedMotion || (window.SITE_SETTINGS && window.SITE_SETTINGS.modo_manutencao)) {
     loader.classList.add("intro-hidden");
+    document.body.classList.add("site-revealed");
     setTimeout(() => {
       if (loader.parentNode) loader.style.display = "none";
     }, 40);
@@ -1547,20 +1548,21 @@ function setupSiteIntroLoader() {
     if (isDismissed) return;
     isDismissed = true;
 
-    // Dispara a onda fluida de luz neon
+    // Dispara a revelação suave em névoa neon de vidro fosco
     loader.classList.add("intro-revealing");
+    document.body.classList.remove("intro-active");
+    document.body.classList.add("site-revealed");
 
-    // Transição ultra-rápida e suave (450ms para dissolver a cortina com total fluidez)
+    // Transição suave de 550ms dissolvendo o vidro fosco e névoa neon
     setTimeout(() => {
       loader.classList.add("intro-hidden");
-      document.body.classList.remove("intro-active");
-    }, 450);
+    }, 550);
 
     // Oculta completamente do DOM após o término da animação
     setTimeout(() => {
       loader.style.display = "none";
       loader.setAttribute("aria-hidden", "true");
-    }, 750);
+    }, 950);
   }
 
   // Permitir fechamento instantâneo ao clicar em qualquer lugar da tela ou pressionar tecla
