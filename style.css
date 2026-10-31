@@ -7681,8 +7681,8 @@ body.body-maintenance > *:not(#maintenance-overlay):not(script) {
 
 
 /* ==========================================================================
-   Abertura Cinemática 3D & Revelação em Tinta de Luz (Cube Forge 3D)
-   Inspirado no Mana Yerba Maté com Logo Imponente e Fluido Neon
+   Abertura Cinemática Fluida e Leve (Cube Forge 3D)
+   Otimizada para 60-120 FPS no Mobile e PC (Zero Jank, Zero Lag)
    ========================================================================== */
 body.intro-active {
   overflow: hidden !important;
@@ -7700,7 +7700,10 @@ body.intro-active {
   user-select: none;
   -webkit-user-select: none;
   cursor: pointer;
-  transition: opacity 0.4s ease, visibility 0.4s ease;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.45s;
   will-change: opacity, transform;
 }
 
@@ -7708,6 +7711,7 @@ body.intro-active {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  transform: translate3d(0, 0, 0) scale(1.04);
 }
 
 .intro-loader-bg {
@@ -7717,44 +7721,31 @@ body.intro-active {
   overflow: hidden;
 }
 
-.intro-aurora-glow {
+/* Brilhos suaves usando radial-gradient puro (SEM filter: blur) para máxima velocidade */
+.intro-light-glow {
   position: absolute;
-  width: 520px;
-  height: 520px;
+  width: 440px;
+  height: 440px;
   border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.32;
   pointer-events: none;
-  animation: introGlowPulse 3s ease-in-out infinite alternate;
+  opacity: 0.4;
+  transform: translate3d(0, 0, 0);
 }
 
-.intro-aurora-glow.glow-cyan {
-  top: 10%;
-  left: 15%;
-  background: radial-gradient(circle, #00d2ff 0%, rgba(0, 210, 255, 0) 70%);
+.intro-light-glow.glow-cyan {
+  top: -60px;
+  left: -60px;
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.35) 0%, rgba(0, 210, 255, 0.12) 40%, transparent 70%);
 }
 
-.intro-aurora-glow.glow-orange {
-  bottom: 10%;
-  right: 15%;
-  background: radial-gradient(circle, #ff6a00 0%, rgba(255, 106, 0, 0) 70%);
-  animation-delay: -1.5s;
+.intro-light-glow.glow-orange {
+  bottom: -60px;
+  right: -60px;
+  background: radial-gradient(circle, rgba(255, 106, 0, 0.35) 0%, rgba(255, 106, 0, 0.12) 40%, transparent 70%);
 }
 
-.intro-mesh-grid {
-  position: absolute;
-  inset: 0;
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.6;
-}
-
-/* ==========================================================================
-   Efeito de Tinta Líquida Neon (Ink Bleed / Luzes Fluidas da Marca)
-   ========================================================================== */
-.intro-liquid-ink-container {
+/* Container das ondas fluidas de luz neon */
+.intro-fluid-wave-container {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -7765,136 +7756,78 @@ body.intro-active {
   z-index: 1;
 }
 
-.ink-blob {
+.fluid-light-wave {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
-  transform: scale(0);
+  transform: translate3d(0, 0, 0) scale(0);
   opacity: 0;
   will-change: transform, opacity;
 }
 
-/* Mancha principal de tinta Ciano */
-.ink-cyan-main {
+/* Onda 1: Pulso de luz Ciano */
+.fluid-light-wave.wave-1 {
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.75) 0%, rgba(0, 210, 255, 0.35) 45%, transparent 70%);
+  border: 2px solid rgba(0, 210, 255, 0.6);
+}
+
+/* Onda 2: Pulso de luz Laranja */
+.fluid-light-wave.wave-2 {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(255, 106, 0, 0.75) 0%, rgba(255, 106, 0, 0.35) 45%, transparent 70%);
+  border: 2px solid rgba(255, 106, 0, 0.6);
+}
+
+/* Onda 3: Expansão final envolvente */
+.fluid-light-wave.wave-3 {
   width: 320px;
   height: 320px;
-  background: radial-gradient(circle, #00d2ff 0%, rgba(0, 210, 255, 0.82) 38%, rgba(0, 166, 255, 0.28) 65%, transparent 75%);
-  border-radius: 46% 54% 62% 38% / 48% 42% 58% 52%;
-  filter: blur(14px);
-  box-shadow: 0 0 110px rgba(0, 210, 255, 0.95);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, rgba(0, 210, 255, 0.25) 50%, transparent 75%);
 }
 
-/* Mancha principal de tinta Laranja */
-.ink-orange-main {
-  width: 320px;
-  height: 320px;
-  background: radial-gradient(circle, #ff6a00 0%, rgba(255, 106, 0, 0.82) 38%, rgba(255, 153, 0, 0.28) 65%, transparent 75%);
-  border-radius: 58% 42% 35% 65% / 55% 62% 38% 45%;
-  filter: blur(14px);
-  box-shadow: 0 0 110px rgba(255, 106, 0, 0.95);
+/* Disparo da revelação fluida (100% acelerada pela GPU) */
+.site-intro-loader.intro-revealing .fluid-light-wave.wave-1 {
+  animation: fluidWaveExpand 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Respingos orgânicos de tinta líquida em ângulos */
-.ink-cyan-splatter {
-  width: 240px;
-  height: 240px;
-  background: radial-gradient(circle, rgba(0, 210, 255, 0.88) 0%, transparent 72%);
-  border-radius: 65% 35% 42% 58% / 38% 54% 46% 62%;
-  filter: blur(16px);
+.site-intro-loader.intro-revealing .fluid-light-wave.wave-2 {
+  animation: fluidWaveExpand 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.05s forwards;
 }
 
-.ink-orange-splatter {
-  width: 240px;
-  height: 240px;
-  background: radial-gradient(circle, rgba(255, 106, 0, 0.88) 0%, transparent 72%);
-  border-radius: 38% 62% 58% 42% / 64% 36% 64% 36%;
-  filter: blur(16px);
-}
-
-/* Anéis de choque de líquido neon */
-.ink-shockwave-ring {
-  position: absolute;
-  border-radius: 48% 52% 56% 44% / 52% 48% 52% 48%;
-  pointer-events: none;
-  transform: scale(0);
-  opacity: 0;
-  filter: blur(4px);
-}
-
-.ink-shockwave-ring.ring-cyan {
-  width: 320px;
-  height: 320px;
-  border: 3.5px solid #00d2ff;
-  box-shadow: 0 0 45px #00d2ff, inset 0 0 35px #00d2ff;
-}
-
-.ink-shockwave-ring.ring-orange {
-  width: 340px;
-  height: 340px;
-  border: 3.5px solid #ff6a00;
-  box-shadow: 0 0 45px #ff6a00, inset 0 0 35px #ff6a00;
-}
-
-.ink-fluid-burst {
-  position: absolute;
-  width: 100vw;
-  height: 100vh;
-  background: radial-gradient(circle at center, rgba(0, 210, 255, 0.38) 0%, rgba(255, 106, 0, 0.28) 45%, transparent 75%);
-  opacity: 0;
-  transform: scale(0.6);
-  filter: blur(35px);
-}
-
-/* ==========================================================================
-   Disparo da Revelação em Tinta (.intro-revealing)
-   ========================================================================== */
-.site-intro-loader.intro-revealing {
-  animation: introInkCurtainReveal 0.78s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.site-intro-loader.intro-revealing .ink-cyan-main {
-  animation: inkBlobCyanExpand 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.site-intro-loader.intro-revealing .ink-orange-main {
-  animation: inkBlobOrangeExpand 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.05s forwards;
-}
-
-.site-intro-loader.intro-revealing .ink-cyan-splatter {
-  animation: inkSplatterCyan 0.78s cubic-bezier(0.16, 1, 0.3, 1) 0.07s forwards;
-}
-
-.site-intro-loader.intro-revealing .ink-orange-splatter {
-  animation: inkSplatterOrange 0.82s cubic-bezier(0.16, 1, 0.3, 1) 0.11s forwards;
-}
-
-.site-intro-loader.intro-revealing .ink-shockwave-ring.ring-cyan {
-  animation: inkRingExpand 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.04s forwards;
-}
-
-.site-intro-loader.intro-revealing .ink-shockwave-ring.ring-orange {
-  animation: inkRingExpand 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
-}
-
-.site-intro-loader.intro-revealing .ink-fluid-burst {
-  animation: inkBurstFlash 0.72s ease-out 0.03s forwards;
+.site-intro-loader.intro-revealing .fluid-light-wave.wave-3 {
+  animation: fluidWaveExpand 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.08s forwards;
 }
 
 .site-intro-loader.intro-revealing .intro-emblem-img {
-  transform: scale(1.18);
-  filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 45px #00d2ff);
-  opacity: 0.95;
+  transform: translate3d(0, 0, 0) scale(1.1);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .site-intro-loader.intro-revealing .intro-brand-reveal {
-  transform: scale(1.06) translateY(-4px);
+  transform: translate3d(0, 0, 0) scale(1.04);
   opacity: 0.95;
   transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
-/* ==========================================================================
-   Conteúdo Central: LOGOTIPO BEM GRANDE e Tipografia Imponente
-   ========================================================================== */
+/* Keyframe de alta performance: Apenas transform e opacity */
+@keyframes fluidWaveExpand {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.2);
+    opacity: 0.95;
+  }
+  60% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(5.5);
+    opacity: 0;
+  }
+}
+
+/* Conteúdo Central */
 .intro-loader-center {
   position: relative;
   z-index: 2;
@@ -7904,14 +7837,15 @@ body.intro-active {
   text-align: center;
   padding: 20px;
   max-width: 90vw;
+  transform: translate3d(0, 0, 0);
 }
 
-/* Logotipo BEM GRANDE com Anéis Giroscópicos 3D */
+/* Logotipo BEM GRANDE */
 .intro-emblem-wrap {
   position: relative;
-  width: 230px;
-  height: 230px;
-  margin-bottom: 24px;
+  width: 220px;
+  height: 220px;
+  margin-bottom: 20px;
   perspective: 900px;
   transform-style: preserve-3d;
   display: flex;
@@ -7921,62 +7855,60 @@ body.intro-active {
 
 .intro-emblem-halo {
   position: absolute;
-  width: 210px;
-  height: 210px;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 210, 255, 0.45) 0%, rgba(255, 106, 0, 0.3) 50%, transparent 75%);
-  filter: blur(24px);
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.4) 0%, rgba(255, 106, 0, 0.25) 50%, transparent 75%);
+  pointer-events: none;
   animation: introHaloPulse 2.4s ease-in-out infinite alternate;
 }
 
 .intro-emblem-ring {
   position: absolute;
-  inset: -14px;
+  inset: -12px;
   border-radius: 50%;
   pointer-events: none;
 }
 
 .intro-emblem-ring.ring-1 {
-  border: 2px solid rgba(0, 210, 255, 0.6);
+  border: 2px solid rgba(0, 210, 255, 0.65);
   border-top-color: #00d2ff;
   border-bottom-color: transparent;
   transform: rotateX(68deg) rotateZ(0deg);
-  animation: introSpinRing1 2.2s linear infinite;
-  box-shadow: 0 0 20px rgba(0, 210, 255, 0.45);
+  animation: introSpinRing1 2.4s linear infinite;
 }
 
 .intro-emblem-ring.ring-2 {
-  border: 2px solid rgba(255, 106, 0, 0.6);
+  border: 2px solid rgba(255, 106, 0, 0.65);
   border-left-color: #ff6a00;
   border-right-color: transparent;
   transform: rotateY(68deg) rotateZ(0deg);
-  animation: introSpinRing2 2.6s linear infinite;
-  box-shadow: 0 0 20px rgba(255, 106, 0, 0.45);
+  animation: introSpinRing2 2.8s linear infinite;
 }
 
 .intro-emblem-img {
-  width: 185px;
-  height: 185px;
+  width: 175px;
+  height: 175px;
   object-fit: contain;
   position: relative;
   z-index: 3;
-  filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 28px rgba(0, 210, 255, 0.5));
   animation: introEmblemFloat 2.4s ease-in-out infinite;
-  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.65s ease;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
 
-/* Tipografia de Destaque */
+/* Tipografia */
 .intro-brand-reveal {
   margin-bottom: 0;
-  animation: introTextReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: introTextReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .intro-brand-title {
   margin: 0 0 8px;
   font-family: var(--font-main, 'Plus Jakarta Sans', sans-serif);
-  font-size: 2.6rem;
+  font-size: 2.5rem;
   font-weight: 900;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.15em;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7989,151 +7921,39 @@ body.intro-active {
   background: linear-gradient(135deg, #ffffff 15%, #ff9900 65%, #ff6a00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 18px rgba(255, 106, 0, 0.5));
 }
 
 .intro-word-forge {
   background: linear-gradient(135deg, #ffffff 15%, #00d2ff 70%, #00a6ff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 18px rgba(0, 210, 255, 0.5));
 }
 
 .intro-word-3d {
   display: inline-block;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 800;
-  padding: 3px 10px;
+  padding: 3px 9px;
   border-radius: 6px;
   background: rgba(0, 210, 255, 0.14);
   border: 1px solid rgba(0, 210, 255, 0.55);
   color: #00d2ff;
   letter-spacing: 0.08em;
-  box-shadow: 0 0 16px rgba(0, 210, 255, 0.35);
 }
 
 .intro-brand-tagline {
   margin: 0;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* ==========================================================================
-   Keyframes da Tinta Líquida e Efeitos de Luz
-   ========================================================================== */
-@keyframes introInkCurtainReveal {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-    filter: blur(0px);
-  }
-  30% {
-    opacity: 1;
-    filter: blur(4px);
-  }
-  70% {
-    opacity: 0.35;
-    filter: blur(14px);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.08);
-    filter: blur(20px);
-    visibility: hidden;
-    pointer-events: none;
-  }
-}
-
-@keyframes inkBlobCyanExpand {
-  0% {
-    transform: scale(0.1) rotate(0deg);
-    opacity: 0.95;
-  }
-  50% {
-    opacity: 0.85;
-  }
-  100% {
-    transform: scale(6.5) rotate(140deg);
-    opacity: 0;
-  }
-}
-
-@keyframes inkBlobOrangeExpand {
-  0% {
-    transform: scale(0.1) rotate(0deg);
-    opacity: 0.95;
-  }
-  50% {
-    opacity: 0.85;
-  }
-  100% {
-    transform: scale(6.8) rotate(-160deg);
-    opacity: 0;
-  }
-}
-
-@keyframes inkSplatterCyan {
-  0% {
-    transform: translate(0, 0) scale(0.1) rotate(0deg);
-    opacity: 0.9;
-  }
-  100% {
-    transform: translate(-15vw, -12vh) scale(5.8) rotate(220deg);
-    opacity: 0;
-  }
-}
-
-@keyframes inkSplatterOrange {
-  0% {
-    transform: translate(0, 0) scale(0.1) rotate(0deg);
-    opacity: 0.9;
-  }
-  100% {
-    transform: translate(15vw, 12vh) scale(6) rotate(-200deg);
-    opacity: 0;
-  }
-}
-
-@keyframes inkRingExpand {
-  0% {
-    transform: scale(0.1) rotate(0deg);
-    opacity: 1;
-  }
-  60% {
-    opacity: 0.75;
-  }
-  100% {
-    transform: scale(5.2) rotate(90deg);
-    opacity: 0;
-  }
-}
-
-@keyframes inkBurstFlash {
-  0% {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  40% {
-    opacity: 0.75;
-    transform: scale(1.15);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.4);
-  }
-}
-
-@keyframes introGlowPulse {
-  0% { transform: scale(0.9) translateY(0); opacity: 0.22; }
-  100% { transform: scale(1.1) translateY(-15px); opacity: 0.35; }
-}
-
+/* Keyframes de animação sem repainting */
 @keyframes introHaloPulse {
-  0% { transform: scale(0.92); opacity: 0.35; }
-  100% { transform: scale(1.12); opacity: 0.7; }
+  0% { transform: scale(0.94); opacity: 0.35; }
+  100% { transform: scale(1.08); opacity: 0.65; }
 }
 
 @keyframes introSpinRing1 {
@@ -8147,45 +7967,43 @@ body.intro-active {
 }
 
 @keyframes introEmblemFloat {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-8px) scale(1.03); }
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -6px, 0) scale(1.03); }
 }
 
 @keyframes introTextReveal {
-  0% { opacity: 0; transform: translateY(12px) scale(0.96); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+  0% { opacity: 0; transform: translate3d(0, 10px, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
 /* Responsividade Mobile para Abertura */
 @media (max-width: 768px) {
   .intro-emblem-wrap {
-    width: 170px;
-    height: 170px;
-    margin-bottom: 18px;
+    width: 165px;
+    height: 165px;
+    margin-bottom: 16px;
   }
   .intro-emblem-halo {
-    width: 160px;
-    height: 160px;
+    width: 150px;
+    height: 150px;
   }
   .intro-emblem-img {
-    width: 135px;
-    height: 135px;
+    width: 130px;
+    height: 130px;
   }
   .intro-brand-title {
-    font-size: 2rem;
+    font-size: 1.95rem;
     letter-spacing: 0.12em;
   }
   .intro-word-3d {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     padding: 2px 7px;
   }
   .intro-brand-tagline {
-    font-size: 0.72rem;
-    letter-spacing: 0.2em;
+    font-size: 0.70rem;
+    letter-spacing: 0.18em;
   }
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    Efeito 3D Depth nos Cards de Produto (Liquid Glass Cyberpunk)
    ========================================================================== */
 .product-card,

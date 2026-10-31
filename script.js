@@ -1547,20 +1547,20 @@ function setupSiteIntroLoader() {
     if (isDismissed) return;
     isDismissed = true;
 
-    // Dispara a onda expansiva de tinta líquida neon
+    // Dispara a onda fluida de luz neon
     loader.classList.add("intro-revealing");
 
-    // Remove trava de rolagem e finaliza esmaecimento após a tinta cobrir a tela
+    // Transição ultra-rápida e suave (450ms para dissolver a cortina com total fluidez)
     setTimeout(() => {
       loader.classList.add("intro-hidden");
       document.body.classList.remove("intro-active");
-    }, 700);
+    }, 450);
 
     // Oculta completamente do DOM após o término da animação
     setTimeout(() => {
       loader.style.display = "none";
       loader.setAttribute("aria-hidden", "true");
-    }, 920);
+    }, 750);
   }
 
   // Permitir fechamento instantâneo ao clicar em qualquer lugar da tela ou pressionar tecla
@@ -1569,8 +1569,8 @@ function setupSiteIntroLoader() {
     if (e.key === "Escape" || e.key === " " || e.key === "Enter") dismissIntro();
   }, { once: true });
 
-  // Exibe o logo imponente por 1.2s e então desencadeia a revelação fluida de tinta de luz
-  setTimeout(dismissIntro, 1200);
+  // Exibe o logo com presença por 850ms e então desencadeia a revelação fluida e instantânea
+  setTimeout(dismissIntro, 850);
 }
 
 function setupFaqAccordion() {
