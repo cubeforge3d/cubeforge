@@ -736,13 +736,51 @@ button {
     line-height: 1.15;
     letter-spacing: -0.7px;
     margin-bottom: 14px;
+    cursor: default;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  .desktop-hero-title:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Texto Branco: Ao passar o mouse, torna-se apenas contorno neon futurista (outline) */
+  .desktop-hero-title .hero-title-text {
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
+    -webkit-text-stroke: 0px transparent;
+    transition: color 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+                -webkit-text-fill-color 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+                -webkit-text-stroke 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+                text-shadow 0.42s ease;
+    display: inline;
+  }
+
+  .desktop-hero-title:hover .hero-title-text {
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.94);
+    text-shadow: 0 0 22px rgba(0, 210, 255, 0.45), 0 0 38px rgba(255, 106, 0, 0.28);
+  }
+
+  /* Texto Colorido: Degrade dinâmico que flui suavemente e ganha iluminação neon ao passar o mouse */
   .desktop-hero-title .gradient-text {
-    background: linear-gradient(135deg, #ff8533 0%, #ff5500 50%, #00d2ff 100%);
+    background: linear-gradient(135deg, #ff8533 0%, #ff5500 30%, #00d2ff 65%, #00f5a0 100%);
+    background-size: 240% 240%;
+    background-position: 0% 50%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 2px 14px rgba(255, 106, 0, 0.35));
+    transition: filter 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                background-position 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                letter-spacing 0.45s ease;
+    display: inline;
+  }
+
+  .desktop-hero-title:hover .gradient-text {
+    background-position: 100% 50%;
+    filter: drop-shadow(0 0 26px rgba(0, 210, 255, 0.85)) drop-shadow(0 0 40px rgba(255, 106, 0, 0.55));
+    letter-spacing: -0.2px;
   }
 
   .desktop-hero-subtitle {
