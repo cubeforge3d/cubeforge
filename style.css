@@ -3278,21 +3278,60 @@ button {
   color: #ffffff;
   font-size: 1.05rem;
   font-weight: 800;
-  padding: 16px 36px;
+  padding: 16px 32px;
   border-radius: var(--radius-pill);
   box-shadow: 
     inset 0 1px 1px rgba(255, 255, 255, 0.35),
     0 8px 25px rgba(37, 211, 102, 0.4);
   transition: all var(--transition-smooth);
-  width: auto !important;
-  max-width: fit-content;
+  width: auto;
+  max-width: 100%;
   margin: 0 auto;
+  white-space: nowrap !important;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.btn-whatsapp-large i {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.btn-whatsapp-large span {
+  white-space: nowrap !important;
 }
 
 .btn-whatsapp-large:hover {
   transform: translateY(-2px);
   filter: brightness(1.1);
   box-shadow: 0 12px 32px rgba(37, 211, 102, 0.55);
+}
+
+@media (max-width: 768px) {
+  .cta-banner {
+    padding: 30px 18px;
+  }
+  .btn-whatsapp-large {
+    padding: 14px 24px;
+    font-size: 0.98rem;
+    white-space: nowrap !important;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .cta-banner {
+    padding: 26px 14px;
+  }
+  .btn-whatsapp-large {
+    padding: 13px 18px;
+    font-size: 0.9rem;
+    white-space: nowrap !important;
+    gap: 7px;
+  }
+  .btn-whatsapp-large i {
+    font-size: 1.1rem;
+  }
 }
 
 /* ==========================================================================
