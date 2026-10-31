@@ -742,6 +742,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initInteractiveMotion();
   loadProductsData();
   setupGradientTextComponent();
+  setupMobileFloatingActionsVisibility();
 });
 /**
  * Componente GradientText (Inspirado no React Bits)
@@ -767,12 +768,18 @@ function initGradientText(el, options = {}) {
   const followPointer = options.followPointer ?? true;
   const pauseOnHover = options.pauseOnHover ?? false;
 
+  // Destrói instância anterior no elemento se houver
+  if (el._gtInstance && typeof el._gtInstance.destroy === 'function') {
+    try { el._gtInstance.destroy(); } catch (e) {}
+  }
+
   // Garante que a estrutura interna contenha __inner, __content e __glow
   let contentSpan = el.querySelector('.gradient-text__content');
   let glowSpan = el.querySelector('.gradient-text__glow');
 
   if (!contentSpan) {
-    const rawText = el.textContent.trim();
+    const rawText = el.dataset.gtText || (contentSpan ? contentSpan.textContent.trim() : el.textContent.trim());
+    el.dataset.gtText = rawText;
     el.innerHTML = `
       <span class="gradient-text__inner">
         <span class="gradient-text__content">${rawText}</span>
@@ -907,7 +914,7 @@ function initGradientText(el, options = {}) {
   paint();
   wake();
 
-  return {
+  const instance = {
     destroy: () => {
       alive = false;
       cancelAnimationFrame(raf);
@@ -917,6 +924,8 @@ function initGradientText(el, options = {}) {
       parentTitle.removeEventListener('pointerleave', onLeave);
     }
   };
+  el._gtInstance = instance;
+  return instance;
 }
 
 function setupGradientTextComponent() {
@@ -938,16 +947,65 @@ function setupGradientTextComponent() {
   const mobileBrandForge = document.querySelector('.brand-name .brand-forge');
   if (mobileBrandForge) {
     initGradientText(mobileBrandForge, {
-      colors: ['#ff9933', '#ff5500', '#ffaa00', '#ff3300'],
+      colors: ['#ff8533', '#ffaa00', '#ffffff', '#ff5500', '#ff3300'],
       animationSpeed: 5,
       variant: 'flow',
       angle: 135,
       scale: 2.2,
-      glow: 0.4,
+      glow: 0.48,
       followPointer: false,
       pauseOnHover: false
     });
   }
+}
+
+/**
+ * Controla a visibilidade dos botões flutuantes no mobile para não sobrepor o Hero
+ */
+function setupMobileFloatingActionsVisibility() {
+  const waContainer = document.querySelector('.floating-whatsapp-container');
+  const cartContainer = document.getElementById('mobile-cart-container');
+  if (!waContainer && !cartContainer) return;
+
+  const update = () => {
+    if (window.innerWidth >= 992) {
+      if (waContainer) waContainer.classList.remove('floating-bottom-hidden');
+      if (cartContainer) cartContainer.classList.remove('floating-bottom-hidden');
+      return;
+    }
+
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const isAtTop = scrollY < 65;
+
+    // Se o usuário está no topo da tela do celular, o botão de WhatsApp do Hero já está em foco
+    if (waContainer) {
+      if (isAtTop) {
+        waContainer.classList.add('floating-bottom-hidden');
+      } else {
+        waContainer.classList.remove('floating-bottom-hidden');
+      }
+    }
+
+    // Carrinho: se estiver vazio e no topo, fica oculto para não sobrepor os botões do Hero
+    if (cartContainer) {
+      let hasItems = false;
+      try {
+        const cart = (typeof getCart === 'function') ? getCart() : [];
+        hasItems = cart && cart.length > 0;
+      } catch (e) {}
+
+      if (isAtTop && !hasItems) {
+        cartContainer.classList.add('floating-bottom-hidden');
+      } else {
+        cartContainer.classList.remove('floating-bottom-hidden');
+      }
+    }
+  };
+
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update, { passive: true });
+  setTimeout(update, 200);
+  setTimeout(update, 1200);
 }
 
 
@@ -969,6 +1027,9 @@ function setupBrandInfo() {
 
   const currentYear = document.getElementById("current-year");
   if (currentYear) currentYear.textContent = new Date().getFullYear();
+
+  // Re-aplica o gradiente dinâmico no mobile se o título da marca foi renderizado
+  setupGradientTextComponent();
 
   // Links do WhatsApp
   const defaultOrderWhatsAppUrl = createWhatsappUrl(whatsappNumber, defaultWhatsappMsg);

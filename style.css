@@ -668,6 +668,130 @@ button {
 }
 
 /* ==========================================================================
+   GradientText Component (React Bits Inspired)
+   Living Mesh Gradient com Bloom Glow e Rastreamento Dinâmico de Cursor
+   Universal (Mobile, Tablet e Desktop)
+   ========================================================================== */
+.gradient-text {
+  --gt-gradient: linear-gradient(135deg, #ff8533 0%, #ff5500 30%, #00d2ff 65%, #00f5a0 100%);
+  --gt-border: 1.5px;
+  --gt-glow: 0.45;
+  position: relative;
+  display: inline;
+  isolation: isolate;
+  vertical-align: baseline;
+}
+
+.gradient-text--border {
+  padding: 0.35em 0.75em;
+  border-radius: 999px;
+}
+
+.gradient-text--border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: var(--gt-border, 1.5px);
+  border-radius: inherit;
+  background-image: var(--gt-gradient);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+
+.gradient-text__inner {
+  position: relative;
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.gradient-text__content {
+  display: inline-block;
+  background-image: var(--gt-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 14px rgba(255, 106, 0, 0.35));
+  will-change: background-image;
+  transition: filter 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              letter-spacing 0.45s ease;
+}
+
+.gradient-text__glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--gt-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: blur(0.28em) saturate(1.5);
+  opacity: var(--gt-glow, 0.45);
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.45s ease;
+  will-change: background-image, opacity;
+}
+
+/* Customização para a palavra FORGE com GradientText no Mobile e Desktop */
+.brand-forge.gradient-text {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+  filter: none !important;
+  display: inline-flex !important;
+  align-items: baseline !important;
+  vertical-align: baseline !important;
+  position: relative;
+}
+
+.brand-forge.gradient-text .gradient-text__inner {
+  display: inline-flex;
+  align-items: baseline;
+  vertical-align: baseline;
+  position: relative;
+}
+
+.brand-forge.gradient-text .gradient-text__content {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  filter: drop-shadow(0 2px 10px rgba(255, 106, 0, 0.45));
+}
+
+.brand-forge.gradient-text .gradient-text__glow {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  filter: blur(0.25em) saturate(1.6);
+  opacity: 0.52;
+}
+
+/* Transição suave e ocultação dos botões flutuantes quando no topo do Hero no Mobile */
+@media (max-width: 991px) {
+  .floating-whatsapp-container,
+  .mobile-cart-float-container {
+    transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.32s ease !important;
+  }
+  .floating-bottom-hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(28px) scale(0.92) !important;
+  }
+}
+
+/* ==========================================================================
    Versão Widescreen Exclusiva para Computador (>= 992px)
    Layout Studio Rico, Visual, Encaixado e Sem Espaços Vazios
    ========================================================================== */
@@ -783,77 +907,6 @@ button {
     -webkit-text-fill-color: transparent;
     -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.94);
     text-shadow: 0 0 22px rgba(0, 210, 255, 0.45), 0 0 38px rgba(255, 106, 0, 0.28);
-  }
-
-  /* ==========================================================================
-     GradientText Component (React Bits Inspired)
-     Living Mesh Gradient com Bloom Glow e Rastreamento Dinâmico de Cursor
-     ========================================================================== */
-  .gradient-text {
-    --gt-gradient: linear-gradient(135deg, #ff8533 0%, #ff5500 30%, #00d2ff 65%, #00f5a0 100%);
-    --gt-border: 1.5px;
-    --gt-glow: 0.45;
-    position: relative;
-    display: inline;
-    isolation: isolate;
-    vertical-align: baseline;
-  }
-
-  .gradient-text--border {
-    padding: 0.35em 0.75em;
-    border-radius: 999px;
-  }
-
-  .gradient-text--border::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    padding: var(--gt-border, 1.5px);
-    border-radius: inherit;
-    background-image: var(--gt-gradient);
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#000 0 0) content-box exclude,
-      linear-gradient(#000 0 0);
-    pointer-events: none;
-  }
-
-  .gradient-text__inner {
-    position: relative;
-    display: inline-block;
-    vertical-align: baseline;
-  }
-
-  .gradient-text__content {
-    display: inline-block;
-    background-image: var(--gt-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 2px 14px rgba(255, 106, 0, 0.35));
-    will-change: background-image;
-    transition: filter 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                letter-spacing 0.45s ease;
-  }
-
-  .gradient-text__glow {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background-image: var(--gt-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: blur(0.28em) saturate(1.5);
-    opacity: var(--gt-glow, 0.45);
-    pointer-events: none;
-    user-select: none;
-    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                filter 0.45s ease;
-    will-change: background-image, opacity;
   }
 
   /* Efeito Hover Sincronizado com o Título Hero */
