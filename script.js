@@ -1902,6 +1902,13 @@ function setCartStep(step) {
     renderCartStep3();
     const deliveryBody = document.querySelector(".cart-delivery-body");
     if (deliveryBody) deliveryBody.scrollTop = 0;
+
+    // Dispara cálculo de frete na Etapa 3 se já houver CEP salvo e ainda não calculado
+    const cepInput = document.getElementById("checkout-cust-cep");
+    const cleanCep = (cepInput?.value || "").replace(/\D/g, "");
+    if (cleanCep.length === 8 && !selectedShippingOption) {
+      calculateShippingForCart(cleanCep, true);
+    }
   }
 
   updateCartValidation();
@@ -2362,11 +2369,7 @@ function loadSavedCustomerData() {
       if (cityInput && data.city) cityInput.value = data.city;
       if (addressWrapper && (data.street || data.number)) addressWrapper.style.display = "block";
 
-      // Pré-calcula frete se CEP salvo for válido
-      const cleanCep = data.cep.replace(/\D/g, "");
-      if (cleanCep.length === 8) {
-        calculateShippingForCart(cleanCep, true);
-      }
+      // Nota: o frete agora só é calculado quando o cliente avançar para a Etapa 3 (Entrega)
     }
   } catch (e) {}
 }
@@ -2437,7 +2440,7 @@ function initDeliveryAndShippingEvents() {
   if (cityInput) {
     cityInput.addEventListener("click", () => {
       if (!cityInput.value.trim()) {
-        showCartToast("Digite o CEP acima para preencher a Cidade e Estado", "warning", "Preenchimento automático");
+        showCartToast("Informe seu CEP", "warning", "Para calcular o frete");
         if (cepInput) cepInput.focus();
       }
     });
@@ -2595,24 +2598,21 @@ function renderCartStep3() {
     summaryTotal.textContent = formatBRL(grandTotal);
   }
 
-  // Atualiza também os totais da Etapa 1
+  // Na Etapa 1, os totais refletem SEMPRE apenas os itens, sem frete antecipado
   const step1Shipping = document.getElementById("step1-shipping-label");
   const cartTotalDisplay = document.getElementById("cart-total-display");
   const cartFixedTotal = document.getElementById("cart-fixed-total-display");
 
   if (step1Shipping) {
-    if (selectedShippingOption) {
-      step1Shipping.textContent = selectedShippingOption.price === 0 ? "Grátis" : formatBRL(selectedShippingOption.price);
-    } else {
-      step1Shipping.textContent = "A calcular na etapa de entrega ›";
-    }
+    step1Shipping.textContent = "A calcular na etapa de entrega ›";
   }
 
+  // Na Etapa 1 e barra inferior fixa, o total é SEMPRE apenas a soma dos itens
   if (cartTotalDisplay) {
-    cartTotalDisplay.textContent = formatBRL(grandTotal);
+    cartTotalDisplay.textContent = formatBRL(itemsPrice);
   }
   if (cartFixedTotal) {
-    cartFixedTotal.textContent = formatBRL(grandTotal);
+    cartFixedTotal.textContent = formatBRL(itemsPrice);
   }
 
   updateCartValidation();
@@ -3835,10 +3835,9 @@ function setupCartListeners() {
       const hasOrderOnly = cart.some(item => Boolean(item.somente_encomenda));
       const hasNotes = notesInput ? (notesInput.value.trim().length > 0) : false;
       if (hasOrderOnly || hasNotes) {
-        const msg = hasNotes 
-          ? "Pedido com observação: combine pelo WhatsApp"
-          : "Item sob encomenda: combine pelo WhatsApp";
-        showCartToast(msg, "warning", "Pagamento no cartão indisponível para personalizações");
+        const title = hasNotes ? "Item personalizado" : "Item sob encomenda";
+        const subtitle = "Finalize pelo WhatsApp";
+        showCartToast(title, "warning", subtitle);
         
         // Destaca o botão do WhatsApp para guiar o cliente
         const zapBtn = document.getElementById("btn-checkout-whatsapp");
@@ -3894,10 +3893,9 @@ function setupCartListeners() {
       const hasOrderOnly = cart.some(item => Boolean(item.somente_encomenda));
       const hasNotes = notesInput ? (notesInput.value.trim().length > 0) : false;
       if (hasOrderOnly || hasNotes) {
-        const msg = hasNotes 
-          ? "Pedido com observação: combine pelo WhatsApp"
-          : "Item sob encomenda: combine pelo WhatsApp";
-        showCartToast(msg, "warning", "Pagamento no cartão indisponível para personalizações");
+        const title = hasNotes ? "Item personalizado" : "Item sob encomenda";
+        const subtitle = "Finalize pelo WhatsApp";
+        showCartToast(title, "warning", subtitle);
         
         // Destaca o botão do WhatsApp para guiar o cliente
         const zapBtn = document.getElementById("btn-checkout-whatsapp");
