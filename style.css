@@ -4633,14 +4633,17 @@ button {
     gap: 8px;
     padding: 10px 16px;
     border-radius: var(--radius-pill);
-    background: rgba(16, 22, 34, 0.75);
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(135deg, rgba(22, 30, 48, 0.92) 0%, rgba(14, 20, 34, 0.92) 100%) !important;
+    backdrop-filter: blur(24px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+    border: 1.2px solid rgba(255, 255, 255, 0.22) !important;
     color: #ffffff;
     font-weight: 700;
     font-size: 0.86rem;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
+    box-shadow: 
+      0 12px 32px rgba(0, 0, 0, 0.75),
+      inset 0 1px 1px rgba(255, 255, 255, 0.32),
+      0 0 16px rgba(0, 210, 255, 0.15) !important;
     cursor: pointer;
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
@@ -4667,6 +4670,20 @@ button {
     justify-content: center;
     padding: 0 5px;
     box-shadow: 0 0 10px rgba(255, 106, 0, 0.6);
+  }
+
+  .mobile-cart-label {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 0.88rem !important;
+    letter-spacing: 0.2px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .mobile-cart-float-btn i {
+    font-size: 1.05rem;
+    color: #ff8533 !important;
+    filter: drop-shadow(0 2px 6px rgba(255, 106, 0, 0.7));
   }
 
   .cart-pulse-ring {
@@ -7977,16 +7994,41 @@ body.intro-active {
   -webkit-user-select: none;
   cursor: pointer;
   transform: translate3d(0, 0, 0);
-  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-              visibility 0.55s;
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.75s;
   will-change: opacity, transform;
 }
 
 .site-intro-loader.intro-revealing {
   opacity: 0 !important;
-  transform: scale(1.05) translate3d(0, 0, 0) !important;
+  transform: scale(1.04) translate3d(0, -6px, 0) !important;
   pointer-events: none !important;
+}
+
+.site-intro-loader.intro-revealing .intro-frosted-backdrop {
+  opacity: 0;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              backdrop-filter 0.75s ease,
+              -webkit-backdrop-filter 0.75s ease;
+}
+
+.site-intro-loader.intro-revealing .intro-frosted-panel {
+  opacity: 0;
+  transform: scale(1.05) translate3d(0, -10px, 0);
+  box-shadow: 0 0 60px rgba(0, 210, 255, 0.45), 0 0 70px rgba(255, 106, 0, 0.35);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.65s ease;
+}
+
+.site-intro-loader.intro-revealing .intro-radial-core-glow {
+  transform: translate(-50%, -50%) scale(1.6);
+  opacity: 0.85;
+  transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .site-intro-loader.intro-hidden {
@@ -8068,6 +8110,67 @@ body.intro-active {
     transform: scale(1.15) translate3d(10px, -10px, 0);
     opacity: 0.90;
   }
+}
+
+/* Efeitos de Luzes Suaves, Feixes Difusos e Bloom Central na Vinheta */
+.intro-ambient-light-beam {
+  position: absolute;
+  top: -25%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
+  background: radial-gradient(ellipse 65% 50% at 50% 50%, rgba(0, 210, 255, 0.16) 0%, rgba(255, 106, 0, 0.13) 45%, transparent 75%);
+  filter: blur(55px);
+  pointer-events: none;
+  animation: introBeamDrift 6s ease-in-out infinite alternate;
+}
+
+@keyframes introBeamDrift {
+  0% { transform: rotate(-4deg) scale(0.96); opacity: 0.65; }
+  100% { transform: rotate(4deg) scale(1.08); opacity: 0.95; }
+}
+
+.intro-radial-core-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 520px;
+  height: 520px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 106, 0, 0.40) 0%, rgba(0, 210, 255, 0.30) 45%, transparent 72%);
+  filter: blur(65px);
+  pointer-events: none;
+  animation: introCorePulse 3.6s ease-in-out infinite alternate;
+}
+
+@keyframes introCorePulse {
+  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.95; }
+}
+
+.intro-glass-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.16) 48%, rgba(0, 210, 255, 0.12) 53%, transparent 75%);
+  pointer-events: none;
+  background-size: 200% 200%;
+  animation: introShimmerGlide 4.5s ease-in-out infinite;
+}
+
+@keyframes introShimmerGlide {
+  0% { background-position: 150% 0%; }
+  100% { background-position: -50% 100%; }
+}
+
+.intro-emblem-aura {
+  position: absolute;
+  width: 155px;
+  height: 155px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 106, 0, 0.55) 0%, rgba(0, 210, 255, 0.35) 55%, transparent 75%);
+  filter: blur(24px);
+  animation: introHaloPulse 2.8s ease-in-out infinite alternate;
 }
 
 /* Camada Geral de Vidro Fosco Acrílico (Frosted Backdrop) */
@@ -8212,69 +8315,12 @@ body.intro-active {
 }
 
 /* =====================================================================
-   Cascata de Revelação Suave do Site e Entrada dos Itens Flutuantes
+   Revelação Limpa e Estável do Site (Sem saltos ou itens voando)
    ===================================================================== */
-/* Enquanto a introdução estiver ativa, itens flutuantes ficam preparados em offset */
-body.intro-active .hero-mobile-avatar,
-body.intro-active .brand-name,
-body.intro-active .brand-handle,
-body.intro-active .brand-bio,
-body.intro-active .trust-tags .tag,
-body.intro-active .action-buttons-group .btn,
-body.intro-active .mobile-cart-float-container,
-body.intro-active .floating-whatsapp-container,
-body.intro-active .desktop-navbar,
-body.intro-active .desktop-hero-left,
-body.intro-active .desktop-hero-right {
-  opacity: 0;
-  pointer-events: none;
-}
+/* O site já fica em sua posição de repouso natural por baixo do preloader.
+   A vinheta dissolve com luzes suaves e revela o site de forma sólida e coesa. */
 
-/* Mobile: Cascata de entrada fluida dos itens flutuantes */
-body.site-revealed .hero-mobile-avatar {
-  animation: floatEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.04s forwards;
-}
-
-body.site-revealed .brand-name,
-body.site-revealed .brand-handle {
-  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.10s forwards;
-}
-
-body.site-revealed .brand-bio {
-  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.16s forwards;
-}
-
-body.site-revealed .trust-tags .tag:nth-child(1) {
-  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.20s forwards;
-}
-body.site-revealed .trust-tags .tag:nth-child(2) {
-  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
-}
-body.site-revealed .trust-tags .tag:nth-child(3) {
-  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.30s forwards;
-}
-body.site-revealed .trust-tags .tag:nth-child(4) {
-  animation: floatEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
-}
-
-body.site-revealed .action-buttons-group .btn:nth-child(1) {
-  animation: floatEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.40s forwards;
-}
-body.site-revealed .action-buttons-group .btn:nth-child(2) {
-  animation: floatEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.46s forwards;
-}
-body.site-revealed .action-buttons-group .btn:nth-child(3) {
-  animation: floatEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.52s forwards;
-}
-
-body.site-revealed .mobile-cart-float-container {
-  animation: floatEntranceBottom 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.56s forwards;
-}
-body.site-revealed .floating-whatsapp-container {
-  animation: floatEntranceBottom 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.56s forwards;
-}
-
-/* Desktop: Entrada suave da navbar e colunas hero */
+/* Desktop: Painel da vinheta adaptado */
 @media (min-width: 992px) {
   .intro-frosted-panel {
     max-width: 480px;
@@ -8298,18 +8344,6 @@ body.site-revealed .floating-whatsapp-container {
 
   .intro-brand-tagline {
     font-size: 0.84rem;
-  }
-
-  body.site-revealed .desktop-navbar {
-    animation: floatNavbar 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.04s forwards;
-  }
-
-  body.site-revealed .desktop-hero-left {
-    animation: floatHeroLeft 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.10s forwards;
-  }
-
-  body.site-revealed .desktop-hero-right {
-    animation: floatHeroRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.16s forwards;
   }
 }
 

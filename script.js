@@ -2086,21 +2086,21 @@ function setupSiteIntroLoader() {
     if (isDismissed) return;
     isDismissed = true;
 
-    // Dispara a revelação suave em névoa neon de vidro fosco
+    // Dispara a revelação suave em névoa de luzes suaves e dissolução de vidro fosco
     loader.classList.add("intro-revealing");
     document.body.classList.remove("intro-active");
     document.body.classList.add("site-revealed");
 
-    // Transição suave de 550ms dissolvendo o vidro fosco e névoa neon
+    // Transição suave de 750ms dissolvendo o vidro fosco e névoa neon
     setTimeout(() => {
       loader.classList.add("intro-hidden");
-    }, 550);
+    }, 750);
 
     // Oculta completamente do DOM após o término da animação
     setTimeout(() => {
       loader.style.display = "none";
       loader.setAttribute("aria-hidden", "true");
-    }, 950);
+    }, 1050);
   }
 
   // Permitir fechamento instantâneo ao clicar em qualquer lugar da tela ou pressionar tecla
@@ -2109,8 +2109,8 @@ function setupSiteIntroLoader() {
     if (e.key === "Escape" || e.key === " " || e.key === "Enter") dismissIntro();
   }, { once: true });
 
-  // Exibe o logo com presença por 850ms e então desencadeia a revelação fluida e instantânea
-  setTimeout(dismissIntro, 850);
+  // Exibe a vinheta com luzes suaves por 1.1s e então desencadeia a revelação suave
+  setTimeout(dismissIntro, 1100);
 }
 
 function setupFaqAccordion() {
