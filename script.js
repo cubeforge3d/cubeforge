@@ -974,27 +974,40 @@ function setupMobileFloatingActionsVisibility() {
       return;
     }
 
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    const isAtTop = scrollY < 65;
+    // Identificar o Hero e os botões de ação do Hero
+    const heroBtn = document.getElementById('hero-whatsapp-btn');
+    const heroActions = document.querySelector('.action-buttons-group');
+    const heroSection = document.querySelector('.hero-mobile-content') || document.querySelector('.hero-section');
 
-    // Se o usuário está no topo da tela do celular, o botão de WhatsApp do Hero já está em foco
+    let isHeroInView = false;
+    if (heroBtn) {
+      const rect = heroBtn.getBoundingClientRect();
+      // O botão do WhatsApp do Hero ainda está no viewport ou visível antes do usuário rolar além dele
+      isHeroInView = rect.bottom > 25;
+    } else if (heroActions) {
+      const rect = heroActions.getBoundingClientRect();
+      isHeroInView = rect.bottom > 25;
+    } else if (heroSection) {
+      const rect = heroSection.getBoundingClientRect();
+      isHeroInView = rect.bottom > 80;
+    } else {
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      isHeroInView = scrollY < 320;
+    }
+
+    // Enquanto o usuário estiver no Hero ou o botão principal estiver visível,
+    // os botões flutuantes ficam 100% ocultos para nunca sobrepor o CTA "Fazer Pedido no WhatsApp".
     if (waContainer) {
-      if (isAtTop) {
+      if (isHeroInView) {
         waContainer.classList.add('floating-bottom-hidden');
       } else {
         waContainer.classList.remove('floating-bottom-hidden');
       }
     }
 
-    // Carrinho: se estiver vazio e no topo, fica oculto para não sobrepor os botões do Hero
+    // Carrinho: no Hero fica sempre oculto para manter o visual limpo e sem sobreposição.
     if (cartContainer) {
-      let hasItems = false;
-      try {
-        const cart = (typeof getCart === 'function') ? getCart() : [];
-        hasItems = cart && cart.length > 0;
-      } catch (e) {}
-
-      if (isAtTop && !hasItems) {
+      if (isHeroInView) {
         cartContainer.classList.add('floating-bottom-hidden');
       } else {
         cartContainer.classList.remove('floating-bottom-hidden');
@@ -1004,8 +1017,14 @@ function setupMobileFloatingActionsVisibility() {
 
   window.addEventListener('scroll', update, { passive: true });
   window.addEventListener('resize', update, { passive: true });
-  setTimeout(update, 200);
-  setTimeout(update, 1200);
+  
+  // Atualizações imediatas e sincronizadas
+  update();
+  setTimeout(update, 50);
+  setTimeout(update, 300);
+  setTimeout(update, 900);
+  setTimeout(update, 1500);
+  setTimeout(update, 2500);
 }
 
 

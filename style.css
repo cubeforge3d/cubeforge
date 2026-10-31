@@ -8,8 +8,8 @@
   /* Cores Base da Logo */
   --bg-deep: #070a12;                 /* Preto Obsidiana Espacial */
   --bg-surface: #0c1220;              /* Azul Grafite Profundo */
-  --bg-card: rgba(16, 24, 40, 0.65);  /* Vidro Líquido Escuro Translúcido */
-  --bg-card-hover: rgba(22, 33, 56, 0.8);
+  --bg-card: rgba(14, 21, 38, 0.88);  /* Vidro Fosco Acrílico Escuro de Alto Contraste */
+  --bg-card-hover: rgba(20, 30, 52, 0.94);
   --bg-glass-input: rgba(255, 255, 255, 0.05);
 
   /* Acentos Principais da Logo (Laranja Fogo e Ciano Cristal) */
@@ -35,11 +35,11 @@
   --text-secondary: #94a3b8;          /* Titânio Claro / Prata */
   --text-muted: #64748b;              /* Grafite Médio */
 
-  /* Bordas de Vidro Líquido (Specular Highlights) */
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-border-focus: rgba(255, 255, 255, 0.22);
-  --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
-  --glass-specular-subtle: inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+  /* Bordas de Vidro Fosco Lapidado (Specular Highlights & Glow) */
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-border-focus: rgba(0, 210, 255, 0.45);
+  --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.28);
+  --glass-specular-subtle: inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
 
   /* Sombras e Difusões */
   --shadow-liquid: 0 14px 40px -10px rgba(0, 0, 0, 0.65);
@@ -89,8 +89,10 @@ body {
    Áreas iluminadas em movimento suave, contínuo e mais evidentes no fundo do site
    ========================================================================== */
 /* ==========================================================================
-   GhostFibers WebGL2 3D Background (Fibras Ópticas & Partículas Tridimensionais)
+   ColorBends WebGL Background (React Bits)
+   Ondas e Dobras Fluidas de Luz Neon: Laranja Forja (#ff6a00), Azul (#00d2ff) & Roxo (#9d4edd)
    ========================================================================== */
+.color-bends-container,
 .ghost-fibers-container {
   position: fixed;
   inset: 0;
@@ -100,9 +102,11 @@ body {
   pointer-events: none;
   z-index: 1;
   opacity: 1;
+  background: #080d18;
   transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.color-bends-canvas,
 .ghost-fibers-canvas {
   width: 100%;
   height: 100%;
@@ -390,21 +394,28 @@ button {
     display: none !important;
   }
 
-  /* Remove repaints de backdrop-filter contínuo em elementos que rolam no celular */
+  /* Otimização de Vidro Fosco Sólido no Celular: Mantém alto contraste e legibilidade perfeita sobre o ColorBends */
   .product-card,
   .showroom-product-card,
   .step-card,
-  .feature-strip-item,
-  .faq-item,
-  .btn,
-  .btn-card-cart,
-  .btn-card-direct,
-  .btn-card-buy-online,
-  .btn-card-order-zap,
-  .custom-idea-banner,
+  .faq-item {
+    background: rgba(14, 20, 36, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .cta-banner,
+  .custom-idea-banner {
+    background: rgba(14, 20, 36, 0.94) !important;
+    border: 1.2px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+  }
+
   .trust-tags .tag {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    background: rgba(16, 24, 42, 0.90) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
   }
 
   /* Suavização de rolagem nativa */
@@ -782,12 +793,17 @@ button {
 @media (max-width: 991px) {
   .floating-whatsapp-container,
   .mobile-cart-float-container {
-    transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.32s ease !important;
+    transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.32s ease, visibility 0.32s ease !important;
   }
-  .floating-bottom-hidden {
+  .floating-bottom-hidden,
+  body .floating-whatsapp-container.floating-bottom-hidden,
+  body .mobile-cart-float-container.floating-bottom-hidden,
+  body.site-revealed .floating-whatsapp-container.floating-bottom-hidden,
+  body.site-revealed .mobile-cart-float-container.floating-bottom-hidden {
     opacity: 0 !important;
+    visibility: hidden !important;
     pointer-events: none !important;
-    transform: translateY(28px) scale(0.92) !important;
+    transform: translateY(32px) scale(0.9) !important;
   }
 }
 
@@ -8399,8 +8415,6 @@ body.intro-active {
   body.intro-active .brand-bio,
   body.intro-active .trust-tags .tag,
   body.intro-active .action-buttons-group .btn,
-  body.intro-active .mobile-cart-float-container,
-  body.intro-active .floating-whatsapp-container,
   body.intro-active .desktop-navbar,
   body.intro-active .desktop-hero-left,
   body.intro-active .desktop-hero-right,
@@ -8410,8 +8424,6 @@ body.intro-active {
   body.site-revealed .brand-bio,
   body.site-revealed .trust-tags .tag,
   body.site-revealed .action-buttons-group .btn,
-  body.site-revealed .mobile-cart-float-container,
-  body.site-revealed .floating-whatsapp-container,
   body.site-revealed .desktop-navbar,
   body.site-revealed .desktop-hero-left,
   body.site-revealed .desktop-hero-right {

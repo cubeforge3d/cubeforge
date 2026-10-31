@@ -999,6 +999,7 @@ void main() {
 
   // Auto-inicializar quando DOM estiver pronto se o elemento existir
   function autoInit() {
+    if (window._colorBendsInstance) return;
     const container = document.getElementById('ghost-fibers-bg');
     if (container && !window.ghostFibersInstance) {
       window.ghostFibersInstance = initGhostFibers(container, {
