@@ -1602,6 +1602,9 @@ window.removeFromCart = function(productId) {
 
 window.clearCart = function() {
   if (cart.length === 0) return;
+  // Se estiver no modo compra direta, descarta o backup pois o usuário quer limpar tudo
+  isDirectBuyMode = false;
+  savedCartBeforeDirectBuy = null;
   cart = [];
   saveCart();
   const notesInput = document.getElementById("cart-custom-notes");
@@ -1757,6 +1760,26 @@ function updateCartUI() {
  * ============================================================================
  */
 let currentCartStep = 1;
+
+// Modo de compra direta: isola o produto clicado sem misturar com o carrinho existente
+let isDirectBuyMode = false;
+let savedCartBeforeDirectBuy = null;
+
+/**
+ * Sai do modo compra direta, restaurando o carrinho original do cliente.
+ * Chamada ao fechar o drawer, voltar etapas, ou limpar o carrinho.
+ */
+function exitDirectBuyMode() {
+  if (!isDirectBuyMode) return;
+  if (savedCartBeforeDirectBuy) {
+    cart = savedCartBeforeDirectBuy;
+    savedCartBeforeDirectBuy = null;
+  }
+  isDirectBuyMode = false;
+  saveCart();
+  updateCartUI();
+}
+window.exitDirectBuyMode = exitDirectBuyMode;
 
 function setCartStep(step) {
   currentCartStep = step;
@@ -2558,6 +2581,9 @@ window.closeCart = function() {
   }
   const confirmBar = document.getElementById("cart-clear-confirm-bar");
   if (confirmBar) confirmBar.classList.remove("active");
+
+  // Restaura o carrinho original se estava no modo compra direta
+  exitDirectBuyMode();
 };
 
 /**
@@ -2676,25 +2702,23 @@ window.buySingleProductOnline = function(productId, e) {
     closeProductModal();
   }
 
-  // Remove eventuais itens sob encomenda do carrinho para não bloquear o checkout online
-  cart = cart.filter(item => !item.somente_encomenda);
+  // Salva o carrinho original antes de isolar o produto único para compra direta
+  savedCartBeforeDirectBuy = JSON.parse(JSON.stringify(cart));
+  isDirectBuyMode = true;
 
-  // Garante que o produto clicado está presente no carrinho
-  const existing = cart.find(item => item.id === productId);
-  if (!existing) {
-    cart.push({
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      numericPrice: parseItemPrice(product.price),
-      image: product.image,
-      icon: product.icon,
-      categoryName: product.categoryName,
-      estoque: product.estoque || 0,
-      somente_encomenda: false,
-      quantity: 1
-    });
-  }
+  // Substitui o carrinho inteiro pelo produto clicado (isolado dos demais itens)
+  cart = [{
+    id: product.id,
+    title: product.title,
+    price: product.price,
+    numericPrice: parseItemPrice(product.price),
+    image: product.image,
+    icon: product.icon,
+    categoryName: product.categoryName,
+    estoque: product.estoque || 0,
+    somente_encomenda: false,
+    quantity: 1
+  }];
 
   saveCart();
   updateCartUI();
@@ -2850,6 +2874,11 @@ async function checkoutCartOnlineInfinitePay(e) {
     return;
   }
 
+  if (!custBairro) {
+    highlightFieldError(custBairroEl, "Informe o bairro do endereço de entrega.");
+    return;
+  }
+
   // Salva no localStorage para próxima visita
   saveCustomerDeliveryData({
     name: custName,
@@ -2980,6 +3009,15 @@ async function checkoutCartOnlineInfinitePay(e) {
 
     const data = await response.json();
     if (data && data.url) {
+      // Após checkout bem-sucedido no modo compra direta, restaura o carrinho original
+      // (sem o item que acabou de ser comprado) para que o cliente não perca os demais itens
+      if (isDirectBuyMode && savedCartBeforeDirectBuy) {
+        const purchasedId = cart.length > 0 ? cart[0].id : null;
+        cart = savedCartBeforeDirectBuy.filter(item => item.id !== purchasedId);
+        isDirectBuyMode = false;
+        savedCartBeforeDirectBuy = null;
+        saveCart();
+      }
       if (checkoutWindow) {
         checkoutWindow.location.href = data.url;
       } else {
@@ -3162,8 +3200,13 @@ function setupCartListeners() {
   const btnBackStep = document.getElementById("cart-back-step-btn");
   if (btnBackStep) {
     btnBackStep.addEventListener("click", () => {
-      if (currentCartStep === 3) setCartStep(2);
-      else if (currentCartStep === 2) setCartStep(1);
+      if (currentCartStep === 3) {
+        // Se está no modo compra direta, restaura o carrinho original antes de voltar
+        exitDirectBuyMode();
+        setCartStep(2);
+      } else if (currentCartStep === 2) {
+        setCartStep(1);
+      }
     });
   }
 
@@ -3176,7 +3219,10 @@ function setupCartListeners() {
   // Botão Voltar para Pagamento (Etapa 3 -> Etapa 2)
   const btnBackToPayment = document.getElementById("btn-back-to-payment");
   if (btnBackToPayment) {
-    btnBackToPayment.addEventListener("click", () => setCartStep(2));
+    btnBackToPayment.addEventListener("click", () => {
+      exitDirectBuyMode();
+      setCartStep(2);
+    });
   }
 
   // Pílulas do Stepper (Navegação direta no topo)
