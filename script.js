@@ -690,6 +690,8 @@ document.addEventListener("DOMContentLoaded", () => {
   loadCart();
   setupCartListeners();
   initInteractiveMotion();
+  initScrollReveal();
+  initMetricsCounters();
   loadProductsData();
 });
 
@@ -815,7 +817,7 @@ function renderCatalog(filterCategory = "all") {
 
   filteredItems.forEach((item, index) => {
     const card = document.createElement("div");
-    card.className = "product-card animate-card";
+    card.className = "product-card animate-card cf-reveal cf-in-view";
     card.style.animationDelay = `${index * 0.05}s`;
 
     // Imagem ou ícone estilizado 3D
@@ -4101,7 +4103,7 @@ function initInteractiveMotion() {
     .filter-btn
   `;
 
-  // Atualizar iluminação especular apenas dentro do widget/botão sob o cursor
+  // Atualizar iluminação especular e 3D tilt apenas dentro do card/widget sob o cursor
   document.addEventListener("mousemove", (e) => {
     const el = e.target.closest(interactiveElementsSelector);
     if (el) {
@@ -4110,15 +4112,111 @@ function initInteractiveMotion() {
       const y = e.clientY - rect.top;
       el.style.setProperty("--mouse-x", `${x}px`);
       el.style.setProperty("--mouse-y", `${y}px`);
+
+      // 3D tilt sutil em cartões de produtos no desktop (inspirado em Mana Mate)
+      if (el.classList.contains("product-card") || el.classList.contains("showroom-product-card")) {
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -4; // máx 4 graus
+        const rotateY = ((x - centerX) / centerX) * 4;  // máx 4 graus
+        el.style.transform = `perspective(900px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-6px) scale3d(1.015, 1.015, 1.015)`;
+      }
     }
   }, { passive: true });
 
-  // Desativar iluminação quando o cursor sair do widget/botão
+  // Desativar iluminação e restaurar ângulo quando o cursor sair do elemento
   document.addEventListener("mouseout", (e) => {
     const el = e.target.closest(interactiveElementsSelector);
     if (el && (!e.relatedTarget || !el.contains(e.relatedTarget))) {
       el.style.setProperty("--mouse-x", "-500px");
       el.style.setProperty("--mouse-y", "-500px");
+      if (el.classList.contains("product-card") || el.classList.contains("showroom-product-card")) {
+        el.style.transform = "";
+      }
     }
   }, { passive: true });
 }
+
+
+/* ============================================================================
+   SISTEMA DE ANIMAÇÕES DINÂMICAS & SCROLL REVEAL (Inspirado no Mana Yerba Mate)
+   Leve, sem dependências externas, 60fps no mobile e no PC
+   ============================================================================ */
+
+/**
+ * Revela elementos com física de mola suave conforme entram na tela
+ */
+function initScrollReveal() {
+  const revealElements = document.querySelectorAll(".cf-reveal");
+  if (!revealElements || revealElements.length === 0) return;
+
+  if (!("IntersectionObserver" in window)) {
+    revealElements.forEach(el => el.classList.add("cf-in-view"));
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("cf-in-view");
+        obs.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.12,
+    rootMargin: "0px 0px -40px 0px"
+  });
+
+  revealElements.forEach(el => observer.observe(el));
+}
+window.initScrollReveal = initScrollReveal;
+
+/**
+ * Anima os contadores numéricos de métricas com easing suave
+ */
+function initMetricsCounters() {
+  const counters = document.querySelectorAll(".metric-counter");
+  if (!counters || counters.length === 0) return;
+
+  if (!("IntersectionObserver" in window)) {
+    counters.forEach(c => {
+      const targetVal = c.getAttribute("data-target");
+      c.textContent = targetVal;
+    });
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const targetVal = parseFloat(el.getAttribute("data-target")) || 0;
+        const decimals = parseInt(el.getAttribute("data-decimals"), 10) || 0;
+        const duration = 1500; // 1.5s
+        const startTime = performance.now();
+
+        function updateCounter(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          // Ease-out cubic: 1 - (1 - progress)^3
+          const easeProgress = 1 - Math.pow(1 - progress, 3);
+          const currentVal = targetVal * easeProgress;
+
+          el.textContent = decimals > 0 ? currentVal.toFixed(decimals) : Math.floor(currentVal);
+
+          if (progress < 1) {
+            requestAnimationFrame(updateCounter);
+          } else {
+            el.textContent = decimals > 0 ? targetVal.toFixed(decimals) : targetVal;
+          }
+        }
+
+        requestAnimationFrame(updateCounter);
+        obs.unobserve(el);
+      }
+    });
+  }, { threshold: 0.25 });
+
+  counters.forEach(c => observer.observe(c));
+}
+window.initMetricsCounters = initMetricsCounters;

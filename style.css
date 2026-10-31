@@ -7603,3 +7603,363 @@ body.body-maintenance > *:not(#maintenance-overlay):not(script) {
     font-size: 0.98rem;
   }
 }
+
+
+/* ==========================================================================
+   ANIMAÇÕES & MICRO-INTERAÇÕES (Inspiradas em Mana Yerba Mate & Awwwards)
+   Leves, fluidas a 60fps, responsivas e otimizadas para Mobile e Desktop
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. INFINITE MARQUEE TICKER (Fitilhos de Alta Energia Contínua)
+   -------------------------------------------------------------------------- */
+.marquee-ticker-section {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  overflow: hidden;
+  position: relative;
+  background: rgba(8, 13, 24, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 106, 0, 0.28);
+  border-bottom: 1px solid rgba(0, 210, 255, 0.25);
+  padding: 13px 0;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.45);
+  z-index: 20;
+  user-select: none;
+}
+
+.marquee-ticker-reverse {
+  border-top: 1px solid rgba(0, 210, 255, 0.25);
+  border-bottom: 1px solid rgba(238, 9, 121, 0.25);
+  margin-top: 36px;
+  margin-bottom: 0;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marqueeScrollForward 36s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track-reverse {
+  animation: marqueeScrollReverse 36s linear infinite;
+}
+
+.marquee-ticker-section:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes marqueeScrollForward {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marqueeScrollReverse {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+.marquee-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-right: 24px;
+  white-space: nowrap;
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f8fafc;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.ticker-item:hover {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255, 106, 0, 0.7);
+}
+
+.ticker-icon {
+  color: var(--accent-orange, #ff6a00);
+  font-size: 0.88rem;
+  filter: drop-shadow(0 0 6px rgba(255, 106, 0, 0.65));
+}
+
+.marquee-ticker-reverse .ticker-icon {
+  color: var(--accent-cyan, #00d2ff);
+  filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.65));
+}
+
+.ticker-dot {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+/* --------------------------------------------------------------------------
+   2. FAIXA DE MÉTRICAS & NÚMEROS DE IMPACTO (Animated Counters)
+   -------------------------------------------------------------------------- */
+.metrics-strip-section {
+  padding: 30px 0 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+@media (min-width: 820px) {
+  .metrics-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+}
+
+.metric-card {
+  background: rgba(14, 21, 36, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 16px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 10px 28px rgba(0, 0, 0, 0.35);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease,
+              box-shadow 0.35s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 106, 0, 0.35);
+  box-shadow: 
+    0 14px 34px rgba(0, 0, 0, 0.5),
+    0 0 22px rgba(255, 106, 0, 0.16);
+}
+
+.metric-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 106, 0, 0.18) 0%, rgba(238, 9, 121, 0.12) 100%);
+  border: 1px solid rgba(255, 106, 0, 0.35);
+  color: #ff8533;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  box-shadow: 0 0 14px rgba(255, 106, 0, 0.25);
+  flex-shrink: 0;
+}
+
+.metric-data {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.metric-number-row {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.metric-counter {
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.metric-suffix {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--accent-cyan, #00d2ff);
+  line-height: 1;
+}
+
+.metric-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --------------------------------------------------------------------------
+   3. SELO GIRATÓRIO STAMP SEAL (Selo de Qualidade Artesanal 3D)
+   -------------------------------------------------------------------------- */
+.desktop-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.stamp-seal-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.desktop-stamp-seal {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  cursor: pointer;
+  animation: stampSealFloat 4s ease-in-out infinite alternate;
+}
+
+.mobile-stamp-seal {
+  position: absolute;
+  inset: -16px;
+  width: calc(100% + 32px);
+  height: calc(100% + 32px);
+  pointer-events: none;
+}
+
+.stamp-seal-svg {
+  width: 100%;
+  height: 100%;
+  animation: spinSealContinuous 24s linear infinite;
+  will-change: transform;
+  filter: drop-shadow(0 0 8px rgba(255, 106, 0, 0.45));
+}
+
+@keyframes spinSealContinuous {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes stampSealFloat {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-4px) rotate(2deg); }
+}
+
+.stamp-seal-text {
+  fill: #ff8533;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.stamp-seal-center-dot {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(14, 21, 36, 0.95);
+  border: 1px solid rgba(255, 106, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff8533;
+  font-size: 0.82rem;
+  box-shadow: 0 0 14px rgba(255, 106, 0, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   4. SCROLL REVEAL SUAVE (Coreografia Dinâmica com Spring Physics)
+   -------------------------------------------------------------------------- */
+.cf-reveal {
+  opacity: 0;
+  transform: translateY(28px) scale(0.98);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.cf-reveal.cf-in-view {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Stagger automático para cartões e filhos de grids */
+.cf-reveal-stagger > *:nth-child(1).cf-reveal,
+.cf-reveal-stagger > .cf-reveal:nth-child(1) { transition-delay: 0.05s; }
+
+.cf-reveal-stagger > *:nth-child(2).cf-reveal,
+.cf-reveal-stagger > .cf-reveal:nth-child(2) { transition-delay: 0.12s; }
+
+.cf-reveal-stagger > *:nth-child(3).cf-reveal,
+.cf-reveal-stagger > .cf-reveal:nth-child(3) { transition-delay: 0.19s; }
+
+.cf-reveal-stagger > *:nth-child(4).cf-reveal,
+.cf-reveal-stagger > .cf-reveal:nth-child(4) { transition-delay: 0.26s; }
+
+/* --------------------------------------------------------------------------
+   5. SHEEN LIGHT SWEEP PERIÓDICO EM BOTÕES PRIMÁRIOS (Luz Líquida Dinâmica)
+   -------------------------------------------------------------------------- */
+@keyframes periodicSheenSweep {
+  0%, 70% { left: -140%; }
+  85%, 100% { left: 140%; }
+}
+
+.btn-whatsapp::before,
+.desktop-btn-whatsapp::before,
+.btn-whatsapp-large::before,
+.btn-card-buy-online::before {
+  animation: periodicSheenSweep 5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+/* --------------------------------------------------------------------------
+   6. 3D MAGNETIC TILT NOS CARDS (Apenas em Desktop com Mouse Fino)
+   -------------------------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  .product-card,
+  .showroom-product-card {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.3s ease,
+                box-shadow 0.3s ease,
+                background 0.3s ease;
+    transform-style: preserve-3d;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. SUPORTE TOTAL A REDUCED MOTION (Acessibilidade)
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .cf-reveal,
+  .marquee-track,
+  .stamp-seal-svg,
+  .stamp-seal-badge,
+  .btn-whatsapp::before,
+  .desktop-btn-whatsapp::before,
+  .btn-whatsapp-large::before {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
