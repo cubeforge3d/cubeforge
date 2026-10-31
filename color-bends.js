@@ -345,7 +345,7 @@
   // Inicialização Automática e Compatibilidade
   document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('.color-bends-canvas') || document.querySelector('.ghost-fibers-canvas');
-    if (canvas) {
+    if (canvas && window.getComputedStyle(canvas).display !== 'none') {
       window._colorBendsInstance = initColorBends(canvas, {
         colors: ['#ff6a00', '#9d4edd', '#00d2ff', '#ff8533', '#7b2cbf', '#0088ff', '#ffffff'],
         rotation: 45,

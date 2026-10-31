@@ -92,26 +92,43 @@ body {
    ColorBends WebGL Background (React Bits)
    Ondas e Dobras Fluidas de Luz Neon: Laranja Forja (#ff6a00), Azul (#00d2ff) & Roxo (#9d4edd)
    ========================================================================== */
-.color-bends-container,
-.ghost-fibers-container {
+/* ==========================================================================
+   MoltenMetal WebGL2 Fluid Background (React Bits)
+   Metais Líquidos e Plasma Cósmico nas Cores Oficiais da Cube Forge:
+   Laranja Forja (#f97316), Índigo/Azul (#5227FF) e Violeta (#a855f7)
+   ========================================================================== */
+.molten-metal-container {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  z-index: 0;
   pointer-events: none;
-  z-index: 1;
-  opacity: 1;
-  background: #080d18;
-  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  background: #070913;
+}
+
+.molten-metal-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.color-bends-container,
+.ghost-fibers-container {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
 
 .color-bends-canvas,
 .ghost-fibers-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-  pointer-events: none;
+  display: none !important;
+  pointer-events: none !important;
 }
 
 .ambient-aurora-layer {
@@ -123,6 +140,7 @@ body {
   pointer-events: none;
   z-index: 0;
   opacity: 1;
+  background-color: #070913;
 }
 
 .ambient-orb {
@@ -133,112 +151,112 @@ body {
   mix-blend-mode: screen;
 }
 
-/* 1. Área Iluminada em Laranja Forja (Topo Esquerdo / Superior) */
+/* 1. Área Iluminada em Laranja Forja (Topo Esquerdo - Suave e Difuso) */
 .orb-orange {
-  width: 820px;
-  height: 820px;
-  top: -120px;
-  left: -100px;
+  width: 860px;
+  height: 860px;
+  top: -140px;
+  left: -120px;
   background: radial-gradient(
     circle,
-    rgba(255, 106, 0, 0.40) 0%,
-    rgba(255, 85, 0, 0.24) 28%,
-    rgba(249, 115, 22, 0.12) 52%,
-    rgba(255, 106, 0, 0.02) 72%,
-    transparent 84%
+    rgba(255, 106, 0, 0.24) 0%,
+    rgba(255, 133, 51, 0.13) 30%,
+    rgba(255, 106, 0, 0.03) 58%,
+    transparent 75%
   );
-  filter: blur(88px);
-  animation: driftOrange 23s ease-in-out infinite alternate;
+  filter: blur(140px);
+  -webkit-filter: blur(140px);
+  animation: driftOrange 32s ease-in-out infinite alternate;
 }
 
-/* 2. Área Iluminada em Roxo Leve de Transição (Centro Superior - Ponte Laranja / Azul) */
+/* 2. Área Iluminada em Roxo Neon (Centro Superior - Efeito Nebulosa Cósmica) */
 .orb-purple-transition {
-  width: 760px;
-  height: 760px;
-  top: -60px;
-  left: calc(50% - 380px);
+  width: 880px;
+  height: 880px;
+  top: -100px;
+  left: calc(50% - 440px);
   background: radial-gradient(
     circle,
-    rgba(168, 85, 247, 0.36) 0%,
-    rgba(147, 51, 234, 0.22) 30%,
-    rgba(124, 58, 237, 0.10) 54%,
-    rgba(168, 85, 247, 0.02) 72%,
-    transparent 82%
+    rgba(157, 78, 221, 0.22) 0%,
+    rgba(124, 58, 237, 0.12) 32%,
+    rgba(107, 33, 168, 0.03) 58%,
+    transparent 75%
   );
-  filter: blur(96px);
-  animation: driftPurple 29s ease-in-out infinite alternate;
+  filter: blur(150px);
+  -webkit-filter: blur(150px);
+  animation: driftPurple 36s ease-in-out infinite alternate;
 }
 
-/* 3. Área Iluminada em Ciano / Azul Cristalino (Topo Direito / Superior) */
+/* 3. Área Iluminada em Azul Ciano (Topo Direito - Brilho Frio e Discreto) */
 .orb-cyan {
-  width: 840px;
-  height: 840px;
-  top: -100px;
+  width: 880px;
+  height: 880px;
+  top: -120px;
   right: -120px;
   background: radial-gradient(
     circle,
-    rgba(0, 210, 255, 0.38) 0%,
-    rgba(14, 165, 233, 0.24) 30%,
-    rgba(37, 99, 235, 0.12) 54%,
-    rgba(0, 210, 255, 0.02) 72%,
-    transparent 84%
+    rgba(0, 210, 255, 0.22) 0%,
+    rgba(14, 165, 233, 0.12) 32%,
+    rgba(37, 99, 235, 0.03) 58%,
+    transparent 75%
   );
-  filter: blur(92px);
-  animation: driftCyan 26s ease-in-out infinite alternate;
+  filter: blur(140px);
+  -webkit-filter: blur(140px);
+  animation: driftCyan 30s ease-in-out infinite alternate;
 }
 
-/* 4. Área Iluminada Inferior em Azul / Ciano Profundo */
+/* 4. Área Iluminada Inferior em Azul Royal / Noturno */
 .orb-deep-blue {
-  width: 780px;
-  height: 780px;
+  width: 860px;
+  height: 860px;
   bottom: -150px;
-  left: 6%;
+  left: 4%;
   background: radial-gradient(
     circle,
-    rgba(2, 132, 199, 0.34) 0%,
-    rgba(37, 99, 235, 0.22) 32%,
-    rgba(79, 70, 229, 0.10) 55%,
-    rgba(2, 132, 199, 0.02) 72%,
-    transparent 82%
+    rgba(37, 99, 235, 0.18) 0%,
+    rgba(2, 132, 199, 0.10) 35%,
+    rgba(15, 23, 42, 0.03) 60%,
+    transparent 76%
   );
-  filter: blur(95px);
-  animation: driftBlueBottom 25s ease-in-out infinite alternate;
+  filter: blur(145px);
+  -webkit-filter: blur(145px);
+  animation: driftBlueBottom 34s ease-in-out infinite alternate;
 }
 
-/* 5. Área Iluminada Inferior em Roxo Leve de Transição */
+/* 5. Área Iluminada Inferior em Roxo Profundo */
 .orb-purple-bottom {
-  width: 720px;
-  height: 720px;
-  bottom: -100px;
-  left: calc(50% - 360px);
+  width: 820px;
+  height: 820px;
+  bottom: -120px;
+  left: calc(50% - 410px);
   background: radial-gradient(
     circle,
-    rgba(147, 51, 234, 0.32) 0%,
-    rgba(168, 85, 247, 0.18) 32%,
-    rgba(124, 58, 237, 0.08) 55%,
-    rgba(147, 51, 234, 0.02) 72%,
-    transparent 80%
+    rgba(147, 51, 234, 0.18) 0%,
+    rgba(124, 58, 237, 0.10) 34%,
+    rgba(88, 28, 135, 0.02) 60%,
+    transparent 75%
   );
-  filter: blur(98px);
-  animation: driftPurpleBottom 31s ease-in-out infinite alternate;
+  filter: blur(150px);
+  -webkit-filter: blur(150px);
+  animation: driftPurpleBottom 38s ease-in-out infinite alternate;
 }
 
 /* 6. Área Iluminada Inferior em Laranja Forja */
 .orb-orange-bottom {
-  width: 760px;
-  height: 760px;
-  bottom: -130px;
-  right: -80px;
+  width: 840px;
+  height: 840px;
+  bottom: -140px;
+  right: -90px;
   background: radial-gradient(
     circle,
-    rgba(255, 106, 0, 0.35) 0%,
-    rgba(255, 80, 0, 0.20) 30%,
-    rgba(249, 115, 22, 0.09) 54%,
-    rgba(255, 106, 0, 0.02) 72%,
-    transparent 82%
+    rgba(255, 106, 0, 0.20) 0%,
+    rgba(255, 80, 0, 0.10) 32%,
+    rgba(234, 88, 12, 0.02) 58%,
+    transparent 75%
   );
-  filter: blur(90px);
-  animation: driftOrangeBottom 27s ease-in-out infinite alternate;
+  filter: blur(140px);
+  -webkit-filter: blur(140px);
+  animation: driftOrangeBottom 33s ease-in-out infinite alternate;
 }
 
 @keyframes driftOrange {
@@ -384,10 +402,12 @@ button {
   /* Otimizações de Alta Performance para Celular (Chrome Android, Samsung, iOS) */
   .ambient-aurora-layer {
     background: 
-      radial-gradient(circle at 10% 10%, rgba(255, 106, 0, 0.20) 0%, transparent 48%),
-      radial-gradient(circle at 90% 18%, rgba(0, 210, 255, 0.18) 0%, transparent 48%),
-      radial-gradient(circle at 50% 85%, rgba(147, 51, 234, 0.15) 0%, transparent 52%),
-      #080d18 !important;
+      radial-gradient(circle at 12% 10%, rgba(255, 106, 0, 0.16) 0%, transparent 50%),
+      radial-gradient(circle at 88% 18%, rgba(0, 210, 255, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(157, 78, 221, 0.14) 0%, transparent 55%),
+      radial-gradient(circle at 80% 85%, rgba(255, 106, 0, 0.12) 0%, transparent 50%),
+      radial-gradient(circle at 20% 90%, rgba(37, 99, 235, 0.12) 0%, transparent 50%),
+      #070a14 !important;
   }
 
   .ambient-orb {
@@ -1142,27 +1162,34 @@ button {
     transform: scale(1.08);
   }
 
-  /* 1. WhatsApp Desktop (Degrade Verde WhatsApp Reativo) */
+  /* 1. WhatsApp Desktop (Vidro Fosco Sólido, Preciso e Elegante) */
   .desktop-btn-whatsapp {
     flex: 1.25 1 auto;
     min-width: 0;
-    background: linear-gradient(135deg, rgba(37, 211, 102, 0.16) 0%, rgba(18, 140, 126, 0.10) 50%, rgba(12, 20, 24, 0.65) 100%);
-    border: 1px solid rgba(37, 211, 102, 0.32);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    background: linear-gradient(135deg, rgba(14, 38, 26, 0.96) 0%, rgba(8, 24, 16, 0.98) 100%) !important;
+    border: 1.5px solid rgba(37, 211, 102, 0.6) !important;
+    background-clip: padding-box !important;
+    box-shadow: 
+      0 6px 20px rgba(0, 0, 0, 0.45),
+      inset 0 1px 1px rgba(74, 222, 128, 0.35),
+      0 0 16px rgba(37, 211, 102, 0.12) !important;
   }
 
   .desktop-btn-whatsapp:hover {
     transform: translateY(-2px);
-    background: linear-gradient(135deg, rgba(37, 211, 102, 0.32) 0%, rgba(18, 140, 126, 0.22) 50%, rgba(14, 28, 26, 0.8) 100%);
-    border-color: rgba(74, 222, 128, 0.65);
-    box-shadow: 0 10px 28px rgba(37, 211, 102, 0.35), 0 0 16px rgba(37, 211, 102, 0.2);
+    background: linear-gradient(135deg, rgba(20, 48, 34, 0.96) 0%, rgba(14, 32, 24, 0.98) 100%) !important;
+    border-color: rgba(74, 222, 128, 0.85) !important;
+    box-shadow: 
+      0 10px 28px rgba(0, 0, 0, 0.55),
+      inset 0 1px 1px rgba(74, 222, 128, 0.55),
+      0 0 24px rgba(37, 211, 102, 0.3) !important;
   }
 
   .desktop-btn-whatsapp .desktop-btn-icon {
     background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
     color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    box-shadow: 0 2px 10px rgba(37, 211, 102, 0.45);
+    border: 1.2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 10px rgba(37, 211, 102, 0.5);
   }
 
   .desktop-btn-whatsapp::after {
@@ -1174,27 +1201,34 @@ button {
     );
   }
 
-  /* 2. Vitrine Desktop (Degrade Laranja Forja Reativo) */
+  /* 2. Vitrine Desktop (Vidro Fosco Sólido, Preciso e Elegante) */
   .desktop-btn-primary {
     flex: 0.9 1 auto;
     min-width: 0;
-    background: linear-gradient(135deg, rgba(255, 106, 0, 0.16) 0%, rgba(255, 133, 51, 0.10) 50%, rgba(20, 16, 26, 0.65) 100%);
-    border: 1px solid rgba(255, 106, 0, 0.32);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    background: linear-gradient(135deg, rgba(42, 20, 10, 0.96) 0%, rgba(24, 10, 6, 0.98) 100%) !important;
+    border: 1.5px solid rgba(255, 106, 0, 0.6) !important;
+    background-clip: padding-box !important;
+    box-shadow: 
+      0 6px 20px rgba(0, 0, 0, 0.45),
+      inset 0 1px 1px rgba(255, 133, 51, 0.35),
+      0 0 16px rgba(255, 106, 0, 0.12) !important;
   }
 
   .desktop-btn-primary:hover {
     transform: translateY(-2px);
-    background: linear-gradient(135deg, rgba(255, 106, 0, 0.32) 0%, rgba(255, 133, 51, 0.24) 50%, rgba(26, 20, 32, 0.8) 100%);
-    border-color: rgba(255, 133, 51, 0.65);
-    box-shadow: 0 10px 28px rgba(255, 106, 0, 0.35), 0 0 16px rgba(255, 106, 0, 0.2);
+    background: linear-gradient(135deg, rgba(50, 28, 16, 0.96) 0%, rgba(34, 18, 10, 0.98) 100%) !important;
+    border-color: rgba(255, 133, 51, 0.85) !important;
+    box-shadow: 
+      0 10px 28px rgba(0, 0, 0, 0.55),
+      inset 0 1px 1px rgba(255, 133, 51, 0.55),
+      0 0 24px rgba(255, 106, 0, 0.3) !important;
   }
 
   .desktop-btn-primary .desktop-btn-icon {
     background: linear-gradient(135deg, #ff8533 0%, #ff5500 100%);
     color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    box-shadow: 0 2px 10px rgba(255, 106, 0, 0.45);
+    border: 1.2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 10px rgba(255, 106, 0, 0.5);
   }
 
   .desktop-btn-primary::after {
@@ -1217,29 +1251,36 @@ button {
     transform: translateY(2px);
   }
 
-  /* 3. Instagram Desktop (Degrade Suave Rosa, Roxo e Azul Reativo) */
+  /* 3. Instagram Desktop (Vidro Fosco Sólido, Preciso e Elegante) */
   .desktop-btn-glass,
   .desktop-btn-instagram {
     flex: 0.95 0 auto;
     min-width: fit-content;
-    background: linear-gradient(135deg, rgba(245, 61, 116, 0.16) 0%, rgba(214, 41, 118, 0.12) 30%, rgba(150, 47, 191, 0.14) 65%, rgba(79, 91, 213, 0.16) 100%);
-    border: 1px solid rgba(214, 41, 118, 0.32);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    background: linear-gradient(135deg, rgba(38, 14, 30, 0.96) 0%, rgba(22, 8, 22, 0.98) 100%) !important;
+    border: 1.5px solid rgba(214, 41, 118, 0.6) !important;
+    background-clip: padding-box !important;
+    box-shadow: 
+      0 6px 20px rgba(0, 0, 0, 0.45),
+      inset 0 1px 1px rgba(245, 61, 116, 0.35),
+      0 0 16px rgba(214, 41, 118, 0.12) !important;
   }
 
   .desktop-btn-glass:hover,
   .desktop-btn-instagram:hover {
     transform: translateY(-2px);
-    background: linear-gradient(135deg, rgba(245, 61, 116, 0.35) 0%, rgba(214, 41, 118, 0.28) 32%, rgba(150, 47, 191, 0.3) 68%, rgba(79, 91, 213, 0.32) 100%);
-    border-color: rgba(245, 61, 116, 0.65);
-    box-shadow: 0 10px 28px rgba(214, 41, 118, 0.38), 0 0 18px rgba(79, 91, 213, 0.25);
+    background: linear-gradient(135deg, rgba(50, 20, 42, 0.96) 0%, rgba(32, 14, 34, 0.98) 100%) !important;
+    border-color: rgba(245, 61, 116, 0.85) !important;
+    box-shadow: 
+      0 10px 28px rgba(0, 0, 0, 0.55),
+      inset 0 1px 1px rgba(245, 61, 116, 0.55),
+      0 0 24px rgba(214, 41, 118, 0.3) !important;
   }
 
   .desktop-btn-instagram .desktop-btn-icon {
     background: linear-gradient(135deg, #f53d74 0%, #d62976 35%, #962fbf 70%, #4f5bd5 100%);
     color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    box-shadow: 0 2px 10px rgba(214, 41, 118, 0.45);
+    border: 1.2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 10px rgba(214, 41, 118, 0.5);
   }
 
   .desktop-btn-instagram::after {
@@ -1904,13 +1945,15 @@ button {
   text-align: left;
   position: relative;
   overflow: hidden;
-  background: rgba(16, 22, 34, 0.65);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+  background-clip: padding-box !important;
+  box-sizing: border-box !important;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
   color: #ffffff;
-  transition: all var(--transition-smooth);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s ease,
+              border-color 0.22s ease,
+              background 0.22s ease;
 }
 
 .btn:hover {
@@ -1990,105 +2033,145 @@ button {
   transform: scale(0.985);
 }
 
-/* 1. Botão WhatsApp (Degrade Verde WhatsApp Reativo) */
+/* 1. Botão WhatsApp (Degrade Verde Esmeralda Sólido e Preciso - Vidro Fosco Acrílico Sem Falhas) */
 .btn-whatsapp {
-  background: linear-gradient(135deg, rgba(37, 211, 102, 0.16) 0%, rgba(18, 140, 126, 0.10) 50%, rgba(12, 20, 24, 0.65) 100%);
-  border: 1px solid rgba(37, 211, 102, 0.32);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+  background: linear-gradient(135deg, rgba(14, 38, 26, 0.96) 0%, rgba(8, 24, 16, 0.98) 100%) !important;
+  border: 1.5px solid rgba(37, 211, 102, 0.65) !important;
+  background-clip: padding-box !important;
+  box-sizing: border-box !important;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px rgba(74, 222, 128, 0.45),
+    0 0 18px rgba(37, 211, 102, 0.16) !important;
 }
 
-.btn-whatsapp:hover {
-  background: linear-gradient(135deg, rgba(37, 211, 102, 0.32) 0%, rgba(18, 140, 126, 0.22) 50%, rgba(14, 28, 26, 0.8) 100%);
-  border-color: rgba(74, 222, 128, 0.65);
-  box-shadow: 0 14px 34px rgba(37, 211, 102, 0.35);
+.btn-whatsapp:hover,
+.btn-whatsapp:focus-visible {
+  background: linear-gradient(135deg, rgba(20, 52, 36, 0.98) 0%, rgba(12, 32, 22, 0.99) 100%) !important;
+  border-color: rgba(74, 222, 128, 0.9) !important;
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.65),
+    inset 0 1px 1px rgba(74, 222, 128, 0.6),
+    0 0 24px rgba(37, 211, 102, 0.35) !important;
 }
 
 .btn-whatsapp .btn-icon-box {
-  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  box-shadow: 0 2px 10px rgba(37, 211, 102, 0.45);
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.55) !important;
+  box-shadow: 0 2px 10px rgba(37, 211, 102, 0.5) !important;
 }
 
-.btn-whatsapp::after {
-  background: radial-gradient(
-    200px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
-    rgba(74, 222, 128, 0.35),
-    rgba(37, 211, 102, 0.12) 45%,
-    transparent 70%
-  );
+.btn-whatsapp .btn-title {
+  color: #ffffff !important;
+}
+
+.btn-whatsapp .btn-subtitle {
+  color: #a7f3d0 !important;
+}
+
+.btn-whatsapp .btn-arrow {
+  color: #4ade80 !important;
+  transform: translateX(0);
+  transition: transform var(--transition-smooth);
 }
 
 .btn-whatsapp:hover .btn-arrow {
   transform: translateX(4px);
 }
 
-/* 2. Botão Vitrine (Degrade Laranja Forja Reativo) */
+/* 2. Botão Vitrine (Degrade Laranja Forja Sólido e Preciso - Vidro Fosco Acrílico Sem Falhas) */
 .btn-primary {
-  background: linear-gradient(135deg, rgba(255, 106, 0, 0.16) 0%, rgba(255, 133, 51, 0.10) 50%, rgba(20, 16, 26, 0.65) 100%);
-  border: 1px solid rgba(255, 106, 0, 0.32);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+  background: linear-gradient(135deg, rgba(42, 20, 10, 0.96) 0%, rgba(24, 10, 6, 0.98) 100%) !important;
+  border: 1.5px solid rgba(255, 106, 0, 0.65) !important;
+  background-clip: padding-box !important;
+  box-sizing: border-box !important;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px rgba(255, 148, 77, 0.45),
+    0 0 18px rgba(255, 106, 0, 0.16) !important;
 }
 
-.btn-primary:hover {
-  background: linear-gradient(135deg, rgba(255, 106, 0, 0.32) 0%, rgba(255, 133, 51, 0.24) 50%, rgba(26, 20, 32, 0.8) 100%);
-  border-color: rgba(255, 133, 51, 0.65);
-  box-shadow: 0 14px 34px rgba(255, 106, 0, 0.35);
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background: linear-gradient(135deg, rgba(56, 26, 14, 0.98) 0%, rgba(32, 14, 8, 0.99) 100%) !important;
+  border-color: rgba(255, 148, 77, 0.9) !important;
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.65),
+    inset 0 1px 1px rgba(255, 148, 77, 0.6),
+    0 0 24px rgba(255, 106, 0, 0.35) !important;
 }
 
 .btn-primary .btn-icon-box {
-  background: linear-gradient(135deg, #ff8533 0%, #ff5500 100%);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  box-shadow: 0 2px 10px rgba(255, 106, 0, 0.45);
+  background: linear-gradient(135deg, #ff8533 0%, #ff5500 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.55) !important;
+  box-shadow: 0 2px 10px rgba(255, 106, 0, 0.5) !important;
 }
 
-.btn-primary::after {
-  background: radial-gradient(
-    200px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
-    rgba(255, 133, 51, 0.38),
-    rgba(255, 106, 0, 0.12) 45%,
-    transparent 70%
-  );
+.btn-primary .btn-title {
+  color: #ffffff !important;
+}
+
+.btn-primary .btn-subtitle {
+  color: #fed7aa !important;
+}
+
+.btn-primary .btn-arrow {
+  color: #ffa366 !important;
+  transform: translateY(0);
+  transition: transform var(--transition-smooth);
 }
 
 .btn-primary:hover .btn-arrow {
   transform: translateY(3px);
 }
 
-/* 3. Botão Instagram (Degrade Suave Rosa, Roxo e Azul Reativo) */
+/* 3. Botão Instagram (Degrade Rosa/Magenta Sólido e Preciso - Vidro Fosco Acrílico Sem Falhas) */
 .btn-secondary {
-  background: linear-gradient(135deg, rgba(245, 61, 116, 0.16) 0%, rgba(214, 41, 118, 0.12) 30%, rgba(150, 47, 191, 0.14) 65%, rgba(79, 91, 213, 0.16) 100%);
-  border: 1px solid rgba(214, 41, 118, 0.32);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+  background: linear-gradient(135deg, rgba(38, 14, 30, 0.96) 0%, rgba(22, 8, 22, 0.98) 100%) !important;
+  border: 1.5px solid rgba(214, 41, 118, 0.65) !important;
+  background-clip: padding-box !important;
+  box-sizing: border-box !important;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px rgba(245, 61, 116, 0.45),
+    0 0 18px rgba(214, 41, 118, 0.16) !important;
 }
 
-.btn-secondary:hover {
-  background: linear-gradient(135deg, rgba(245, 61, 116, 0.35) 0%, rgba(214, 41, 118, 0.28) 32%, rgba(150, 47, 191, 0.3) 68%, rgba(79, 91, 213, 0.32) 100%);
-  border-color: rgba(245, 61, 116, 0.65);
-  box-shadow: 0 14px 34px rgba(214, 41, 118, 0.38);
+.btn-secondary:hover,
+.btn-secondary:focus-visible {
+  background: linear-gradient(135deg, rgba(54, 20, 42, 0.98) 0%, rgba(32, 12, 32, 0.99) 100%) !important;
+  border-color: rgba(245, 61, 116, 0.9) !important;
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.65),
+    inset 0 1px 1px rgba(245, 61, 116, 0.6),
+    0 0 24px rgba(214, 41, 118, 0.35) !important;
 }
 
 .btn-secondary .btn-icon-box {
-  background: linear-gradient(135deg, #f53d74 0%, #d62976 35%, #962fbf 70%, #4f5bd5 100%);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  box-shadow: 0 2px 10px rgba(214, 41, 118, 0.45);
+  background: linear-gradient(135deg, #f53d74 0%, #d62976 35%, #962fbf 70%, #4f5bd5 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.55) !important;
+  box-shadow: 0 2px 10px rgba(214, 41, 118, 0.5) !important;
 }
 
-.btn-secondary::after {
-  background: radial-gradient(
-    200px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
-    rgba(245, 61, 116, 0.38),
-    rgba(150, 47, 191, 0.22) 42%,
-    rgba(79, 91, 213, 0.14) 65%,
-    transparent 72%
-  );
+.btn-secondary .btn-title {
+  color: #ffffff !important;
+}
+
+.btn-secondary .btn-subtitle {
+  color: #fbcfe8 !important;
+}
+
+.btn-secondary .btn-arrow {
+  color: #f472b6 !important;
+  transform: translate(0, 0);
+  transition: transform var(--transition-smooth);
 }
 
 .btn-secondary:hover .btn-arrow {
   transform: translate(2px, -2px);
-  color: #ffffff;
 }
 
 /* ==========================================================================
@@ -3055,18 +3138,33 @@ button {
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
 }
 
-/* Botão de filtro destacado para Pronta Entrega */
-.filter-btn-ready {
-  border-color: rgba(255, 106, 0, 0.4) !important;
-  color: var(--accent-orange-bright) !important;
-  background: rgba(255, 106, 0, 0.08) !important;
+/* Botão de filtro destacado para Pronta Entrega (Design Arredondado JellyRadio) */
+.filter-btn-ready,
+.filter-btn-ready.active,
+.filter-btn-ready[data-on='true'] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: var(--radius-pill) !important;
+  padding: 0 !important;
 }
 
-.filter-btn-ready.active {
-  background: var(--accent-orange) !important;
+.filter-btn-ready .jelly-radio__skin {
+  border-color: rgba(255, 106, 0, 0.48) !important;
+  color: #ff944d !important;
+  background: rgba(255, 106, 0, 0.08) !important;
+  border-radius: var(--radius-pill) !important;
+}
+
+.filter-btn-ready[data-on='true'] .jelly-radio__skin,
+.filter-btn-ready.active .jelly-radio__skin {
+  background: linear-gradient(135deg, #ff7a1a 0%, #ff5500 100%) !important;
   color: #ffffff !important;
-  border-color: var(--accent-orange) !important;
-  box-shadow: 0 0 15px rgba(255, 106, 0, 0.5) !important;
+  border-color: #ffaa44 !important;
+  border-radius: var(--radius-pill) !important;
+  box-shadow: 
+    0 4px 18px rgba(255, 106, 0, 0.4),
+    0 0 24px rgba(255, 106, 0, 0.6) !important;
 }
 
 /* Tag de pronta entrega no item do carrinho */
@@ -4775,12 +4873,13 @@ button {
   .action-buttons-group {
     max-width: 480px;
     width: 100%;
-    gap: 8px;
+    gap: 10px;
     margin: 0 auto;
   }
 
   .btn {
-    padding: 8px 14px 8px 12px;
+    padding: 10px 16px 10px 12px;
+    min-height: 52px;
   }
 
   .btn-icon-box {
@@ -5315,18 +5414,18 @@ button {
   box-shadow: 0 4px 18px rgba(14, 165, 233, 0.4) !important;
 }
 
-/* Botão do Instagram na Navbar Desktop */
+/* Botão do Instagram na Navbar Desktop (Vidro Fosco Sólido e Preciso) */
 .nav-instagram-link {
   color: #ffffff !important;
-  background: linear-gradient(135deg, rgba(245, 61, 116, 0.16) 0%, rgba(214, 41, 118, 0.12) 30%, rgba(150, 47, 191, 0.14) 65%, rgba(79, 91, 213, 0.16) 100%) !important;
-  border: 1px solid rgba(214, 41, 118, 0.32) !important;
+  background: linear-gradient(135deg, rgba(38, 16, 32, 0.94) 0%, rgba(26, 10, 26, 0.96) 100%) !important;
+  border: 1.2px solid rgba(214, 41, 118, 0.52) !important;
   font-weight: 600 !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 7px !important;
   padding: 4px 13px 4px 5px !important;
   border-radius: var(--radius-pill) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(245, 61, 116, 0.32) !important;
   transition: all var(--transition-smooth) !important;
 }
 
@@ -5341,7 +5440,7 @@ button {
   background: linear-gradient(135deg, #f53d74 0%, #d62976 35%, #962fbf 70%, #4f5bd5 100%);
   color: #ffffff !important;
   font-size: 0.74rem;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   box-shadow: 0 2px 8px rgba(214, 41, 118, 0.42);
   flex-shrink: 0;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -5350,9 +5449,9 @@ button {
 .nav-instagram-link:hover {
   color: #ffffff !important;
   transform: translateY(-1px) !important;
-  background: linear-gradient(135deg, rgba(245, 61, 116, 0.32) 0%, rgba(214, 41, 118, 0.26) 30%, rgba(150, 47, 191, 0.28) 65%, rgba(79, 91, 213, 0.3) 100%) !important;
-  border-color: rgba(245, 61, 116, 0.65) !important;
-  box-shadow: 0 6px 20px rgba(214, 41, 118, 0.36), 0 0 14px rgba(79, 91, 213, 0.22) !important;
+  background: linear-gradient(135deg, rgba(50, 20, 42, 0.96) 0%, rgba(32, 14, 34, 0.98) 100%) !important;
+  border-color: rgba(245, 61, 116, 0.85) !important;
+  box-shadow: 0 6px 20px rgba(214, 41, 118, 0.45), 0 0 16px rgba(79, 91, 213, 0.28) !important;
 }
 
 .nav-instagram-link:hover .nav-instagram-icon,
