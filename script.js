@@ -514,40 +514,40 @@ async function loadSiteSettings() {
   applyMaintenanceMode(Boolean(SITE_SETTINGS.modo_manutencao));
 }
 
+/**
+ * BLINDAGEM MÁXIMA DO MODO DE MANUTENÇÃO (À prova de Inspecionar Elemento e DevTools)
+ * - Desanexa fisicamente todo o site do DOM (navbar, hero, catálogo, showroom, carrinho, etc.)
+ *   deixando no document.body EXCLUSIVAMENTE o painel de manutenção.
+ * - Ativa MutationObserver contra adulteração ou exclusão de nós via console/elementos.
+ * - Bloqueia teclas de desenvolvedor (F12, Ctrl+Shift+I, Ctrl+U) e botão direito durante manutenção.
+ * - Ao desativar, restaura os elementos intactos ao DOM.
+ */
+let __maintenanceObserver = null;
+let __detachedAppNodes = [];
+
 function applyMaintenanceMode(isActive) {
   const overlay = document.getElementById("maintenance-overlay");
-  if (!overlay) return;
 
   if (isActive) {
     document.body.classList.add("body-maintenance");
-    overlay.classList.add("active");
-    overlay.setAttribute("aria-hidden", "false");
 
-    // Fecha o carrinho caso esteja aberto
-    if (typeof window.closeCart === "function") {
-      window.closeCart();
-    }
+    // Fecha modais e carrinhos
+    if (typeof window.closeCart === "function") window.closeCart();
+    if (typeof window.closeDirectBuyModal === "function") window.closeDirectBuyModal();
+    if (typeof window.closeProductModal === "function") window.closeProductModal();
 
     // Atualiza os textos dinâmicos do Pages CMS
     const titleEl = document.getElementById("maintenance-title");
-    if (titleEl && SITE_SETTINGS.titulo_manutencao) {
-      titleEl.textContent = SITE_SETTINGS.titulo_manutencao;
-    }
+    if (titleEl && SITE_SETTINGS.titulo_manutencao) titleEl.textContent = SITE_SETTINGS.titulo_manutencao;
 
     const subtitleEl = document.getElementById("maintenance-subtitle");
-    if (subtitleEl && SITE_SETTINGS.subtitulo_manutencao) {
-      subtitleEl.textContent = SITE_SETTINGS.subtitulo_manutencao;
-    }
+    if (subtitleEl && SITE_SETTINGS.subtitulo_manutencao) subtitleEl.textContent = SITE_SETTINGS.subtitulo_manutencao;
 
     const messageEl = document.getElementById("maintenance-message");
-    if (messageEl && SITE_SETTINGS.mensagem_manutencao) {
-      messageEl.textContent = SITE_SETTINGS.mensagem_manutencao;
-    }
+    if (messageEl && SITE_SETTINGS.mensagem_manutencao) messageEl.textContent = SITE_SETTINGS.mensagem_manutencao;
 
     const returnTextEl = document.getElementById("maintenance-return-text");
-    if (returnTextEl && SITE_SETTINGS.previsao_retorno) {
-      returnTextEl.textContent = SITE_SETTINGS.previsao_retorno;
-    }
+    if (returnTextEl && SITE_SETTINGS.previsao_retorno) returnTextEl.textContent = SITE_SETTINGS.previsao_retorno;
 
     // Configura o link do WhatsApp na tela de manutenção
     const zapBtn = document.getElementById("maintenance-whatsapp-btn");
@@ -555,10 +555,90 @@ function applyMaintenanceMode(isActive) {
       const zapMsg = "Olá! Vi que o site da Cube Forge está em manutenção e gostaria de tirar uma dúvida / fazer um pedido direto por aqui.";
       zapBtn.href = createWhatsappUrl(SITE_CONFIG.whatsappNumber, zapMsg);
     }
+
+    if (overlay) {
+      overlay.classList.add("active");
+      overlay.setAttribute("aria-hidden", "false");
+    }
+
+    // 1. DESMONTAGEM FÍSICA DO DOM:
+    // Remove do body todos os elementos da loja exceto o overlay de manutenção e os scripts.
+    // Assim, mesmo inspecionando o elemento, NADA do site existe na árvore DOM!
+    if (__detachedAppNodes.length === 0) {
+      const children = Array.from(document.body.childNodes);
+      children.forEach(node => {
+        if (node.id === "maintenance-overlay" || node.tagName === "SCRIPT") {
+          return;
+        }
+        __detachedAppNodes.push(node);
+        document.body.removeChild(node);
+      });
+    }
+
+    // 2. ATIVA MUTATION OBSERVER PARA ANTI-TAMPERING:
+    if (!__maintenanceObserver && window.MutationObserver) {
+      __maintenanceObserver = new MutationObserver(() => {
+        if (!document.body.classList.contains("body-maintenance")) {
+          document.body.classList.add("body-maintenance");
+        }
+        const ov = document.getElementById("maintenance-overlay");
+        if (!ov || !document.body.contains(ov)) {
+          location.reload();
+        } else if (!ov.classList.contains("active")) {
+          ov.classList.add("active");
+        }
+      });
+      __maintenanceObserver.observe(document.body, { attributes: true, childList: true, subtree: true });
+    }
+
+    // 3. BLOQUEIO DE ATALHOS DE INSPEÇÃO E MENU DE CONTEXTO
+    if (!window.__maintenanceKeyHandler) {
+      window.__maintenanceKeyHandler = function(e) {
+        if (
+          e.key === "F12" ||
+          (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c")) ||
+          (e.ctrlKey && (e.key === "U" || e.key === "u"))
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+      };
+      window.__maintenanceContextHandler = function(e) {
+        e.preventDefault();
+        return false;
+      };
+      window.addEventListener("keydown", window.__maintenanceKeyHandler, true);
+      window.addEventListener("contextmenu", window.__maintenanceContextHandler, true);
+    }
+
   } else {
+    // DESATIVAÇÃO E RESTAURAÇÃO:
+    if (__maintenanceObserver) {
+      __maintenanceObserver.disconnect();
+      __maintenanceObserver = null;
+    }
+    if (window.__maintenanceKeyHandler) {
+      window.removeEventListener("keydown", window.__maintenanceKeyHandler, true);
+      window.removeEventListener("contextmenu", window.__maintenanceContextHandler, true);
+      window.__maintenanceKeyHandler = null;
+      window.__maintenanceContextHandler = null;
+    }
+
+    // Restaura os elementos desmontados de volta ao DOM na ordem original
+    if (__detachedAppNodes.length > 0) {
+      const refNode = document.getElementById("maintenance-overlay") || document.body.firstChild;
+      __detachedAppNodes.forEach(node => {
+        document.body.insertBefore(node, refNode);
+      });
+      __detachedAppNodes = [];
+    }
+
     document.body.classList.remove("body-maintenance");
-    overlay.classList.remove("active");
-    overlay.setAttribute("aria-hidden", "true");
+    if (overlay) {
+      overlay.classList.remove("active");
+      overlay.setAttribute("aria-hidden", "true");
+    }
   }
 }
 
@@ -1602,9 +1682,6 @@ window.removeFromCart = function(productId) {
 
 window.clearCart = function() {
   if (cart.length === 0) return;
-  // Se estiver no modo compra direta, descarta o backup pois o usuário quer limpar tudo
-  isDirectBuyMode = false;
-  savedCartBeforeDirectBuy = null;
   cart = [];
   saveCart();
   const notesInput = document.getElementById("cart-custom-notes");
@@ -1760,26 +1837,6 @@ function updateCartUI() {
  * ============================================================================
  */
 let currentCartStep = 1;
-
-// Modo de compra direta: isola o produto clicado sem misturar com o carrinho existente
-let isDirectBuyMode = false;
-let savedCartBeforeDirectBuy = null;
-
-/**
- * Sai do modo compra direta, restaurando o carrinho original do cliente.
- * Chamada ao fechar o drawer, voltar etapas, ou limpar o carrinho.
- */
-function exitDirectBuyMode() {
-  if (!isDirectBuyMode) return;
-  if (savedCartBeforeDirectBuy) {
-    cart = savedCartBeforeDirectBuy;
-    savedCartBeforeDirectBuy = null;
-  }
-  isDirectBuyMode = false;
-  saveCart();
-  updateCartUI();
-}
-window.exitDirectBuyMode = exitDirectBuyMode;
 
 function setCartStep(step) {
   currentCartStep = step;
@@ -2582,9 +2639,8 @@ window.closeCart = function() {
   const confirmBar = document.getElementById("cart-clear-confirm-bar");
   if (confirmBar) confirmBar.classList.remove("active");
 
-  // Restaura o carrinho original se estava no modo compra direta
-  exitDirectBuyMode();
 };
+
 
 /**
  * Valida o carrinho e atualiza avisos e estado do botão de checkout online:
@@ -2672,12 +2728,21 @@ function updateCartValidation() {
 }
 window.updateCartNotesValidation = updateCartValidation;
 
-/**
- * Ao clicar em 'Comprar Online / Cartão' direto na tela inicial da página (ou modal/showroom),
- * adiciona o produto ao carrinho e direciona imediatamente para a tela de solicitação de dados,
- * endereço com Cidade/UF bloqueadas pelo CEP, frete Correios e checkout na InfinitePay.
+/* ============================================================================
+ * SISTEMA EXCLUSIVO DE COMPRA DIRETA (Tela Dedicada 100% Isolada do Carrinho)
+ * Nunca adiciona nem remove itens do carrinho do cliente.
+ * ============================================================================
  */
-window.buySingleProductOnline = function(productId, e) {
+let currentDirectProduct = null;
+let directBuyQuantity = 1;
+let directSelectedShipping = null;
+let directCalculatedQuotes = [];
+let isCalculatingDirectShipping = false;
+
+/**
+ * Abre a tela exclusiva de Compra Direta para o produto clicado
+ */
+function openDirectBuyModal(productId, e) {
   if (e) {
     e.preventDefault();
     e.stopPropagation();
@@ -2691,68 +2756,613 @@ window.buySingleProductOnline = function(productId, e) {
   const product = CATALOG_ITEMS.find(p => p.id === productId) || ALL_PRODUCTS.find(p => p.id === productId);
   if (!product) return;
 
-  // Se o item for somente sob encomenda, redireciona para o WhatsApp de encomendas
+  // Se o item for sob encomenda, redireciona para o WhatsApp de encomendas
   if (product.somente_encomenda) {
     orderEncomendaFromCard(productId);
     return;
   }
 
-  // Fecha o modal de detalhes do produto se estiver aberto
-  if (typeof closeProductModal === "function") {
-    closeProductModal();
-  }
+  // Fecha modais que possam estar abertos
+  if (typeof closeProductModal === "function") closeProductModal();
+  if (typeof closeCart === "function") closeCart();
 
-  // Salva o carrinho original antes de isolar o produto único para compra direta
-  savedCartBeforeDirectBuy = JSON.parse(JSON.stringify(cart));
-  isDirectBuyMode = true;
+  currentDirectProduct = product;
+  directBuyQuantity = 1;
+  directSelectedShipping = null;
+  directCalculatedQuotes = [];
 
-  // Substitui o carrinho inteiro pelo produto clicado (isolado dos demais itens)
-  cart = [{
-    id: product.id,
-    title: product.title,
-    price: product.price,
-    numericPrice: parseItemPrice(product.price),
-    image: product.image,
-    icon: product.icon,
-    categoryName: product.categoryName,
-    estoque: product.estoque || 0,
-    somente_encomenda: false,
-    quantity: 1
-  }];
+  // Carrega dados salvos do cliente nos inputs da tela direta
+  loadCustomerDataIntoDirectBuy();
 
-  saveCart();
-  updateCartUI();
-  animateCartBadges();
+  // Renderiza produto e resumo
+  renderDirectProductCard();
+  renderDirectSummary();
 
-  // Abre o drawer do carrinho
-  const overlay = document.getElementById("cart-overlay");
+  // Abre a tela de compra direta
+  const overlay = document.getElementById("direct-buy-overlay");
   if (overlay) {
     overlay.classList.add("active");
+    overlay.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
   }
 
-  // Direciona imediatamente para a Etapa 3: Dados do Cliente, Endereço e Frete Correios
-  setCartStep(3);
+  // Rola o corpo para o topo
+  const directBody = document.querySelector(".direct-buy-body");
+  if (directBody) directBody.scrollTop = 0;
 
-  // Rola o corpo da tela de entrega para o topo
-  const deliveryBody = document.querySelector(".cart-delivery-body");
-  if (deliveryBody) deliveryBody.scrollTop = 0;
+  // Se já tiver CEP salvo no input, dispara o cálculo de frete Correios
+  const cepInput = document.getElementById("direct-cust-cep");
+  const cleanCep = (cepInput?.value || "").replace(/\D/g, "");
+  if (cleanCep.length === 8) {
+    calculateDirectShipping(cleanCep, true);
+  }
 
   // Foco inteligente no primeiro campo obrigatório pendente
   setTimeout(() => {
-    const nameInput = document.getElementById("checkout-cust-name");
-    const cepInput = document.getElementById("checkout-cust-cep");
-    const numberInput = document.getElementById("checkout-cust-number");
-
+    const nameInput = document.getElementById("direct-cust-name");
+    const cepInp = document.getElementById("direct-cust-cep");
+    const numInp = document.getElementById("direct-cust-number");
     if (nameInput && !nameInput.value.trim()) {
       nameInput.focus();
-    } else if (cepInput && !cepInput.value.trim()) {
-      cepInput.focus();
-    } else if (numberInput && !numberInput.value.trim()) {
-      numberInput.focus();
+    } else if (cepInp && !cepInp.value.trim()) {
+      cepInp.focus();
+    } else if (numInp && !numInp.value.trim()) {
+      numInp.focus();
     }
-  }, 220);
+  }, 240);
+}
+window.openDirectBuyModal = openDirectBuyModal;
+window.buySingleProductOnline = openDirectBuyModal;
+
+/**
+ * Fecha a tela exclusiva de Compra Direta (o carrinho continua 100% intacto)
+ */
+function closeDirectBuyModal() {
+  const overlay = document.getElementById("direct-buy-overlay");
+  if (overlay) {
+    overlay.classList.remove("active");
+    overlay.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+}
+window.closeDirectBuyModal = closeDirectBuyModal;
+
+/**
+ * Altera a quantidade do produto na compra direta
+ */
+function updateDirectQuantity(delta) {
+  if (!currentDirectProduct) return;
+  const maxStock = currentDirectProduct.estoque || 10;
+  const newQty = directBuyQuantity + delta;
+  if (newQty < 1) return;
+  if (maxStock > 0 && newQty > maxStock) {
+    showCartToast("Estoque máximo atingido", "remove", `Limite de ${maxStock} unidades`);
+    return;
+  }
+  directBuyQuantity = newQty;
+  renderDirectProductCard();
+  renderDirectSummary();
+
+  // Recalcula o frete se já havia cotação
+  const cepInput = document.getElementById("direct-cust-cep");
+  const cleanCep = (cepInput?.value || "").replace(/\D/g, "");
+  if (cleanCep.length === 8 && directCalculatedQuotes.length > 0) {
+    calculateDirectShipping(cleanCep, true);
+  }
+}
+window.updateDirectQuantity = updateDirectQuantity;
+
+/**
+ * Renderiza o card do produto selecionado na tela de compra direta
+ */
+function renderDirectProductCard() {
+  const container = document.getElementById("direct-buy-product-card");
+  if (!container || !currentDirectProduct) return;
+
+  const item = currentDirectProduct;
+  const unitPrice = item.numericPrice || parseItemPrice(item.price);
+  const subtotal = unitPrice * directBuyQuantity;
+  const maxStock = item.estoque || 10;
+
+  const imageHtml = item.image
+    ? `<img src="${item.image}" alt="${item.title}" class="direct-product-img">`
+    : `<div class="direct-product-icon-fallback"><i class="${item.icon || 'fa-solid fa-cube'}"></i></div>`;
+
+  container.innerHTML = `
+    <div class="direct-product-img-box">
+      ${imageHtml}
+    </div>
+    <div class="direct-product-details">
+      <span class="direct-product-tag">${item.categoryName || 'Colecionável'}</span>
+      <h4 class="direct-product-title" title="${item.title}">${item.title}</h4>
+      <span class="direct-product-unit-price">${formatBRL(unitPrice)} un.</span>
+    </div>
+    <div class="direct-product-right">
+      <span class="direct-product-total-price">${formatBRL(subtotal)}</span>
+      <div class="direct-qty-selector">
+        <button type="button" class="direct-qty-btn" onclick="updateDirectQuantity(-1)" ${directBuyQuantity <= 1 ? 'disabled' : ''} aria-label="Diminuir quantidade">
+          <i class="fa-solid fa-minus"></i>
+        </button>
+        <span class="direct-qty-value">${directBuyQuantity}</span>
+        <button type="button" class="direct-qty-btn" onclick="updateDirectQuantity(1)" ${directBuyQuantity >= maxStock ? 'disabled' : ''} aria-label="Aumentar quantidade">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Renderiza o resumo financeiro com o frete Correios
+ */
+function renderDirectSummary() {
+  if (!currentDirectProduct) return;
+  const unitPrice = currentDirectProduct.numericPrice || parseItemPrice(currentDirectProduct.price);
+  const subtotal = unitPrice * directBuyQuantity;
+  const shippingPrice = directSelectedShipping ? directSelectedShipping.price : 0;
+  const grandTotal = subtotal + shippingPrice;
+
+  const countEl = document.getElementById("direct-summary-items-count");
+  const subtotalEl = document.getElementById("direct-summary-subtotal-amount");
+  const shippingEl = document.getElementById("direct-summary-shipping-amount");
+  const totalEl = document.getElementById("direct-summary-total-amount");
+  const btnPay = document.getElementById("btn-direct-checkout-pay");
+
+  if (countEl) countEl.textContent = `${directBuyQuantity} ${directBuyQuantity === 1 ? 'item' : 'itens'}`;
+  if (subtotalEl) subtotalEl.textContent = formatBRL(subtotal);
+
+  if (shippingEl) {
+    if (directSelectedShipping) {
+      const priceText = directSelectedShipping.price === 0 ? "Grátis" : formatBRL(directSelectedShipping.price);
+      shippingEl.innerHTML = `${directSelectedShipping.company} ${directSelectedShipping.name} (<strong>${priceText}</strong>)`;
+      shippingEl.className = directSelectedShipping.price === 0 ? "shipping-amount-text free" : "shipping-amount-text";
+    } else {
+      shippingEl.textContent = "Digite o CEP acima";
+      shippingEl.className = "shipping-amount-text";
+    }
+  }
+
+  if (totalEl) totalEl.textContent = formatBRL(grandTotal);
+
+  if (btnPay) {
+    btnPay.innerHTML = `<i class="fa-solid fa-lock"></i> Concluir Pagamento de ${formatBRL(grandTotal)} na InfinitePay`;
+  }
+}
+
+/**
+ * Carrega dados do cliente do localStorage nos inputs da tela direta
+ */
+function loadCustomerDataIntoDirectBuy() {
+  try {
+    const raw = localStorage.getItem("cubeforge_customer_data");
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== "object") return;
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && val) el.value = val;
+    };
+
+    setVal("direct-cust-name", data.name);
+    setVal("direct-cust-phone", data.phone);
+    setVal("direct-cust-cep", data.cep);
+    setVal("direct-cust-street", data.street);
+    setVal("direct-cust-number", data.number);
+    setVal("direct-cust-comp", data.comp);
+    setVal("direct-cust-bairro", data.bairro);
+
+    const cityInput = document.getElementById("direct-cust-city");
+    if (cityInput && data.city) {
+      cityInput.value = data.city;
+      cityInput.readOnly = true;
+    }
+
+    const addressWrapper = document.getElementById("direct-address-details-wrapper");
+    if (addressWrapper && (data.street || data.city)) {
+      addressWrapper.style.display = "block";
+    }
+  } catch (e) {}
+}
+
+/**
+ * Salva os dados digitados na tela de compra direta no localStorage
+ */
+function saveDirectCustomerData() {
+  const getVal = (id) => (document.getElementById(id)?.value || "").trim();
+  saveCustomerDeliveryData({
+    name: getVal("direct-cust-name"),
+    phone: getVal("direct-cust-phone"),
+    cep: getVal("direct-cust-cep"),
+    street: getVal("direct-cust-street"),
+    number: getVal("direct-cust-number"),
+    comp: getVal("direct-cust-comp"),
+    bairro: getVal("direct-cust-bairro"),
+    city: getVal("direct-cust-city")
+  });
+}
+
+/**
+ * Calcula o frete dos Correios para a tela exclusiva de Compra Direta
+ */
+async function calculateDirectShipping(targetCep, autoTriggered = false) {
+  const cleanCep = (targetCep || "").replace(/\D/g, "");
+  const feedbackEl = document.getElementById("direct-cep-feedback-msg");
+  const optionsWrapper = document.getElementById("direct-shipping-options-wrapper");
+  const addressWrapper = document.getElementById("direct-address-details-wrapper");
+  const btnCalc = document.getElementById("btn-calc-direct-cep");
+  const spinner = btnCalc ? btnCalc.querySelector(".btn-cep-spinner") : null;
+  const icon = btnCalc ? btnCalc.querySelector(".btn-cep-icon") : null;
+  const btnText = btnCalc ? btnCalc.querySelector(".btn-cep-text") : null;
+  const cityInput = document.getElementById("direct-cust-city");
+
+  if (cleanCep.length !== 8) {
+    if (!autoTriggered && feedbackEl) {
+      feedbackEl.style.display = "block";
+      feedbackEl.className = "cep-feedback-msg error";
+      feedbackEl.textContent = "Digite o CEP completo com 8 números.";
+    }
+    if (cityInput) cityInput.value = "";
+    if (optionsWrapper) optionsWrapper.style.display = "none";
+    directSelectedShipping = null;
+    renderDirectSummary();
+    return;
+  }
+
+  if (isCalculatingDirectShipping) return;
+  isCalculatingDirectShipping = true;
+
+  if (spinner) spinner.style.display = "inline-block";
+  if (icon) icon.style.display = "none";
+  if (btnText) btnText.textContent = "Calculando...";
+  if (feedbackEl) {
+    feedbackEl.style.display = "block";
+    feedbackEl.className = "cep-feedback-msg loading";
+    feedbackEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Localizando cidade e calculando frete Correios...';
+  }
+
+  try {
+    const viaCepRes = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+    if (!viaCepRes.ok) throw new Error("Erro ao consultar CEP");
+    const addressData = await viaCepRes.json();
+
+    const streetInput = document.getElementById("direct-cust-street");
+    const bairroInput = document.getElementById("direct-cust-bairro");
+    const numberInput = document.getElementById("direct-cust-number");
+    const syncStatusText = document.getElementById("direct-address-sync-status-text");
+
+    if (addressData.erro) {
+      if (feedbackEl) {
+        feedbackEl.style.display = "block";
+        feedbackEl.className = "cep-feedback-msg error";
+        feedbackEl.textContent = "CEP não encontrado. Por favor, confira os números digitados.";
+      }
+      if (cityInput) cityInput.value = "";
+      if (optionsWrapper) optionsWrapper.style.display = "none";
+      directSelectedShipping = null;
+      renderDirectSummary();
+      return;
+    }
+
+    // Preenche Cidade e Estado e bloqueia para alteração manual
+    if (cityInput) {
+      cityInput.value = `${addressData.localidade} - ${addressData.uf}`;
+      cityInput.readOnly = true;
+      cityInput.setAttribute("readonly", "readonly");
+    }
+
+    // Preenche Rua e Bairro como sugestão
+    if (streetInput && addressData.logradouro) streetInput.value = addressData.logradouro;
+    if (bairroInput && addressData.bairro) bairroInput.value = addressData.bairro;
+
+    if (syncStatusText) {
+      syncStatusText.textContent = "Endereço localizado pelo CEP (Cidade e Estado definidos automaticamente):";
+    }
+
+    if (addressWrapper) addressWrapper.style.display = "block";
+
+    if (feedbackEl) {
+      feedbackEl.style.display = "block";
+      feedbackEl.className = "cep-feedback-msg success";
+      feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>${addressData.localidade} - ${addressData.uf}</strong> localizado com sucesso!`;
+    }
+
+    // Cotações Correios (SEDEX e PAC)
+    let quotes = await requestMelhorEnvioApi(cleanCep, addressData);
+    if (!quotes || quotes.length === 0) {
+      quotes = getRegionalShippingQuotes(cleanCep, addressData);
+    }
+
+    directCalculatedQuotes = quotes;
+    renderDirectShippingOptionsList(quotes);
+    saveDirectCustomerData();
+
+    if (numberInput && !numberInput.value.trim()) {
+      setTimeout(() => numberInput.focus(), 250);
+    }
+  } catch (err) {
+    console.warn("Erro no cálculo do frete direto:", err);
+    if (feedbackEl) {
+      feedbackEl.style.display = "block";
+      feedbackEl.className = "cep-feedback-msg error";
+      feedbackEl.textContent = "Não foi possível calcular o frete agora. Tente novamente.";
+    }
+  } finally {
+    isCalculatingDirectShipping = false;
+    if (spinner) spinner.style.display = "none";
+    if (icon) icon.style.display = "inline-block";
+    if (btnText) btnText.textContent = "Calcular";
+  }
+}
+
+/**
+ * Renderiza cards de opções de frete Correios na tela de compra direta
+ */
+function renderDirectShippingOptionsList(quotes) {
+  const container = document.getElementById("direct-shipping-options-list");
+  const wrapper = document.getElementById("direct-shipping-options-wrapper");
+  if (!container || !wrapper) return;
+
+  if (!quotes || quotes.length === 0) {
+    wrapper.style.display = "none";
+    return;
+  }
+
+  wrapper.style.display = "block";
+
+  if (!directSelectedShipping || !quotes.some(q => q.id === directSelectedShipping.id)) {
+    directSelectedShipping = quotes[0];
+  }
+
+  container.innerHTML = quotes.map(q => {
+    const isSelected = directSelectedShipping && directSelectedShipping.id === q.id;
+    const priceFormatted = q.price === 0 ? "Grátis" : formatBRL(q.price);
+    const priceClass = q.price === 0 ? "shipping-price-badge free" : "shipping-price-badge";
+
+    return `
+      <div class="shipping-card-option ${isSelected ? "selected" : ""}" data-direct-shipping-id="${q.id}" onclick="selectDirectShippingOption('${q.id}')" role="radio" aria-checked="${isSelected}">
+        <div class="shipping-card-left">
+          <div class="shipping-radio-circle"></div>
+          <div class="shipping-card-info">
+            <div class="shipping-card-top-row">
+              <span class="shipping-carrier-pill">${q.company}</span>
+              <span class="shipping-service-name">${q.name}</span>
+            </div>
+            <span class="shipping-delivery-days"><i class="fa-regular fa-clock"></i> ${q.days}</span>
+          </div>
+        </div>
+        <span class="${priceClass}">${priceFormatted}</span>
+      </div>
+    `;
+  }).join("");
+
+  renderDirectSummary();
+}
+
+window.selectDirectShippingOption = function(optionId) {
+  const quote = directCalculatedQuotes.find(q => q.id === optionId);
+  if (!quote) return;
+  directSelectedShipping = quote;
+
+  const cards = document.querySelectorAll("#direct-shipping-options-list .shipping-card-option");
+  cards.forEach(card => {
+    const id = card.getAttribute("data-direct-shipping-id");
+    if (id === optionId) {
+      card.classList.add("selected");
+      card.setAttribute("aria-checked", "true");
+    } else {
+      card.classList.remove("selected");
+      card.setAttribute("aria-checked", "false");
+    }
+  });
+
+  renderDirectSummary();
 };
+
+/**
+ * Conclui o checkout exclusivo da Compra Direta na InfinitePay
+ * Envia o endereço pré-preenchido no formato oficial suportado pela plataforma!
+ */
+async function checkoutDirectBuyInfinitePay(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  if (!currentDirectProduct) return;
+
+  const custNameEl = document.getElementById("direct-cust-name");
+  const custPhoneEl = document.getElementById("direct-cust-phone");
+  const custCepEl = document.getElementById("direct-cust-cep");
+  const custStreetEl = document.getElementById("direct-cust-street");
+  const custNumberEl = document.getElementById("direct-cust-number");
+  const custCompEl = document.getElementById("direct-cust-comp");
+  const custBairroEl = document.getElementById("direct-cust-bairro");
+  const custCityEl = document.getElementById("direct-cust-city");
+
+  const custName = (custNameEl?.value || "").trim();
+  const custPhone = (custPhoneEl?.value || "").replace(/\D/g, "");
+  const custCep = (custCepEl?.value || "").replace(/\D/g, "");
+  const custStreet = (custStreetEl?.value || "").trim();
+  const custNumber = (custNumberEl?.value || "").trim();
+  const custComp = (custCompEl?.value || "").trim();
+  const custBairro = (custBairroEl?.value || "").trim();
+  const custCity = (custCityEl?.value || "").trim();
+
+  if (!custName) {
+    highlightFieldError(custNameEl, "Por favor, preencha seu nome completo.");
+    return;
+  }
+  if (custPhone.length < 10) {
+    highlightFieldError(custPhoneEl, "Digite seu WhatsApp/celular com DDD.");
+    return;
+  }
+  if (custCep.length !== 8) {
+    highlightFieldError(custCepEl, "Digite um CEP válido para calcular o frete Correios.");
+    return;
+  }
+  if (!directSelectedShipping) {
+    if (directCalculatedQuotes && directCalculatedQuotes.length > 0) {
+      directSelectedShipping = directCalculatedQuotes[0];
+      renderDirectSummary();
+    } else {
+      highlightFieldError(custCepEl, "Calcule o frete para continuar.");
+      calculateDirectShipping(custCep, false);
+      return;
+    }
+  }
+  if (!custStreet) {
+    highlightFieldError(custStreetEl, "Informe o nome da sua rua ou logradouro.");
+    return;
+  }
+  if (!custNumber) {
+    highlightFieldError(custNumberEl, "Informe o número do endereço de entrega.");
+    return;
+  }
+  if (!custBairro) {
+    highlightFieldError(custBairroEl, "Informe o bairro do endereço de entrega.");
+    return;
+  }
+
+  // Salva no localStorage para futuras compras
+  saveDirectCustomerData();
+
+  const btnPay = document.getElementById("btn-direct-checkout-pay");
+  if (btnPay && btnPay.classList.contains("loading")) return;
+  const originalHtml = btnPay ? btnPay.innerHTML : "";
+
+  // Abre janela pop-up imediatamente para contornar bloqueador
+  const checkoutWindow = window.open("", "_blank");
+  if (checkoutWindow) {
+    checkoutWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+        <head>
+          <meta charset="utf-8">
+          <title>Conectando ao Checkout - Cube Forge</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style>
+            body {
+              margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+              align-items: center; justify-content: center; background: #080d18;
+              color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+              text-align: center; padding: 24px; box-sizing: border-box;
+            }
+            .spinner {
+              width: 48px; height: 48px; border: 3px solid rgba(56, 189, 248, 0.15);
+              border-top-color: #38bdf8; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 22px;
+            }
+            @keyframes spin { to { transform: rotate(360deg); } }
+            h2 { font-size: 1.25rem; font-weight: 700; margin: 0 0 8px; color: #f8fafc; }
+            p { font-size: 0.9rem; color: #94a3b8; margin: 0; line-height: 1.4; }
+          </style>
+        </head>
+        <body>
+          <div class="spinner"></div>
+          <h2>Conectando ao Checkout Seguro</h2>
+          <p>Preparando seu produto e frete selecionado na InfinitePay...</p>
+        </body>
+      </html>
+    `);
+  }
+
+  if (btnPay) {
+    btnPay.classList.add("loading");
+    btnPay.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando Checkout com Frete...';
+  }
+
+  try {
+    const unitPrice = currentDirectProduct.numericPrice || parseItemPrice(currentDirectProduct.price);
+    const unitCents = Math.round(unitPrice * 100);
+    const items = [
+      {
+        quantity: directBuyQuantity,
+        price: unitCents > 0 ? unitCents : 1000,
+        description: currentDirectProduct.title
+      }
+    ];
+
+    const shippingPriceCents = Math.round((directSelectedShipping.price || 0) * 100);
+    if (shippingPriceCents > 0) {
+      const carrier = "Correios";
+      const service = directSelectedShipping.name || "Frete";
+      const addrShort = `${custStreet}, ${custNumber}${custBairro ? " - " + custBairro : ""}${custCity ? " (" + custCity + ")" : ""}`;
+      const desc = `Frete: ${carrier} ${service} [${addrShort}]`.slice(0, 120);
+
+      items.push({
+        quantity: 1,
+        price: shippingPriceCents,
+        description: desc
+      });
+    }
+
+    const cityOnly = custCity.includes("-") ? custCity.split("-")[0].trim() : custCity;
+    const stateOnly = custCity.includes("-") ? custCity.split("-")[1].trim() : "ES";
+
+    const payload = {
+      handle: SITE_CONFIG.infinitePayHandle || "cubeforge",
+      redirect_url: window.location.href.split("?")[0],
+      items: items,
+      customer: {
+        name: custName,
+        phone_number: `+55${custPhone}`,
+        phone: custPhone,
+        address: {
+          street: custStreet,
+          number: custNumber,
+          complement: custComp || "",
+          neighborhood: custBairro || "",
+          city: cityOnly,
+          state: stateOnly,
+          zip_code: custCep
+        }
+      },
+      address: {
+        cep: custCep,
+        street: custStreet,
+        number: custNumber,
+        complement: custComp || "",
+        neighborhood: custBairro || "",
+        city: cityOnly,
+        state: stateOnly
+      }
+    };
+
+    const response = await fetch("https://api.checkout.infinitepay.io/links", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`InfinitePay API Status ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data && data.url) {
+      if (checkoutWindow) {
+        checkoutWindow.location.href = data.url;
+      } else {
+        window.location.href = data.url;
+      }
+    } else {
+      throw new Error("URL de checkout unificado não retornada");
+    }
+  } catch (err) {
+    console.warn("Aviso ao gerar checkout InfinitePay direto, usando fallback:", err);
+    const fallbackUrl = SITE_CONFIG.jimStoreUrl || "https://jim.com/a/cubeforge";
+    if (checkoutWindow) {
+      checkoutWindow.location.href = fallbackUrl;
+    } else {
+      window.open(fallbackUrl, "_blank");
+    }
+  } finally {
+    if (btnPay) {
+      btnPay.classList.remove("loading");
+      btnPay.innerHTML = originalHtml;
+    }
+  }
+}
 
 /**
  * Gera dinamicamente o link de checkout unificado na InfinitePay via API oficial
@@ -2992,6 +3602,17 @@ async function checkoutCartOnlineInfinitePay(e) {
       }
     };
 
+    // Bloco de endereço na raiz conforme documentação oficial da InfinitePay
+    const addressPayload = {
+      cep: custCep,
+      street: custStreet,
+      number: custNumber,
+      complement: custComp || "",
+      neighborhood: custBairro || "",
+      city: cityOnly,
+      state: stateOnly
+    };
+
     const response = await fetch("https://api.checkout.infinitepay.io/links", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -2999,7 +3620,8 @@ async function checkoutCartOnlineInfinitePay(e) {
         handle: SITE_CONFIG.infinitePayHandle || "cubeforge",
         redirect_url: window.location.href.split("?")[0],
         items: items,
-        customer: customerPayload
+        customer: customerPayload,
+        address: addressPayload
       })
     });
 
@@ -3009,15 +3631,7 @@ async function checkoutCartOnlineInfinitePay(e) {
 
     const data = await response.json();
     if (data && data.url) {
-      // Após checkout bem-sucedido no modo compra direta, restaura o carrinho original
-      // (sem o item que acabou de ser comprado) para que o cliente não perca os demais itens
-      if (isDirectBuyMode && savedCartBeforeDirectBuy) {
-        const purchasedId = cart.length > 0 ? cart[0].id : null;
-        cart = savedCartBeforeDirectBuy.filter(item => item.id !== purchasedId);
-        isDirectBuyMode = false;
-        savedCartBeforeDirectBuy = null;
-        saveCart();
-      }
+
       if (checkoutWindow) {
         checkoutWindow.location.href = data.url;
       } else {
@@ -3200,11 +3814,8 @@ function setupCartListeners() {
   const btnBackStep = document.getElementById("cart-back-step-btn");
   if (btnBackStep) {
     btnBackStep.addEventListener("click", () => {
-      if (currentCartStep === 3) {
-        // Se está no modo compra direta, restaura o carrinho original antes de voltar
-        exitDirectBuyMode();
-        setCartStep(2);
-      } else if (currentCartStep === 2) {
+      if (currentCartStep === 3) setCartStep(2);
+      else if (currentCartStep === 2) {
         setCartStep(1);
       }
     });
@@ -3219,10 +3830,7 @@ function setupCartListeners() {
   // Botão Voltar para Pagamento (Etapa 3 -> Etapa 2)
   const btnBackToPayment = document.getElementById("btn-back-to-payment");
   if (btnBackToPayment) {
-    btnBackToPayment.addEventListener("click", () => {
-      exitDirectBuyMode();
-      setCartStep(2);
-    });
+    btnBackToPayment.addEventListener("click", () => setCartStep(2));
   }
 
   // Pílulas do Stepper (Navegação direta no topo)
@@ -3306,6 +3914,65 @@ function setupCartListeners() {
 
   const continueBtn = document.getElementById("btn-continue-shopping");
   if (continueBtn) continueBtn.addEventListener("click", closeCart);
+
+  // =========================================================================
+  // Listeners da Tela Exclusiva de Compra Direta
+  // =========================================================================
+  const directCloseBtn = document.getElementById("direct-buy-close-btn");
+  if (directCloseBtn) directCloseBtn.addEventListener("click", closeDirectBuyModal);
+
+  const directCancelBtn = document.getElementById("btn-direct-cancel");
+  if (directCancelBtn) directCancelBtn.addEventListener("click", closeDirectBuyModal);
+
+  const directPayBtn = document.getElementById("btn-direct-checkout-pay");
+  if (directPayBtn) directPayBtn.addEventListener("click", checkoutDirectBuyInfinitePay);
+
+  const directCepBtn = document.getElementById("btn-calc-direct-cep");
+  const directCepInput = document.getElementById("direct-cust-cep");
+
+  if (directCepInput) {
+    // Máscara e auto-trigger de CEP na tela direta
+    directCepInput.addEventListener("input", (e) => {
+      let v = e.target.value.replace(/\D/g, "");
+      if (v.length > 5) v = v.substring(0, 5) + "-" + v.substring(5, 8);
+      e.target.value = v;
+
+      const cleanCep = v.replace(/\D/g, "");
+      if (cleanCep.length === 8) {
+        calculateDirectShipping(cleanCep, true);
+      } else if (cleanCep.length === 0) {
+        const cityInput = document.getElementById("direct-cust-city");
+        if (cityInput) cityInput.value = "";
+        const optionsWrapper = document.getElementById("direct-shipping-options-wrapper");
+        if (optionsWrapper) optionsWrapper.style.display = "none";
+        directSelectedShipping = null;
+        renderDirectSummary();
+      }
+    });
+
+    directCepInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        calculateDirectShipping(directCepInput.value, false);
+      }
+    });
+  }
+
+  if (directCepBtn && directCepInput) {
+    directCepBtn.addEventListener("click", () => {
+      calculateDirectShipping(directCepInput.value, false);
+    });
+  }
+
+  // Tecla Escape fecha tela de compra direta se estiver aberta
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      const directOverlay = document.getElementById("direct-buy-overlay");
+      if (directOverlay && directOverlay.classList.contains("active")) {
+        closeDirectBuyModal();
+      }
+    }
+  });
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && overlay && overlay.classList.contains("active")) {

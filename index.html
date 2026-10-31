@@ -817,6 +817,181 @@
     </div>
   </div>
 
+  <!-- =====================================================================
+       TELA EXCLUSIVA DE COMPRA DIRETA ONLINE (1 Produto via InfinitePay)
+       Totalmente isolada do carrinho normal. Nunca mistura com outros itens.
+       ===================================================================== -->
+  <div id="direct-buy-overlay" class="direct-buy-overlay" role="dialog" aria-modal="true" aria-labelledby="direct-buy-title" aria-hidden="true">
+    <div class="direct-buy-backdrop" id="direct-buy-backdrop"></div>
+    <div class="direct-buy-drawer" id="direct-buy-drawer">
+      
+      <!-- Cabeçalho da Compra Direta -->
+      <div class="direct-buy-header">
+        <div class="direct-buy-header-left">
+          <div class="direct-buy-icon-badge">
+            <i class="fa-solid fa-bolt-lightning"></i>
+          </div>
+          <div class="direct-buy-header-titles">
+            <h3 class="direct-buy-header-title" id="direct-buy-title">Compra Rápida</h3>
+            <span class="direct-buy-header-subtitle">Pix ou Cartão em até 12x via InfinitePay</span>
+          </div>
+        </div>
+        <button type="button" class="direct-buy-close-btn" id="direct-buy-close-btn" aria-label="Fechar compra rápida">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Corpo da Compra Direta (Scrollável) -->
+      <div class="direct-buy-body">
+        
+        <!-- Card 1: Produto Selecionado com Seletor de Quantidade -->
+        <div class="direct-buy-product-card" id="direct-buy-product-card">
+          <!-- Inserido dinamicamente via JavaScript -->
+        </div>
+
+        <!-- Card 2: Dados para Entrega & Frete Correios -->
+        <div class="cart-delivery-card direct-delivery-card">
+          <div class="delivery-card-header">
+            <div class="delivery-card-title">
+              <i class="fa-solid fa-truck-fast"></i>
+              <span>Dados para Entrega & Frete</span>
+            </div>
+            <div class="correios-badge" title="Cálculo oficial via Correios">
+              <i class="fa-solid fa-box"></i>
+              <span>Correios</span>
+            </div>
+          </div>
+
+          <div class="delivery-form-grid">
+            <!-- Nome Completo -->
+            <div class="form-group-field col-full">
+              <label for="direct-cust-name"><i class="fa-solid fa-user"></i> Nome Completo <span class="req">*</span></label>
+              <input type="text" id="direct-cust-name" class="checkout-input" placeholder="Seu nome completo" autocomplete="name" required>
+            </div>
+
+            <!-- WhatsApp / Celular -->
+            <div class="form-group-field col-full">
+              <label for="direct-cust-phone"><i class="fa-brands fa-whatsapp"></i> WhatsApp / Celular <span class="req">*</span></label>
+              <input type="tel" id="direct-cust-phone" class="checkout-input" placeholder="(27) 99999-9999" maxlength="15" autocomplete="tel" required>
+            </div>
+
+            <!-- CEP de Entrega -->
+            <div class="form-group-field col-full">
+              <div class="label-split-row">
+                <label for="direct-cust-cep"><i class="fa-solid fa-location-dot"></i> CEP de Entrega <span class="req">*</span></label>
+                <a href="https://buscacepinter.correios.com.br/app/cep/index.php" target="_blank" rel="noopener noreferrer" class="link-find-cep" title="Não sei meu CEP">Não sei o CEP</a>
+              </div>
+              <div class="cep-input-wrapper">
+                <input type="text" id="direct-cust-cep" class="checkout-input" placeholder="00000-000" maxlength="9" inputmode="numeric" required>
+                <button type="button" id="btn-calc-direct-cep" class="btn-cep-calc" title="Calcular frete">
+                  <span class="btn-cep-text">Calcular</span>
+                  <i class="fa-solid fa-arrow-right btn-cep-icon"></i>
+                  <i class="fa-solid fa-spinner fa-spin btn-cep-spinner" style="display: none;"></i>
+                </button>
+              </div>
+              <div class="cep-feedback-msg" id="direct-cep-feedback-msg" style="display: none;"></div>
+            </div>
+          </div>
+
+          <!-- Endereço Detalhado -->
+          <div class="address-details-wrapper" id="direct-address-details-wrapper">
+            <div class="address-autofill-badge">
+              <i class="fa-solid fa-map-location-dot"></i>
+              <span id="direct-address-sync-status-text">Endereço de Entrega (Cidade/UF preenchidas automaticamente pelo CEP):</span>
+            </div>
+            <div class="address-grid">
+              <div class="form-group-field col-full">
+                <label for="direct-cust-street">Rua / Logradouro <span class="req">*</span></label>
+                <input type="text" id="direct-cust-street" class="checkout-input" placeholder="Ex: Av. Principal ou Rua das Flores" required>
+              </div>
+
+              <div class="form-group-field col-half">
+                <label for="direct-cust-number">Número <span class="req">*</span></label>
+                <input type="text" id="direct-cust-number" class="checkout-input input-highlight" placeholder="Ex: 123" required>
+              </div>
+
+              <div class="form-group-field col-half">
+                <label for="direct-cust-comp">Complemento (opcional)</label>
+                <input type="text" id="direct-cust-comp" class="checkout-input" placeholder="Apto, Casa, Bloco...">
+              </div>
+
+              <div class="form-group-field col-half">
+                <label for="direct-cust-bairro">Bairro <span class="req">*</span></label>
+                <input type="text" id="direct-cust-bairro" class="checkout-input" placeholder="Bairro" required>
+              </div>
+
+              <div class="form-group-field col-half">
+                <label for="direct-cust-city">
+                  <i class="fa-solid fa-lock" style="font-size: 0.72rem; color: #94a3b8; margin-right: 3px;" title="Bloqueado para alteração manual"></i>
+                  Cidade - UF <span class="req">*</span>
+                </label>
+                <input type="text" id="direct-cust-city" class="checkout-input input-readonly" placeholder="Preenchido via CEP" readonly required tabindex="-1" title="A cidade e estado são definidos automaticamente pelo CEP digitado">
+              </div>
+            </div>
+          </div>
+
+          <!-- Opções de Frete Correios (SEDEX e PAC) -->
+          <div class="shipping-options-wrapper" id="direct-shipping-options-wrapper" style="display: none;">
+            <div class="shipping-options-title">
+              <i class="fa-solid fa-box"></i> Escolha o frete Correios:
+            </div>
+            <div class="shipping-options-list" id="direct-shipping-options-list">
+              <!-- Inserido dinamicamente via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Resumo Financeiro da Compra Direta -->
+        <div class="cart-order-summary-card direct-summary-card">
+          <div class="summary-card-header">
+            <div class="summary-card-title">
+              <i class="fa-solid fa-receipt"></i>
+              <span>Total com Frete</span>
+            </div>
+            <span class="summary-card-items-count" id="direct-summary-items-count">1 item</span>
+          </div>
+
+          <div class="summary-total-box">
+            <div class="summary-total-breakdown">
+              <div class="summary-subtotal-line">
+                <span>Subtotal do item:</span>
+                <span id="direct-summary-subtotal-amount">R$ 0,00</span>
+              </div>
+              <div class="summary-shipping-line">
+                <span>Frete Correios:</span>
+                <span id="direct-summary-shipping-amount" class="shipping-amount-text">Digite o CEP acima</span>
+              </div>
+            </div>
+            <div class="summary-total-line">
+              <span>Total Final:</span>
+              <strong class="summary-total-amount" id="direct-summary-total-amount">R$ 0,00</strong>
+            </div>
+            <span class="summary-installments-badge"><i class="fa-solid fa-credit-card"></i> Até 12x no Cartão ou Pix via InfinitePay</span>
+          </div>
+        </div>
+
+        <!-- Botão Concluir Pagamento na InfinitePay -->
+        <div class="delivery-checkout-action-block">
+          <button type="button" id="btn-direct-checkout-pay" class="btn-cart-checkout-jim" title="Pagar com Pix ou Cartão em até 12x no Checkout da InfinitePay">
+            <i class="fa-solid fa-lock"></i> Concluir Pagamento na InfinitePay
+          </button>
+          <div class="cart-unified-badge">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Ambiente Seguro InfinitePay • Pedido enviado com rastreio Correios</span>
+          </div>
+        </div>
+
+        <div class="direct-buy-cancel-footer">
+          <button type="button" class="btn-back-to-items" id="btn-direct-cancel">
+            <i class="fa-solid fa-arrow-left"></i> Voltar para a Loja
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
   <!-- Toast Flutuante Compacto de Confirmação e Status (One UI 9 Nowbar Capsule) -->
   <div class="cart-toast" id="cart-toast">
     <div class="toast-icon" id="toast-icon-box"><i class="fa-solid fa-circle-check"></i></div>
