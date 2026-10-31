@@ -560,7 +560,7 @@ button {
    Hero Section / Top Glass Hub
    ========================================================================== */
 .hero-section {
-  padding: 38px 0 24px;
+  padding: 22px 0 16px;
   position: relative;
   text-align: center;
 }
@@ -594,7 +594,7 @@ button {
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin: 0 auto 20px;
+  margin: 0 auto 10px;
 }
 
 .emblem-wrapper-solto {
@@ -607,8 +607,8 @@ button {
 }
 
 .hero-emblem-img {
-  width: 108px;
-  height: 108px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
   filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 16px rgba(255, 106, 0, 0.3));
   animation: floatEmblem 4s ease-in-out infinite;
@@ -1658,27 +1658,30 @@ button {
 }
 
 .brand-bio {
-  font-size: 0.94rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
-  max-width: 500px;
-  line-height: 1.55;
-  margin: 0 auto 20px auto;
+  max-width: 340px;
+  line-height: 1.35;
+  margin: 0 auto 12px auto;
   text-align: center;
   text-wrap: balance;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .bio-line-highlight {
-  font-weight: 500;
-  color: var(--text-secondary);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .bio-line-desc {
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.3;
   text-wrap: balance;
 }
 
@@ -1689,11 +1692,13 @@ button {
 
 /* Tags Flutuantes em Vidro Líquido */
 .trust-tags {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 26px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  max-width: 340px;
+  width: 100%;
+  margin: 0 auto 16px auto;
+  padding: 0 4px;
 }
 
 .trust-tags .tag {
@@ -1702,13 +1707,16 @@ button {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   color: var(--text-secondary);
-  font-size: 0.76rem;
+  font-size: 0.70rem;
   font-weight: 600;
-  padding: 6px 14px;
+  padding: 5px 8px;
   border-radius: var(--radius-pill);
   display: flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  gap: 5px;
+  white-space: nowrap;
+  letter-spacing: 0.1px;
   box-shadow: var(--glass-specular-subtle);
   transition: all var(--transition-smooth);
 }
@@ -8031,5 +8039,34 @@ body.intro-active {
   .product-card:hover .product-card-content {
     transform: translateZ(6px);
     transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+
+/* Otimização especial para celulares de tela muito estreita (<= 340px, ex: iPhone SE 1st gen) */
+@media (max-width: 340px) {
+  .hero-emblem-img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .brand-name {
+    font-size: 1.62rem;
+  }
+
+  .brand-bio {
+    font-size: 0.76rem;
+    max-width: 290px;
+  }
+
+  .trust-tags {
+    max-width: 295px;
+    gap: 5px;
+  }
+
+  .trust-tags .tag {
+    font-size: 0.64rem;
+    padding: 4px 5px;
+    gap: 3px;
   }
 }
