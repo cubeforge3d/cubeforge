@@ -2305,6 +2305,7 @@ function getCustomerDeliveryData() {
   return {
     name: getVal("checkout-cust-name"),
     phone: getVal("checkout-cust-phone"),
+    email: getVal("checkout-cust-email"),
     cep: getVal("checkout-cust-cep"),
     street: getVal("checkout-cust-street"),
     number: getVal("checkout-cust-number"),
@@ -2340,6 +2341,7 @@ function loadSavedCustomerData() {
 
     const nameInput = document.getElementById("checkout-cust-name");
     const phoneInput = document.getElementById("checkout-cust-phone");
+    const emailInput = document.getElementById("checkout-cust-email");
     const cepInput = document.getElementById("checkout-cust-cep");
     const streetInput = document.getElementById("checkout-cust-street");
     const numberInput = document.getElementById("checkout-cust-number");
@@ -2350,6 +2352,7 @@ function loadSavedCustomerData() {
 
     if (nameInput && data.name) nameInput.value = data.name;
     if (phoneInput && data.phone) phoneInput.value = data.phone;
+    if (emailInput && data.email) emailInput.value = data.email;
     if (cepInput && data.cep) {
       cepInput.value = data.cep;
       if (streetInput && data.street) streetInput.value = data.street;
@@ -2445,6 +2448,7 @@ function initDeliveryAndShippingEvents() {
   const monitoredFields = [
     "checkout-cust-name",
     "checkout-cust-phone",
+    "checkout-cust-email",
     "checkout-cust-street",
     "checkout-cust-number",
     "checkout-cust-comp",
@@ -2800,10 +2804,13 @@ function openDirectBuyModal(productId, e) {
   // Foco inteligente no primeiro campo obrigatório pendente
   setTimeout(() => {
     const nameInput = document.getElementById("direct-cust-name");
+    const emailInp = document.getElementById("direct-cust-email");
     const cepInp = document.getElementById("direct-cust-cep");
     const numInp = document.getElementById("direct-cust-number");
     if (nameInput && !nameInput.value.trim()) {
       nameInput.focus();
+    } else if (emailInp && !emailInp.value.trim()) {
+      emailInp.focus();
     } else if (cepInp && !cepInp.value.trim()) {
       cepInp.focus();
     } else if (numInp && !numInp.value.trim()) {
@@ -2946,6 +2953,7 @@ function loadCustomerDataIntoDirectBuy() {
 
     setVal("direct-cust-name", data.name);
     setVal("direct-cust-phone", data.phone);
+    setVal("direct-cust-email", data.email);
     setVal("direct-cust-cep", data.cep);
     setVal("direct-cust-street", data.street);
     setVal("direct-cust-number", data.number);
@@ -2973,6 +2981,7 @@ function saveDirectCustomerData() {
   saveCustomerDeliveryData({
     name: getVal("direct-cust-name"),
     phone: getVal("direct-cust-phone"),
+    email: getVal("direct-cust-email"),
     cep: getVal("direct-cust-cep"),
     street: getVal("direct-cust-street"),
     number: getVal("direct-cust-number"),
@@ -3173,6 +3182,7 @@ async function checkoutDirectBuyInfinitePay(e) {
 
   const custNameEl = document.getElementById("direct-cust-name");
   const custPhoneEl = document.getElementById("direct-cust-phone");
+  const custEmailEl = document.getElementById("direct-cust-email");
   const custCepEl = document.getElementById("direct-cust-cep");
   const custStreetEl = document.getElementById("direct-cust-street");
   const custNumberEl = document.getElementById("direct-cust-number");
@@ -3182,6 +3192,7 @@ async function checkoutDirectBuyInfinitePay(e) {
 
   const custName = (custNameEl?.value || "").trim();
   const custPhone = (custPhoneEl?.value || "").replace(/\D/g, "");
+  const custEmail = (custEmailEl?.value || "").trim();
   const custCep = (custCepEl?.value || "").replace(/\D/g, "");
   const custStreet = (custStreetEl?.value || "").trim();
   const custNumber = (custNumberEl?.value || "").trim();
@@ -3195,6 +3206,11 @@ async function checkoutDirectBuyInfinitePay(e) {
   }
   if (custPhone.length < 10) {
     highlightFieldError(custPhoneEl, "Digite seu WhatsApp/celular com DDD.");
+    return;
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!custEmail || !emailRegex.test(custEmail)) {
+    highlightFieldError(custEmailEl, "Digite um e-mail válido para confirmação do pedido.");
     return;
   }
   if (custCep.length !== 8) {
@@ -3305,6 +3321,7 @@ async function checkoutDirectBuyInfinitePay(e) {
       items: items,
       customer: {
         name: custName,
+        email: custEmail,
         phone_number: `+55${custPhone}`,
         phone: custPhone,
         address: {
@@ -3430,6 +3447,7 @@ async function checkoutCartOnlineInfinitePay(e) {
   // 3. Validação dos Dados de Entrega e Frete
   const custNameEl = document.getElementById("checkout-cust-name");
   const custPhoneEl = document.getElementById("checkout-cust-phone");
+  const custEmailEl = document.getElementById("checkout-cust-email");
   const custCepEl = document.getElementById("checkout-cust-cep");
   const custStreetEl = document.getElementById("checkout-cust-street");
   const custNumberEl = document.getElementById("checkout-cust-number");
@@ -3439,6 +3457,7 @@ async function checkoutCartOnlineInfinitePay(e) {
 
   const custName = (custNameEl?.value || "").trim();
   const custPhone = (custPhoneEl?.value || "").replace(/\D/g, "");
+  const custEmail = (custEmailEl?.value || "").trim();
   const custCep = (custCepEl?.value || "").replace(/\D/g, "");
   const custStreet = (custStreetEl?.value || "").trim();
   const custNumber = (custNumberEl?.value || "").trim();
@@ -3453,6 +3472,12 @@ async function checkoutCartOnlineInfinitePay(e) {
 
   if (custPhone.length < 10) {
     highlightFieldError(custPhoneEl, "Digite seu WhatsApp/celular com DDD.");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!custEmail || !emailRegex.test(custEmail)) {
+    highlightFieldError(custEmailEl, "Digite um e-mail válido para confirmação do pedido.");
     return;
   }
 
@@ -3493,6 +3518,7 @@ async function checkoutCartOnlineInfinitePay(e) {
   saveCustomerDeliveryData({
     name: custName,
     phone: custPhoneEl ? custPhoneEl.value : custPhone,
+    email: custEmail,
     cep: custCepEl ? custCepEl.value : custCep,
     street: custStreet,
     number: custNumber,
@@ -3589,6 +3615,7 @@ async function checkoutCartOnlineInfinitePay(e) {
 
     const customerPayload = {
       name: custName,
+      email: custEmail,
       phone_number: `+55${custPhone}`,
       phone: custPhone,
       address: {
@@ -3697,6 +3724,7 @@ function checkoutCartWhatsApp() {
     message += `\n📍 *Dados para Entrega:*\n`;
     if (deliveryData.name) message += `• *Nome:* ${deliveryData.name}\n`;
     if (deliveryData.phone) message += `• *Telefone:* ${deliveryData.phone}\n`;
+    if (deliveryData.email) message += `• *E-mail:* ${deliveryData.email}\n`;
     if (deliveryData.street) {
       let addr = `${deliveryData.street}, ${deliveryData.number || "S/N"}`;
       if (deliveryData.comp) addr += ` (${deliveryData.comp})`;
@@ -3963,6 +3991,26 @@ function setupCartListeners() {
       calculateDirectShipping(directCepInput.value, false);
     });
   }
+
+  // Monitora digitação dos campos da compra direta para auto-salvar e limpar erros
+  const directFields = [
+    "direct-cust-name",
+    "direct-cust-phone",
+    "direct-cust-email",
+    "direct-cust-street",
+    "direct-cust-number",
+    "direct-cust-comp",
+    "direct-cust-bairro"
+  ];
+  directFields.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", () => {
+        el.classList.remove("field-error-shake");
+        saveDirectCustomerData();
+      });
+    }
+  });
 
   // Tecla Escape fecha tela de compra direta se estiver aberta
   document.addEventListener("keydown", (e) => {
