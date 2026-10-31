@@ -385,19 +385,36 @@ function renderFilterTabs(preferredCategory = null) {
   let html = "";
 
   if (isMobile) {
-    // No celular: todos os botões em linha única com deslizamento horizontal touch nativo
-    allTabs.forEach(tab => {
+    // No celular: todos os botões em linha única com design JellyRadio e deslizamento horizontal nativo
+    allTabs.forEach((tab, i) => {
       const isActive = activeCategory === tab.slug;
       if (tab.isReady) {
         html += `
-          <button class="filter-btn filter-btn-ready ${isActive ? 'active' : ''}" data-category="pronta-entrega" title="Filtrar apenas peças com envio imediato">
-            <span class="stock-pulse-dot"></span> ⚡ Pronta Entrega
+          <button class="filter-btn filter-btn-ready jelly-radio__chip ${isActive ? 'active' : ''}" 
+            data-category="pronta-entrega" 
+            role="radio" 
+            aria-checked="${isActive ? 'true' : 'false'}" 
+            tabindex="${isActive ? '0' : '-1'}"
+            data-on="${isActive ? 'true' : 'false'}" 
+            title="Filtrar apenas peças com envio imediato">
+            <span class="jelly-radio__skin">
+              <span class="jelly-radio__icon"><span class="stock-pulse-dot"></span> ⚡</span>
+              <span class="jelly-radio__label">Pronta Entrega</span>
+            </span>
           </button>
         `;
       } else {
         html += `
-          <button class="filter-btn ${isActive ? 'active' : ''}" data-category="${tab.slug}">
-            ${tab.emoji} ${tab.name}
+          <button class="filter-btn jelly-radio__chip ${isActive ? 'active' : ''}" 
+            data-category="${tab.slug}" 
+            role="radio" 
+            aria-checked="${isActive ? 'true' : 'false'}" 
+            tabindex="${isActive ? '0' : '-1'}"
+            data-on="${isActive ? 'true' : 'false'}">
+            <span class="jelly-radio__skin">
+              <span class="jelly-radio__icon">${tab.emoji}</span>
+              <span class="jelly-radio__label">${tab.name}</span>
+            </span>
           </button>
         `;
       }
@@ -414,19 +431,36 @@ function renderFilterTabs(preferredCategory = null) {
     const visibleTabs = allTabs.length > maxVisible ? allTabs.slice(0, maxVisible) : allTabs;
     const overflowTabs = allTabs.length > maxVisible ? allTabs.slice(maxVisible) : [];
 
-    // Renderiza botões visíveis
-    visibleTabs.forEach(tab => {
+    // Renderiza botões visíveis JellyRadio
+    visibleTabs.forEach((tab, i) => {
       const isActive = activeCategory === tab.slug;
       if (tab.isReady) {
         html += `
-          <button class="filter-btn filter-btn-ready ${isActive ? 'active' : ''}" data-category="pronta-entrega" title="Filtrar apenas peças com envio imediato">
-            <span class="stock-pulse-dot"></span> ⚡ Pronta Entrega
+          <button class="filter-btn filter-btn-ready jelly-radio__chip ${isActive ? 'active' : ''}" 
+            data-category="pronta-entrega" 
+            role="radio" 
+            aria-checked="${isActive ? 'true' : 'false'}" 
+            tabindex="${isActive ? '0' : '-1'}"
+            data-on="${isActive ? 'true' : 'false'}" 
+            title="Filtrar apenas peças com envio imediato">
+            <span class="jelly-radio__skin">
+              <span class="jelly-radio__icon"><span class="stock-pulse-dot"></span> ⚡</span>
+              <span class="jelly-radio__label">Pronta Entrega</span>
+            </span>
           </button>
         `;
       } else {
         html += `
-          <button class="filter-btn ${isActive ? 'active' : ''}" data-category="${tab.slug}">
-            ${tab.emoji} ${tab.name}
+          <button class="filter-btn jelly-radio__chip ${isActive ? 'active' : ''}" 
+            data-category="${tab.slug}" 
+            role="radio" 
+            aria-checked="${isActive ? 'true' : 'false'}" 
+            tabindex="${isActive ? '0' : '-1'}"
+            data-on="${isActive ? 'true' : 'false'}">
+            <span class="jelly-radio__skin">
+              <span class="jelly-radio__icon">${tab.emoji}</span>
+              <span class="jelly-radio__label">${tab.name}</span>
+            </span>
           </button>
         `;
       }
@@ -440,9 +474,17 @@ function renderFilterTabs(preferredCategory = null) {
 
       html += `
         <div class="filter-more-wrapper" id="filter-more-wrapper">
-          <button class="filter-btn filter-btn-more ${isMoreActive ? 'active' : ''}" id="filter-btn-more" type="button" aria-expanded="false" title="Ver mais categorias">
-            <span class="more-label">${moreBtnLabel}</span>
-            <i class="fa-solid fa-chevron-down more-chevron"></i>
+          <button class="filter-btn filter-btn-more jelly-radio__chip ${isMoreActive ? 'active' : ''}" 
+            id="filter-btn-more" 
+            type="button" 
+            role="button"
+            aria-expanded="false" 
+            data-on="${isMoreActive ? 'true' : 'false'}"
+            title="Ver mais categorias">
+            <span class="jelly-radio__skin">
+              <span class="jelly-radio__label more-label">${moreBtnLabel}</span>
+              <i class="fa-solid fa-chevron-down more-chevron"></i>
+            </span>
           </button>
           <div class="filter-more-dropdown" id="filter-more-dropdown" role="menu">
             ${overflowTabs.map(t => {
@@ -927,31 +969,229 @@ function renderCatalog(filterCategory = "all") {
 }
 
 /**
- * Configura as abas de filtro com suporte a linha única, dropdown "Mais ⌄" (AliExpress),
- * rolagem dinâmica, centralização e auto-scroll suave
+ * Motor de Física Jelly Spring (Inspirado no JellyRadio do React Bits)
+ * Simula molas elásticas com amortecimento, deformação jelly (wide-before-tall),
+ * afastamento (barge) de vizinhos e expansão orgânica (swell)
+ */
+function createJellySpringSolver(k, m, bounce) {
+  const w0 = Math.sqrt(k / m);
+  const zeta = 1 - bounce;
+  const wd = w0 * Math.sqrt(Math.max(0, 1 - zeta * zeta));
+  return function(t, x0, v0, xt) {
+    if (zeta >= 1 || wd === 0) {
+      const e = Math.exp(-w0 * t);
+      const pos = xt + e * ((x0 - xt) + (v0 + w0 * (x0 - xt)) * t);
+      const vel = e * (v0 - w0 * ((x0 - xt) + (v0 + w0 * (x0 - xt)) * t));
+      return { pos, vel };
+    }
+    const env = Math.exp(-zeta * w0 * t);
+    const c = Math.cos(wd * t);
+    const s = Math.sin(wd * t);
+    const b = (v0 + zeta * w0 * (x0 - xt)) / wd;
+    const pos = xt + env * ((x0 - xt) * c + b * s);
+    const vel = env * (-zeta * w0 * ((x0 - xt) * c + b * s) + wd * (-(x0 - xt) * s + b * c));
+    return { pos, vel };
+  };
+}
+
+/**
+ * Inicializa a dinâmica do JellyRadio no container de filtros
+ */
+function initJellyRadioEngine(container) {
+  if (!container) return null;
+  const chips = Array.from(container.querySelectorAll('.filter-btn.jelly-radio__chip'));
+  if (!chips.length) return null;
+
+  const cfg = {
+    swell: 0.16,
+    barge: 6,
+    shrink: 0.05,
+    jelly: 1,
+    bounce: 0.25,
+    stagger: 22,
+    stiffness: 580
+  };
+
+  const measure = () => {
+    const widths = chips.map(el => el.offsetWidth || 0);
+    const chipH = chips[0]?.offsetHeight || 38;
+    const maxW = Math.max(0, ...widths);
+    container.style.setProperty('--jr-pad-x', `${Math.ceil((maxW * cfg.swell * 1.3) / 2 + cfg.barge) + 2}px`);
+    container.style.setProperty('--jr-pad-y', `${Math.ceil((chipH * cfg.swell) / 2) + 2}px`);
+    return widths;
+  };
+
+  const apply = (selIndex, instant = false) => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    const widths = measure();
+    const targetW = widths[selIndex] || 0;
+    const push = (targetW * cfg.swell) / 2 + cfg.barge;
+    const isRtl = getComputedStyle(container).direction === 'rtl';
+
+    chips.forEach((chip, i) => {
+      const on = i === selIndex;
+      const far = Math.abs(i - selIndex);
+      const dir = Math.sign(i - selIndex) * (isRtl ? -1 : 1);
+      const targetX = dir * push;
+      const targetS = on ? 1 + cfg.swell : 1 - cfg.shrink;
+
+      chip.setAttribute('aria-checked', on ? 'true' : 'false');
+      chip.setAttribute('tabindex', on ? '0' : '-1');
+      chip.setAttribute('data-on', on ? 'true' : 'false');
+      if (on) {
+        chip.classList.add('active');
+      } else {
+        chip.classList.remove('active');
+      }
+
+      if (instant || reduce) {
+        if (chip._jrRaf) {
+          cancelAnimationFrame(chip._jrRaf);
+          chip._jrRaf = null;
+        }
+        chip._jrX = targetX;
+        chip._jrSx = targetS;
+        chip._jrSy = targetS;
+        chip._jrVx = 0;
+        chip._jrVsx = 0;
+        chip._jrVsy = 0;
+        chip.style.transform = `translateX(${targetX.toFixed(2)}px) scale(${targetS.toFixed(3)}, ${targetS.toFixed(3)})`;
+        return;
+      }
+
+      // Transição contínua sem saltos se já estiver em animação
+      const startX = typeof chip._jrX === 'number' ? chip._jrX : 0;
+      const startVx = typeof chip._jrVx === 'number' ? chip._jrVx : 0;
+      const startSx = typeof chip._jrSx === 'number' ? chip._jrSx : 1;
+      const startVsx = typeof chip._jrVsx === 'number' ? chip._jrVsx : 0;
+      const startSy = typeof chip._jrSy === 'number' ? chip._jrSy : 1;
+      const startVsy = typeof chip._jrVsy === 'number' ? chip._jrVsy : 0;
+
+      if (chip._jrRaf) {
+        cancelAnimationFrame(chip._jrRaf);
+        chip._jrRaf = null;
+      }
+
+      const k = cfg.stiffness * (1 - 0.12 * Math.min(far, 3));
+      const j = cfg.jelly;
+      const delayX = (far * cfg.stagger) / 1000;
+      const delaySy = delayX + 0.05 * j;
+
+      const solverX = createJellySpringSolver(k, 0.9, cfg.bounce);
+      const solverSx = createJellySpringSolver(k * (1 + 0.24 * j), 0.9 - 0.1 * j, Math.min(0.85, cfg.bounce + 0.3 * j));
+      const solverSy = createJellySpringSolver(k * (1 - 0.14 * j), 0.9 + 0.05 * j, cfg.bounce);
+
+      const startTime = performance.now();
+
+      const step = (now) => {
+        const elapsedSec = (now - startTime) / 1000;
+
+        let curX = startX;
+        let curVx = startVx;
+        if (elapsedSec >= delayX) {
+          const resX = solverX(elapsedSec - delayX, startX, startVx, targetX);
+          curX = resX.pos;
+          curVx = resX.vel;
+        }
+
+        let curSx = startSx;
+        let curVsx = startVsx;
+        if (elapsedSec >= delayX) {
+          const resSx = solverSx(elapsedSec - delayX, startSx, startVsx, targetS);
+          curSx = resSx.pos;
+          curVsx = resSx.vel;
+        }
+
+        let curSy = startSy;
+        let curVsy = startVsy;
+        if (elapsedSec >= delaySy) {
+          const resSy = solverSy(elapsedSec - delaySy, startSy, startVsy, targetS);
+          curSy = resSy.pos;
+          curVsy = resSy.vel;
+        }
+
+        chip._jrX = curX;
+        chip._jrVx = curVx;
+        chip._jrSx = curSx;
+        chip._jrVsx = curVsx;
+        chip._jrSy = curSy;
+        chip._jrVsy = curVsy;
+
+        chip.style.transform = `translateX(${curX.toFixed(2)}px) scale(${curSx.toFixed(3)}, ${curSy.toFixed(3)})`;
+
+        const isSettledX = elapsedSec >= delayX && Math.abs(curX - targetX) < 0.05 && Math.abs(curVx) < 0.1;
+        const isSettledSx = elapsedSec >= delayX && Math.abs(curSx - targetS) < 0.005 && Math.abs(curVsx) < 0.02;
+        const isSettledSy = elapsedSec >= delaySy && Math.abs(curSy - targetS) < 0.005 && Math.abs(curVsy) < 0.02;
+
+        if (isSettledX && isSettledSx && isSettledSy) {
+          chip._jrX = targetX;
+          chip._jrSx = targetS;
+          chip._jrSy = targetS;
+          chip._jrVx = 0;
+          chip._jrVsx = 0;
+          chip._jrVsy = 0;
+          chip.style.transform = `translateX(${targetX.toFixed(2)}px) scale(${targetS.toFixed(3)}, ${targetS.toFixed(3)})`;
+          chip._jrRaf = null;
+        } else {
+          chip._jrRaf = requestAnimationFrame(step);
+        }
+      };
+
+      chip._jrRaf = requestAnimationFrame(step);
+    });
+  };
+
+  container._applyJellyRadio = apply;
+
+  // Aplica instantaneamente no item ativo atual
+  let initialActive = chips.findIndex(c => c.classList.contains('active') || c.getAttribute('data-on') === 'true');
+  if (initialActive < 0) initialActive = 0;
+  apply(initialActive, true);
+
+  return { measure, apply, chips };
+}
+
+/**
+ * Configura as abas de filtro JellyRadio com suporte a física elástica,
+ * linha única, dropdown "Mais ⌄" (AliExpress), rolagem dinâmica e acessibilidade
  */
 function setupFilterButtons() {
   const container = document.getElementById("filter-tabs-container");
   if (!container) return;
 
-  const buttons = container.querySelectorAll(".filter-btn:not(.filter-btn-more)");
+  // Garante que o container tenha a classe do JellyRadio e atributos ARIA
+  container.classList.add("jelly-radio");
+  container.setAttribute("role", "radiogroup");
+  if (!container.getAttribute("aria-label")) {
+    container.setAttribute("aria-label", "Categorias da Vitrine");
+  }
+
+  const buttons = Array.from(container.querySelectorAll(".filter-btn:not(.filter-btn-more)"));
   const dropdownItems = container.querySelectorAll(".filter-dropdown-item");
   const moreWrapper = document.getElementById("filter-more-wrapper");
   const moreBtn = document.getElementById("filter-btn-more");
   const moreDropdown = document.getElementById("filter-more-dropdown");
 
-  // Cliques nos botões visíveis da barra principal
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      // Remove active de todos os botões e itens do dropdown
-      container.querySelectorAll(".filter-btn, .filter-dropdown-item").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
+  // Inicializa o motor de física JellyRadio
+  const jellyEngine = initJellyRadioEngine(container);
 
-      // Reseta rótulo e estado do botão "Mais" se existir
+  // Cliques nos botões visíveis da barra principal
+  buttons.forEach((btn, index) => {
+    btn.addEventListener("click", () => {
+      // 1. Aplica a animação elástica JellyRadio no botão clicado
+      if (container._applyJellyRadio) {
+        container._applyJellyRadio(index, false);
+      } else {
+        container.querySelectorAll(".filter-btn, .filter-dropdown-item").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+
+      // 2. Reseta rótulo e estado do botão "Mais" se existir
       if (moreBtn) {
         const labelEl = moreBtn.querySelector(".more-label");
         if (labelEl) labelEl.textContent = "Mais";
         moreBtn.classList.remove("active");
+        moreBtn.setAttribute("data-on", "false");
       }
       if (moreWrapper) {
         moreWrapper.classList.remove("open");
@@ -959,7 +1199,7 @@ function setupFilterButtons() {
         if (moreBtn) moreBtn.setAttribute("aria-expanded", "false");
       }
 
-      // 1. Centraliza horizontalmente o botão dentro da barra no celular
+      // 3. Centraliza horizontalmente o botão dentro da barra no celular
       if (window.innerWidth < 768) {
         const btnLeft = btn.offsetLeft;
         const btnWidth = btn.offsetWidth;
@@ -970,12 +1210,30 @@ function setupFilterButtons() {
         });
       }
 
-      // 2. Renderiza os itens filtrados
+      // 4. Renderiza os itens filtrados
       const category = btn.getAttribute("data-category");
       renderCatalog(category);
 
-      // 3. Rola a página para que os produtos e a barra fiquem perfeitamente alinhados
+      // 5. Rola a página para que os produtos e a barra fiquem perfeitamente alinhados
       scrollToCatalogProducts();
+    });
+
+    // Navegação acessível por teclado (Setas, Home, End, Espaço e Enter)
+    btn.addEventListener("keydown", (e) => {
+      const chips = Array.from(container.querySelectorAll(".filter-btn.jelly-radio__chip"));
+      const n = chips.length;
+      let next = null;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (index + 1) % n;
+      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (index - 1 + n) % n;
+      else if (e.key === "Home") next = 0;
+      else if (e.key === "End") next = n - 1;
+      else if (e.key === " " || e.key === "Enter") next = index;
+
+      if (next !== null) {
+        e.preventDefault();
+        chips[next]?.click();
+        chips[next]?.focus();
+      }
     });
   });
 
@@ -993,14 +1251,25 @@ function setupFilterButtons() {
   dropdownItems.forEach(item => {
     item.addEventListener("click", (e) => {
       e.stopPropagation();
-      container.querySelectorAll(".filter-btn, .filter-dropdown-item").forEach(b => b.classList.remove("active"));
+      container.querySelectorAll(".filter-btn, .filter-dropdown-item").forEach(b => {
+        b.classList.remove("active");
+        b.setAttribute("data-on", "false");
+      });
       item.classList.add("active");
 
       if (moreBtn) {
         moreBtn.classList.add("active");
+        moreBtn.setAttribute("data-on", "true");
         const labelEl = moreBtn.querySelector(".more-label");
         const itemText = item.querySelector("span") ? item.querySelector("span").textContent.trim() : item.textContent.trim();
         if (labelEl) labelEl.textContent = `Mais: ${itemText}`;
+
+        // Se o botão Mais for um chip visível, aciona o efeito jelly nele
+        const allVisibleChips = Array.from(container.querySelectorAll(".filter-btn.jelly-radio__chip"));
+        const moreIndex = allVisibleChips.indexOf(moreBtn);
+        if (moreIndex >= 0 && container._applyJellyRadio) {
+          container._applyJellyRadio(moreIndex, false);
+        }
       }
 
       if (moreWrapper) {

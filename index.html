@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <!-- CSS -->
-  <link rel="stylesheet" href="./style.css?v=3.0.0">
+  <link rel="stylesheet" href="./style.css?v=3.1.0">
 </head>
 <body>
 
@@ -287,12 +287,37 @@
 
       <!-- Sticky Filter Tabs Container -->
       <div class="filter-sticky-wrapper" id="filter-sticky-wrapper">
-        <div class="filter-tabs" id="filter-tabs-container">
-          <button class="filter-btn active" data-category="all">✨ Todos</button>
-          <button class="filter-btn" data-category="colecionaveis">🎮 Colecionáveis</button>
-          <button class="filter-btn" data-category="decoracao">🌿 Decoração</button>
-          <button class="filter-btn" data-category="setup">🎧 Setup & Suportes</button>
-          <button class="filter-btn" data-category="personalizados">🎁 Presentes</button>
+        <div class="filter-tabs jelly-radio" id="filter-tabs-container" role="radiogroup" aria-label="Categorias da Vitrine">
+          <button class="filter-btn jelly-radio__chip active" data-category="all" role="radio" aria-checked="true" tabindex="0" data-on="true">
+            <span class="jelly-radio__skin">
+              <span class="jelly-radio__icon">✨</span>
+              <span class="jelly-radio__label">Todos</span>
+            </span>
+          </button>
+          <button class="filter-btn jelly-radio__chip" data-category="colecionaveis" role="radio" aria-checked="false" tabindex="-1" data-on="false">
+            <span class="jelly-radio__skin">
+              <span class="jelly-radio__icon">🎮</span>
+              <span class="jelly-radio__label">Colecionáveis</span>
+            </span>
+          </button>
+          <button class="filter-btn jelly-radio__chip" data-category="decoracao" role="radio" aria-checked="false" tabindex="-1" data-on="false">
+            <span class="jelly-radio__skin">
+              <span class="jelly-radio__icon">🌿</span>
+              <span class="jelly-radio__label">Decoração</span>
+            </span>
+          </button>
+          <button class="filter-btn jelly-radio__chip" data-category="setup" role="radio" aria-checked="false" tabindex="-1" data-on="false">
+            <span class="jelly-radio__skin">
+              <span class="jelly-radio__icon">🎧</span>
+              <span class="jelly-radio__label">Setup &amp; Suportes</span>
+            </span>
+          </button>
+          <button class="filter-btn jelly-radio__chip" data-category="personalizados" role="radio" aria-checked="false" tabindex="-1" data-on="false">
+            <span class="jelly-radio__skin">
+              <span class="jelly-radio__icon">🎁</span>
+              <span class="jelly-radio__label">Presentes</span>
+            </span>
+          </button>
         </div>
       </div>
 
@@ -1127,7 +1152,7 @@
   </div>
 
   <!-- JavaScript -->
-  <script src="./ghost-fibers.js?v=3.0.0"></script>
-  <script src="./script.js?v=3.0.0"></script>
+  <script src="./ghost-fibers.js?v=3.1.0"></script>
+  <script src="./script.js?v=3.1.0"></script>
 </body>
 </html>

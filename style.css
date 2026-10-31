@@ -2143,14 +2143,34 @@ button {
   transition: all var(--transition-smooth);
 }
 
-.filter-tabs {
+/* ==========================================================================
+   JellyRadio Filter Tabs (Vitrine de Inspiração)
+   Física Jelly Spring, Barging de Vizinhos, Expansão Orgânica e Efeito Líquido
+   ========================================================================== */
+.filter-tabs.jelly-radio {
+  --jr-chip: rgba(255, 255, 255, 0.06);
+  --jr-active: #ffffff;
+  --jr-text: rgba(255, 255, 255, 0.88);
+  --jr-active-text: #080d18;
+  --jr-gap: 8px;
+  --jr-radius: 20px;
+  --jr-h: 38px;
+  --jr-font: 0.84rem;
+  --jr-px: 16px;
+  --jr-pad-x: 16px;
+  --jr-pad-y: 6px;
+  --jr-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: var(--jr-gap);
+  padding: var(--jr-pad-y) var(--jr-pad-x);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  padding: 4px 24px;
-  align-items: center;
   flex-wrap: nowrap !important;
   white-space: nowrap !important;
 }
@@ -2159,41 +2179,143 @@ button {
   display: none;
 }
 
-.filter-btn {
-  background: rgba(255, 255, 255, 0.05);
+.filter-btn.jelly-radio__chip {
+  position: relative;
+  margin: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+  transform-origin: 50% 50%;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  will-change: transform;
+  box-shadow: none !important;
+}
+
+.filter-btn.jelly-radio__chip[data-on='true'],
+.filter-btn.jelly-radio__chip.active {
+  cursor: default;
+}
+
+.filter-btn.jelly-radio__chip:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.filter-btn .jelly-radio__skin {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42em;
+  height: var(--jr-h);
+  padding: 0 var(--jr-px);
+  border-radius: var(--jr-radius);
+  overflow: hidden;
+  background: var(--jr-chip);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--jr-text);
+  font-size: var(--jr-font);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  color: var(--text-secondary);
-  font-size: 0.84rem;
-  font-weight: 700;
-  padding: 8px 16px;
-  border-radius: var(--radius-pill);
-  white-space: nowrap;
-  box-shadow: none;
-  transition: all var(--transition-smooth);
-  cursor: pointer;
-  flex-shrink: 0;
-  font-family: var(--font-family);
-  user-select: none;
+  transition:
+    transform 160ms var(--jr-ease-out),
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease;
 }
 
-.filter-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-1px);
+.filter-btn .jelly-radio__skin::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
 }
 
-.filter-btn.active {
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.32);
-  color: #ffffff;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+@media (hover: hover) and (pointer: fine) {
+  .filter-btn.jelly-radio__chip[data-on='false']:not(:disabled):hover .jelly-radio__skin::before {
+    opacity: 0.11;
+  }
+  .filter-btn.jelly-radio__chip[data-on='false']:not(:disabled):hover .jelly-radio__skin {
+    border-color: rgba(255, 255, 255, 0.28);
+    color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
 }
 
-.filter-btn:active {
+.filter-btn.jelly-radio__chip:active .jelly-radio__skin {
   transform: scale(0.96);
+}
+
+.filter-btn.jelly-radio__chip[data-on='true'] .jelly-radio__skin,
+.filter-btn.jelly-radio__chip.active .jelly-radio__skin {
+  background: var(--jr-active);
+  color: var(--jr-active-text);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    0 4px 18px rgba(0, 0, 0, 0.38),
+    0 0 22px rgba(0, 210, 255, 0.35);
+}
+
+.jelly-radio__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05em;
+}
+
+.jelly-radio__label {
+  display: inline-block;
+  line-height: 1;
+}
+
+/* Customização de destaque para Pronta Entrega ⚡ */
+.filter-btn-ready.jelly-radio__chip .jelly-radio__skin {
+  border-color: rgba(255, 106, 0, 0.4);
+  color: #ff944d;
+  background: rgba(255, 106, 0, 0.08);
+}
+
+.filter-btn-ready.jelly-radio__chip[data-on='true'] .jelly-radio__skin,
+.filter-btn-ready.jelly-radio__chip.active .jelly-radio__skin {
+  background: linear-gradient(135deg, #ff7a1a 0%, #ff5500 100%) !important;
+  color: #ffffff !important;
+  border-color: #ff8833 !important;
+  box-shadow: 
+    0 4px 18px rgba(255, 106, 0, 0.4),
+    0 0 24px rgba(255, 106, 0, 0.6) !important;
+}
+
+/* Customização para Botão 'Mais ⌄' no Desktop */
+.filter-btn-more.jelly-radio__chip .jelly-radio__skin {
+  padding-right: 14px;
+}
+.filter-btn-more.jelly-radio__chip .more-chevron {
+  font-size: 0.72rem;
+  margin-left: 5px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.85;
+}
+.filter-more-wrapper.open .filter-btn-more .more-chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter-btn.jelly-radio__chip:active .jelly-radio__skin {
+    transform: none;
+  }
 }
 
 /* Versão Tablet (768px a 991px): Otimização Completa de Hero, Textos, Botões e Barra Flutuante */
@@ -2293,6 +2415,10 @@ button {
     overflow-x: visible;
     padding: 0;
     gap: 10px;
+    --jr-h: 40px;
+    --jr-font: 0.86rem;
+    --jr-px: 18px;
+    --jr-gap: 10px;
   }
 
   .filter-btn {
@@ -2325,6 +2451,10 @@ button {
     overflow-x: visible;
     padding: 0;
     gap: 10px;
+    --jr-h: 40px;
+    --jr-font: 0.86rem;
+    --jr-px: 18px;
+    --jr-gap: 10px;
   }
 
   .filter-btn {
