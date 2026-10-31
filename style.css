@@ -785,24 +785,86 @@ button {
     text-shadow: 0 0 22px rgba(0, 210, 255, 0.45), 0 0 38px rgba(255, 106, 0, 0.28);
   }
 
-  /* Texto Colorido: Degrade dinâmico que flui suavemente e ganha iluminação neon ao passar o mouse */
-  .desktop-hero-title .gradient-text {
-    background: linear-gradient(135deg, #ff8533 0%, #ff5500 30%, #00d2ff 65%, #00f5a0 100%);
-    background-size: 240% 240%;
-    background-position: 0% 50%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 2px 14px rgba(255, 106, 0, 0.35));
-    transition: filter 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                background-position 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-                letter-spacing 0.45s ease;
+  /* ==========================================================================
+     GradientText Component (React Bits Inspired)
+     Living Mesh Gradient com Bloom Glow e Rastreamento Dinâmico de Cursor
+     ========================================================================== */
+  .gradient-text {
+    --gt-gradient: linear-gradient(135deg, #ff8533 0%, #ff5500 30%, #00d2ff 65%, #00f5a0 100%);
+    --gt-border: 1.5px;
+    --gt-glow: 0.45;
+    position: relative;
     display: inline;
+    isolation: isolate;
+    vertical-align: baseline;
   }
 
-  .desktop-hero-title:hover .gradient-text {
-    background-position: 100% 50%;
-    filter: drop-shadow(0 0 26px rgba(0, 210, 255, 0.85)) drop-shadow(0 0 40px rgba(255, 106, 0, 0.55));
+  .gradient-text--border {
+    padding: 0.35em 0.75em;
+    border-radius: 999px;
+  }
+
+  .gradient-text--border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: var(--gt-border, 1.5px);
+    border-radius: inherit;
+    background-image: var(--gt-gradient);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+
+  .gradient-text__inner {
+    position: relative;
+    display: inline-block;
+    vertical-align: baseline;
+  }
+
+  .gradient-text__content {
+    display: inline-block;
+    background-image: var(--gt-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 14px rgba(255, 106, 0, 0.35));
+    will-change: background-image;
+    transition: filter 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                letter-spacing 0.45s ease;
+  }
+
+  .gradient-text__glow {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: var(--gt-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: blur(0.28em) saturate(1.5);
+    opacity: var(--gt-glow, 0.45);
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.45s ease;
+    will-change: background-image, opacity;
+  }
+
+  /* Efeito Hover Sincronizado com o Título Hero */
+  .desktop-hero-title:hover .gradient-text__content {
+    filter: drop-shadow(0 0 20px rgba(0, 210, 255, 0.85)) drop-shadow(0 0 35px rgba(255, 106, 0, 0.55));
     letter-spacing: -0.2px;
+  }
+
+  .desktop-hero-title:hover .gradient-text__glow {
+    opacity: 0.92;
+    filter: blur(0.35em) saturate(1.85);
   }
 
   .desktop-hero-subtitle {
