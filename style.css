@@ -4546,6 +4546,41 @@ button {
   line-height: 1.2;
 }
 
+/* Modo 4: Aviso de Personalização / Encomenda / Alerta (Ambar / Laranja Ouro Neon) */
+.cart-toast.toast-warning {
+  background: 
+    radial-gradient(circle at 26px 50%, rgba(245, 158, 11, 0.48) 0%, rgba(217, 119, 6, 0.16) 42%, transparent 75%),
+    linear-gradient(135deg, rgba(30, 22, 10, 0.96) 0%, rgba(18, 14, 8, 0.98) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.55);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.75), 0 0 24px rgba(245, 158, 11, 0.35);
+}
+
+.cart-toast.toast-warning .toast-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.92rem;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.8), 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.cart-toast.toast-warning .toast-item-status {
+  color: #fbbf24;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  line-height: 1.2;
+}
+
 /* Modo 3: Carrinho Esvaziado (Samsung One UI 9 Nowbar Coral/Red Glow) */
 .cart-toast.toast-empty {
   background: 

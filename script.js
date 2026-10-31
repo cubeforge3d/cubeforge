@@ -2437,7 +2437,7 @@ function initDeliveryAndShippingEvents() {
   if (cityInput) {
     cityInput.addEventListener("click", () => {
       if (!cityInput.value.trim()) {
-        showCartToast("Digite o CEP acima para preencher a Cidade e Estado", "remove");
+        showCartToast("Digite o CEP acima para preencher a Cidade e Estado", "warning", "Preenchimento automático");
         if (cepInput) cepInput.focus();
       }
     });
@@ -2843,7 +2843,7 @@ function updateDirectQuantity(delta) {
   const newQty = directBuyQuantity + delta;
   if (newQty < 1) return;
   if (maxStock > 0 && newQty > maxStock) {
-    showCartToast("Estoque máximo atingido", "remove", `Limite de ${maxStock} unidades`);
+    showCartToast("Estoque máximo atingido", "warning", `Limite de ${maxStock} unidades`);
     return;
   }
   directBuyQuantity = newQty;
@@ -3753,7 +3753,7 @@ function showCartToast(title, type = "add", subtitle = null) {
   if (!toast || !nameEl) return;
 
   nameEl.textContent = title;
-  toast.classList.remove("toast-add", "toast-remove", "toast-empty");
+  toast.classList.remove("toast-add", "toast-remove", "toast-empty", "toast-warning");
 
   if (type === "empty") {
     toast.classList.add("toast-empty");
@@ -3763,6 +3763,10 @@ function showCartToast(title, type = "add", subtitle = null) {
     toast.classList.add("toast-remove");
     if (statusEl) statusEl.textContent = subtitle || "Item removido do carrinho";
     if (iconBox) iconBox.innerHTML = '<i class="fa-solid fa-minus"></i>';
+  } else if (type === "warning") {
+    toast.classList.add("toast-warning");
+    if (statusEl) statusEl.textContent = subtitle || "Finalize seu pedido pelo WhatsApp";
+    if (iconBox) iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
   } else {
     toast.classList.add("toast-add");
     if (statusEl) statusEl.textContent = subtitle || "Adicionado ao carrinho!";
@@ -3831,7 +3835,19 @@ function setupCartListeners() {
       const hasOrderOnly = cart.some(item => Boolean(item.somente_encomenda));
       const hasNotes = notesInput ? (notesInput.value.trim().length > 0) : false;
       if (hasOrderOnly || hasNotes) {
-        showCartToast("Item sob encomenda ou personalizado: finalize pelo WhatsApp", "remove");
+        const msg = hasNotes 
+          ? "Pedido com observação: combine pelo WhatsApp"
+          : "Item sob encomenda: combine pelo WhatsApp";
+        showCartToast(msg, "warning", "Pagamento no cartão indisponível para personalizações");
+        
+        // Destaca o botão do WhatsApp para guiar o cliente
+        const zapBtn = document.getElementById("btn-checkout-whatsapp");
+        if (zapBtn) {
+          zapBtn.classList.remove("highlight-pulse");
+          void zapBtn.offsetWidth;
+          zapBtn.classList.add("highlight-pulse");
+          setTimeout(() => zapBtn.classList.remove("highlight-pulse"), 1800);
+        }
         return;
       }
       setCartStep(3);
@@ -3878,7 +3894,19 @@ function setupCartListeners() {
       const hasOrderOnly = cart.some(item => Boolean(item.somente_encomenda));
       const hasNotes = notesInput ? (notesInput.value.trim().length > 0) : false;
       if (hasOrderOnly || hasNotes) {
-        showCartToast("Item sob encomenda ou personalizado: finalize pelo WhatsApp", "remove");
+        const msg = hasNotes 
+          ? "Pedido com observação: combine pelo WhatsApp"
+          : "Item sob encomenda: combine pelo WhatsApp";
+        showCartToast(msg, "warning", "Pagamento no cartão indisponível para personalizações");
+        
+        // Destaca o botão do WhatsApp para guiar o cliente
+        const zapBtn = document.getElementById("btn-checkout-whatsapp");
+        if (zapBtn) {
+          zapBtn.classList.remove("highlight-pulse");
+          void zapBtn.offsetWidth;
+          zapBtn.classList.add("highlight-pulse");
+          setTimeout(() => zapBtn.classList.remove("highlight-pulse"), 1800);
+        }
         return;
       }
       setCartStep(3);
