@@ -135,6 +135,76 @@ const FALLBACK_CATALOG_ITEMS = [
     destaque: true,
     estoque: 0,
     somente_encomenda: false
+  },
+  {
+    id: 7,
+    nome: "Stitch Cosplay Homem-Aranha",
+    preco: "R$ 49,90",
+    categoria: "colecionaveis",
+    categoriaNome: "Colecionáveis",
+    descricao: "Action figure colecionável do Stitch com capuz e traje do Homem-Aranha, rica em texturas de tecido e teias em relevo 3D.",
+    imagem: "./assets/img/produtos/item7.jpg",
+    icon: "fa-solid fa-dragon",
+    disponivel: true,
+    destaque: true,
+    estoque: 3,
+    somente_encomenda: false
+  },
+  {
+    id: 8,
+    nome: "Urubu Rei do Flamengo no Trono",
+    preco: "R$ 89,90",
+    categoria: "colecionaveis",
+    categoriaNome: "Colecionáveis",
+    descricao: "Mascote Urubu Rei oficial do Flamengo com coroa imperial, manto rubro-negro e chuteiras douradas sentado no trono de ouro.",
+    imagem: "./assets/img/produtos/item8.jpg",
+    icon: "fa-solid fa-crown",
+    disponivel: true,
+    destaque: true,
+    estoque: 2,
+    somente_encomenda: false
+  },
+  {
+    id: 9,
+    nome: "Mini Cooler Monster Energy com Torneira",
+    preco: "R$ 64,90",
+    categoria: "setup",
+    categoriaNome: "Setup & Suportes",
+    descricao: "Garrafão cooler térmico estilizado Monster Energy rosa perolado com torneira funcional. Estilo e praticidade para o seu setup.",
+    imagem: "./assets/img/produtos/item9.jpg",
+    icon: "fa-solid fa-bolt",
+    disponivel: true,
+    destaque: true,
+    estoque: 2,
+    somente_encomenda: false
+  },
+  {
+    id: 10,
+    nome: "Kit Mini Santinhos de Borda & Monitor",
+    preco: "R$ 39,00",
+    categoria: "decoracao",
+    categoriaNome: "Decoração",
+    descricao: "Coleção estilizada de santinhos (Jesus, Nossa Senhora, São Bento e São José) projetados para repousar com charme na borda de monitores ou estantes.",
+    imagem: "./assets/img/produtos/item10.jpg",
+    icon: "fa-solid fa-church",
+    disponivel: true,
+    destaque: true,
+    estoque: 4,
+    somente_encomenda: false
+  },
+  {
+    id: 11,
+    nome: "Porta-Panetone & Doces Papai Noel Natalino",
+    preco: "R$ 58,00",
+    categoria: "decoracao",
+    categoriaNome: "Decoração",
+    descricao: "Suporte decorativo de mesa com Papai Noel segurando bandeja para servir panetone, bolos natalinos, doces ou velas festivas.",
+    imagem: "./assets/img/produtos/item11.jpg",
+    icon: "fa-solid fa-candy-cane",
+    disponivel: true,
+    destaque: true,
+    estoque: 3,
+    somente_encomenda: false
   }
 ];
 
