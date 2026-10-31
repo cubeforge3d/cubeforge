@@ -1530,7 +1530,7 @@ function setupSiteIntroLoader() {
   const loader = document.getElementById("site-intro-loader");
   if (!loader) return;
 
-  // Se preferência de acessibilidade por redução de movimento estiver ativa ou manutenção
+  // Se preferência de acessibilidade por redução de movimento estiver ativa ou modo manutenção
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (prefersReducedMotion || (window.SITE_SETTINGS && window.SITE_SETTINGS.modo_manutencao)) {
     loader.classList.add("intro-hidden");
@@ -1546,22 +1546,31 @@ function setupSiteIntroLoader() {
   function dismissIntro() {
     if (isDismissed) return;
     isDismissed = true;
-    loader.classList.add("intro-hidden");
-    document.body.classList.remove("intro-active");
+
+    // Dispara a onda expansiva de tinta líquida neon
+    loader.classList.add("intro-revealing");
+
+    // Remove trava de rolagem e finaliza esmaecimento após a tinta cobrir a tela
+    setTimeout(() => {
+      loader.classList.add("intro-hidden");
+      document.body.classList.remove("intro-active");
+    }, 700);
+
+    // Oculta completamente do DOM após o término da animação
     setTimeout(() => {
       loader.style.display = "none";
       loader.setAttribute("aria-hidden", "true");
-    }, 600);
+    }, 920);
   }
 
-  // Permitir fechamento instantâneo ao clicar em qualquer lugar da tela de abertura ou pressionar tecla
+  // Permitir fechamento instantâneo ao clicar em qualquer lugar da tela ou pressionar tecla
   loader.addEventListener("click", dismissIntro, { once: true });
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape" || e.key === " " || e.key === "Enter") dismissIntro();
   }, { once: true });
 
-  // Duração harmônica e rápida de 1.4s (tempo perfeito de leitura e apreço visual)
-  setTimeout(dismissIntro, 1400);
+  // Exibe o logo imponente por 1.2s e então desencadeia a revelação fluida de tinta de luz
+  setTimeout(dismissIntro, 1200);
 }
 
 function setupFaqAccordion() {
