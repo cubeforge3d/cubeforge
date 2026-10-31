@@ -561,6 +561,13 @@ function applyMaintenanceMode(isActive) {
       overlay.setAttribute("aria-hidden", "false");
     }
 
+    // Se o intro loader ainda estiver no DOM, oculta-o imediatamente para exibir a manutenção
+    const introLoader = document.getElementById("site-intro-loader");
+    if (introLoader) {
+      introLoader.style.display = "none";
+      introLoader.classList.add("intro-hidden");
+    }
+
     // 1. DESMONTAGEM FÍSICA DO DOM:
     // Remove do body todos os elementos da loja exceto o overlay de manutenção e os scripts.
     // Assim, mesmo inspecionando o elemento, NADA do site existe na árvore DOM!
@@ -679,6 +686,7 @@ async function loadProductsData() {
 // INICIALIZAÇÃO DA PÁGINA
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
+  setupSiteIntroLoader();
   loadSiteSettings();
   setupBrandInfo();
   renderFilterTabs("all");
@@ -1510,13 +1518,58 @@ function setupHeroSlider() {
  * FAQ ACORDEÃO COM TRANSIÇÃO ULTRA-SUAVE
  * ============================================================================
  */
+
+/**
+ * ============================================================================
+ * ABERTURA CINEMÁTICA 3D & SPLASH PRELOADER (Cube Forge 3D)
+ * Inspirado em https://en.manayerbamate.com/
+ * Exibe o logotipo 3D com anéis orbitais giratórios e revela a marca de forma ultra-suave
+ * ============================================================================
+ */
+function setupSiteIntroLoader() {
+  const loader = document.getElementById("site-intro-loader");
+  if (!loader) return;
+
+  // Se preferência de acessibilidade por redução de movimento estiver ativa ou manutenção
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (prefersReducedMotion || (window.SITE_SETTINGS && window.SITE_SETTINGS.modo_manutencao)) {
+    loader.classList.add("intro-hidden");
+    setTimeout(() => {
+      if (loader.parentNode) loader.style.display = "none";
+    }, 40);
+    return;
+  }
+
+  document.body.classList.add("intro-active");
+
+  let isDismissed = false;
+  function dismissIntro() {
+    if (isDismissed) return;
+    isDismissed = true;
+    loader.classList.add("intro-hidden");
+    document.body.classList.remove("intro-active");
+    setTimeout(() => {
+      loader.style.display = "none";
+      loader.setAttribute("aria-hidden", "true");
+    }, 600);
+  }
+
+  // Permitir fechamento instantâneo ao clicar em qualquer lugar da tela de abertura ou pressionar tecla
+  loader.addEventListener("click", dismissIntro, { once: true });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" || e.key === " " || e.key === "Enter") dismissIntro();
+  }, { once: true });
+
+  // Duração harmônica e rápida de 1.4s (tempo perfeito de leitura e apreço visual)
+  setTimeout(dismissIntro, 1400);
+}
+
 function setupFaqAccordion() {
   const faqItems = document.querySelectorAll(".faq-item");
   faqItems.forEach(item => {
-    // Sincronizar estado inicial se o item já vem com [open] no HTML
-    if (item.hasAttribute("open") && !item.classList.contains("faq-open")) {
-      item.classList.add("faq-open");
-    }
+    // Garante que todas as dúvidas comecem 100% fechadas por padrão
+    item.removeAttribute("open");
+    item.classList.remove("faq-open");
 
     const summary = item.querySelector("summary");
     if (!summary) return;
@@ -2335,7 +2388,7 @@ function highlightFieldError(element, message) {
     element.classList.remove("field-error-shake");
   }, 1400);
   if (message) {
-    showCartToast(message, "remove", "Preenchimento obrigatório");
+    showCartToast("Atenção", "warning", message);
   }
 }
 
@@ -4101,7 +4154,7 @@ function initInteractiveMotion() {
     .filter-btn
   `;
 
-  // Atualizar iluminação especular apenas dentro do widget/botão sob o cursor
+    // Atualizar iluminação especular e inclinação 3D nos widgets sob o cursor
   document.addEventListener("mousemove", (e) => {
     const el = e.target.closest(interactiveElementsSelector);
     if (el) {
@@ -4110,15 +4163,27 @@ function initInteractiveMotion() {
       const y = e.clientY - rect.top;
       el.style.setProperty("--mouse-x", `${x}px`);
       el.style.setProperty("--mouse-y", `${y}px`);
+
+      // 3D Depth Tilt interativo nos cards de produto em desktop
+      if (el.classList.contains("product-card") || el.classList.contains("showroom-product-card")) {
+        const tiltX = (((y / rect.height) - 0.5) * -6).toFixed(2);
+        const tiltY = (((x / rect.width) - 0.5) * 6).toFixed(2);
+        el.style.setProperty("--tilt-x", `${tiltX}deg`);
+        el.style.setProperty("--tilt-y", `${tiltY}deg`);
+      }
     }
   }, { passive: true });
 
-  // Desativar iluminação quando o cursor sair do widget/botão
+  // Desativar iluminação e zerar inclinação quando o cursor sair do widget/botão
   document.addEventListener("mouseout", (e) => {
     const el = e.target.closest(interactiveElementsSelector);
     if (el && (!e.relatedTarget || !el.contains(e.relatedTarget))) {
       el.style.setProperty("--mouse-x", "-500px");
       el.style.setProperty("--mouse-y", "-500px");
+      if (el.classList.contains("product-card") || el.classList.contains("showroom-product-card")) {
+        el.style.setProperty("--tilt-x", "0deg");
+        el.style.setProperty("--tilt-y", "0deg");
+      }
     }
   }, { passive: true });
 }

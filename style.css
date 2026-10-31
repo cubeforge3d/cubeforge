@@ -617,12 +617,12 @@ button {
 
 @keyframes floatEmblem {
   0%, 100% {
-    transform: translateY(0) scale(1);
-    filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 16px rgba(255, 106, 0, 0.3));
+    transform: translateY(0) rotateX(0deg) rotateY(0deg) scale(1);
+    filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 16px rgba(255, 106, 0, 0.35));
   }
   50% {
-    transform: translateY(-8px) scale(1.04);
-    filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 22px rgba(255, 106, 0, 0.4));
+    transform: translateY(-8px) rotateX(5deg) rotateY(-5deg) scale(1.03);
+    filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 24px rgba(0, 210, 255, 0.45));
   }
 }
 
@@ -4501,14 +4501,12 @@ button {
 
 .cart-toast .toast-item-status,
 .cart-toast.toast-add .toast-item-status {
-  font-size: 0.68rem;
-  color: #4ade80;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.72rem;
+  font-weight: 600;
   display: block;
-  line-height: 1.2;
+  line-height: 1.3;
+  white-space: normal;
+  word-break: break-word;
 }
 
 /* Modo 2: Item Removido (Samsung One UI 9 Nowbar Amber Glow) */
@@ -4620,7 +4618,7 @@ button {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  max-width: 280px;
+  max-width: min(340px, 78vw);
   text-align: left;
   gap: 2px;
 }
@@ -7601,5 +7599,327 @@ body.body-maintenance > *:not(#maintenance-overlay):not(script) {
 
   .direct-product-total-price {
     font-size: 0.98rem;
+  }
+}
+
+
+/* ==========================================================================
+   Abertura Cinemática 3D & Splash Preloader (Cube Forge 3D)
+   Inspirado na sofisticação minimalista de en.manayerbamate.com
+   ========================================================================== */
+body.intro-active {
+  overflow: hidden !important;
+}
+
+.site-intro-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #080d18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.6s;
+  will-change: opacity, transform;
+}
+
+.site-intro-loader.intro-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(1.05);
+}
+
+.intro-loader-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.intro-aurora-glow {
+  position: absolute;
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.28;
+  pointer-events: none;
+  animation: introGlowPulse 3s ease-in-out infinite alternate;
+}
+
+.intro-aurora-glow.glow-cyan {
+  top: 15%;
+  left: 20%;
+  background: radial-gradient(circle, #00d2ff 0%, rgba(0, 210, 255, 0) 70%);
+}
+
+.intro-aurora-glow.glow-orange {
+  bottom: 15%;
+  right: 20%;
+  background: radial-gradient(circle, #ff6a00 0%, rgba(255, 106, 0, 0) 70%);
+  animation-delay: -1.5s;
+}
+
+.intro-mesh-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 36px 36px;
+  opacity: 0.6;
+}
+
+.intro-loader-center {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  max-width: 90vw;
+}
+
+/* 3D Emblem with Gyroscopic Rings */
+.intro-emblem-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 22px;
+  perspective: 800px;
+  transform-style: preserve-3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro-emblem-halo {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.35) 0%, rgba(255, 106, 0, 0.2) 50%, transparent 75%);
+  filter: blur(14px);
+  animation: introHaloPulse 2s ease-in-out infinite alternate;
+}
+
+.intro-emblem-ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.intro-emblem-ring.ring-1 {
+  border: 1.5px solid rgba(0, 210, 255, 0.45);
+  border-top-color: #00d2ff;
+  border-bottom-color: transparent;
+  transform: rotateX(68deg) rotateZ(0deg);
+  animation: introSpinRing1 2.2s linear infinite;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.3);
+}
+
+.intro-emblem-ring.ring-2 {
+  border: 1.5px solid rgba(255, 106, 0, 0.45);
+  border-left-color: #ff6a00;
+  border-right-color: transparent;
+  transform: rotateY(68deg) rotateZ(0deg);
+  animation: introSpinRing2 2.6s linear infinite;
+  box-shadow: 0 0 12px rgba(255, 106, 0, 0.3);
+}
+
+.intro-emblem-img {
+  width: 82px;
+  height: 82px;
+  object-fit: contain;
+  position: relative;
+  z-index: 3;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 18px rgba(0, 210, 255, 0.4));
+  animation: introEmblemFloat 2.2s ease-in-out infinite;
+}
+
+/* Typography Reveal */
+.intro-brand-reveal {
+  margin-bottom: 24px;
+  animation: introTextReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.intro-brand-title {
+  margin: 0 0 8px;
+  font-family: var(--font-main, 'Plus Jakarta Sans', sans-serif);
+  font-size: 2.25rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.intro-word-cube {
+  background: linear-gradient(135deg, #ffffff 15%, #ff9900 65%, #ff6a00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px rgba(255, 106, 0, 0.45));
+}
+
+.intro-word-forge {
+  background: linear-gradient(135deg, #ffffff 15%, #00d2ff 70%, #00a6ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px rgba(0, 210, 255, 0.45));
+}
+
+.intro-word-3d {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(0, 210, 255, 0.12);
+  border: 1px solid rgba(0, 210, 255, 0.5);
+  color: #00d2ff;
+  letter-spacing: 0.06em;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.3);
+}
+
+.intro-brand-tagline {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Minimalist Progress Bar */
+.intro-progress-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.intro-progress-bar {
+  width: 150px;
+  height: 2.5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.intro-progress-fill {
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  background: linear-gradient(90deg, #ff6a00 0%, #00d2ff 100%);
+  border-radius: inherit;
+  box-shadow: 0 0 8px rgba(0, 210, 255, 0.8);
+  animation: introProgressFill 1.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Keyframes */
+@keyframes introGlowPulse {
+  0% { transform: scale(0.9) translateY(0); opacity: 0.22; }
+  100% { transform: scale(1.1) translateY(-15px); opacity: 0.35; }
+}
+
+@keyframes introHaloPulse {
+  0% { transform: scale(0.92); opacity: 0.3; }
+  100% { transform: scale(1.12); opacity: 0.65; }
+}
+
+@keyframes introSpinRing1 {
+  0% { transform: rotateX(68deg) rotateZ(0deg); }
+  100% { transform: rotateX(68deg) rotateZ(360deg); }
+}
+
+@keyframes introSpinRing2 {
+  0% { transform: rotateY(68deg) rotateZ(0deg); }
+  100% { transform: rotateY(68deg) rotateZ(360deg); }
+}
+
+@keyframes introEmblemFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-6px) scale(1.04); }
+}
+
+@keyframes introTextReveal {
+  0% { opacity: 0; transform: translateY(12px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes introProgressFill {
+  0% { width: 0%; }
+  35% { width: 45%; }
+  75% { width: 85%; }
+  100% { width: 100%; }
+}
+
+/* Responsividade Mobile para Abertura */
+@media (max-width: 768px) {
+  .intro-emblem-wrap {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 18px;
+  }
+  .intro-emblem-img {
+    width: 70px;
+    height: 70px;
+  }
+  .intro-brand-title {
+    font-size: 1.8rem;
+    letter-spacing: 0.1em;
+  }
+  .intro-word-3d {
+    font-size: 0.82rem;
+    padding: 2px 6px;
+  }
+  .intro-brand-tagline {
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+  }
+  .intro-progress-bar {
+    width: 130px;
+  }
+}
+
+/* ==========================================================================
+   Efeito 3D Depth nos Cards de Produto (Liquid Glass Cyberpunk)
+   ========================================================================== */
+.product-card,
+.showroom-product-card {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s ease,
+              border-color 0.28s ease,
+              background 0.28s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover,
+  .showroom-product-card:hover {
+    transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(-4px) scale(1.015);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 210, 255, 0.16);
+    border-color: rgba(0, 210, 255, 0.35);
+  }
+  .product-card:hover .product-card-image,
+  .showroom-product-card:hover .showroom-img-wrap {
+    transform: translateZ(10px);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .product-card:hover .product-card-content {
+    transform: translateZ(6px);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }

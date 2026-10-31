@@ -18,9 +18,42 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <!-- CSS -->
-  <link rel="stylesheet" href="./style.css?v=2.2.1">
+  <link rel="stylesheet" href="./style.css?v=2.3.0">
 </head>
 <body>
+
+  <!-- =====================================================================
+       ABERTURA CINEMÁTICA 3D & SPLASH PRELOADER (Cube Forge 3D)
+       Inspirado na sofisticação minimalista de en.manayerbamate.com
+       ===================================================================== -->
+  <div id="site-intro-loader" class="site-intro-loader" aria-hidden="false">
+    <div class="intro-loader-bg">
+      <div class="intro-aurora-glow glow-cyan"></div>
+      <div class="intro-aurora-glow glow-orange"></div>
+      <div class="intro-mesh-grid"></div>
+    </div>
+    <div class="intro-loader-center">
+      <div class="intro-emblem-wrap">
+        <div class="intro-emblem-halo"></div>
+        <div class="intro-emblem-ring ring-1"></div>
+        <div class="intro-emblem-ring ring-2"></div>
+        <img src="./logo-emblem.png" alt="Cube Forge Logo" class="intro-emblem-img">
+      </div>
+      <div class="intro-brand-reveal">
+        <h1 class="intro-brand-title">
+          <span class="intro-word-cube">CUBE</span>
+          <span class="intro-word-forge">FORGE</span>
+          <span class="intro-word-3d">3D</span>
+        </h1>
+        <p class="intro-brand-tagline">Studio de Impressão 3D de Alta Precisão</p>
+      </div>
+      <div class="intro-progress-wrap">
+        <div class="intro-progress-bar">
+          <div class="intro-progress-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Iluminação de Fundo Dinâmica & Suave (Aurora Orgânica: Laranja, Azul e Transição Roxo Leve) -->
   <div class="ambient-aurora-layer" id="ambient-aurora" aria-hidden="true">
@@ -320,7 +353,7 @@
       </div>
 
       <div class="faq-accordion">
-        <details class="faq-item faq-open" open>
+        <details class="faq-item">
           <summary class="faq-question">
             <span class="faq-q-text"><i class="fa-solid fa-circle-question faq-q-icon"></i> Não tenho modelo 3D, como faço para pedir?</span>
             <i class="fa-solid fa-chevron-down faq-chevron"></i>
@@ -1085,6 +1118,6 @@
   </div>
 
   <!-- JavaScript -->
-  <script src="./script.js?v=2.2.1"></script>
+  <script src="./script.js?v=2.3.0"></script>
 </body>
 </html>
