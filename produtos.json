@@ -1,138 +1,6 @@
 [
   {
     "id": 1,
-    "nome": "Action Figures & Colecionáveis",
-    "preco": "A partir de R$ 30",
-    "categoria": "colecionaveis",
-    "descricao": "Seus personagens favoritos de animes, games e filmes impressos com riqueza de detalhes.",
-    "imagem": "./assets/img/produtos/item1.jpg",
-    "disponivel": true,
-    "destaque": true,
-    "somente_encomenda": false,
-    "estoque": 2
-  },
-  {
-    "id": 2,
-    "nome": "Vaso Geométrico Moderno",
-    "preco": "R$ 35,00",
-    "categoria": "decoracao",
-    "descricao": "Design geométrico moderno e elegante para dar vida à sua mesa, sala ou escritório.",
-    "imagem": "./assets/img/produtos/item2.jpg",
-    "disponivel": true,
-    "destaque": true,
-    "somente_encomenda": false,
-    "estoque": 0
-  },
-  {
-    "id": 3,
-    "nome": "Suporte para Headset & Celular",
-    "preco": "R$ 45,00",
-    "categoria": "setup",
-    "descricao": "Organize seus fones e smartphone com uma base firme, moderna e ergonômica.",
-    "imagem": "./assets/img/produtos/item3.jpg",
-    "disponivel": true,
-    "destaque": true,
-    "somente_encomenda": false,
-    "estoque": 1
-  },
-  {
-    "id": 4,
-    "nome": "Luminária de Foto (Litofania)",
-    "preco": "R$ 65,00",
-    "categoria": "decoracao",
-    "descricao": "Sua foto de família, pet ou casal esculpida em relevo 3D. A imagem aparece ao acender a luz!",
-    "imagem": "./assets/img/produtos/item4.jpg",
-    "disponivel": true,
-    "destaque": true,
-    "somente_encomenda": true,
-    "estoque": 0
-  },
-  {
-    "id": 5,
-    "nome": "Chaveiros Personalizados",
-    "preco": "R$ 15,00",
-    "categoria": "personalizados",
-    "descricao": "Personalize com seu nome, apelido, logotipo ou símbolos de jogos para você ou para presentear.",
-    "imagem": "./assets/img/produtos/item5.jpg",
-    "disponivel": true,
-    "destaque": true,
-    "somente_encomenda": false,
-    "estoque": 4
-  },
-  {
-    "id": 6,
-    "nome": "Suporte para Controle de Videogame",
-    "preco": "R$ 39,00",
-    "categoria": "setup",
-    "descricao": "Base temática estilosa para deixar seus controles de PS5, Xbox ou Switch sempre organizados.",
-    "imagem": "./assets/img/produtos/item6.jpg",
-    "disponivel": true,
-    "destaque": true,
-    "somente_encomenda": false,
-    "estoque": 0
-  },
-  {
-    "id": 7,
-    "nome": "Stitch Cosplay Homem-Aranha",
-    "preco": "R$ 49,90",
-    "categoria": "colecionaveis",
-    "descricao": "Action figure colecionável do Stitch com capuz e traje do Homem-Aranha, rica em texturas de tecido e teias em relevo 3D.",
-    "imagem": "./assets/img/produtos/item7.jpg",
-    "disponivel": true,
-    "destaque": true,
-    "somente_encomenda": false,
-    "estoque": 3
-  },
-  {
-    "id": 8,
-    "nome": "Urubu Rei do Flamengo no Trono",
-    "preco": "R$ 89,90",
-    "categoria": "colecionaveis",
-    "descricao": "Mascote Urubu Rei oficial do Flamengo com coroa imperial, manto rubro-negro e chuteiras douradas sentado no trono de ouro.",
-    "imagem": "./assets/img/produtos/item8.jpg",
-    "disponivel": true,
-    "destaque": true,
-    "somente_encomenda": false,
-    "estoque": 2
-  },
-  {
-    "id": 9,
-    "nome": "Mini Cooler Monster Energy com Torneira",
-    "preco": "R$ 64,90",
-    "categoria": "setup",
-    "descricao": "Garrafão cooler térmico estilizado Monster Energy rosa perolado com torneira funcional. Estilo e praticidade para o seu setup.",
-    "imagem": "./assets/img/produtos/item9.jpg",
-    "disponivel": true,
-    "destaque": true,
-    "somente_encomenda": false,
-    "estoque": 2
-  },
-  {
-    "id": 10,
-    "nome": "Kit Mini Santinhos de Borda & Monitor",
-    "preco": "R$ 39,00",
-    "categoria": "decoracao",
-    "descricao": "Coleção estilizada de santinhos (Jesus, Nossa Senhora, São Bento e São José) projetados para repousar com charme na borda de monitores ou estantes.",
-    "imagem": "./assets/img/produtos/item10.jpg",
-    "disponivel": true,
-    "destaque": true,
-    "somente_encomenda": false,
-    "estoque": 4
-  },
-  {
-    "id": 11,
-    "nome": "Porta-Panetone & Doces Papai Noel Natalino",
-    "preco": "R$ 58,00",
-    "categoria": "decoracao",
-    "descricao": "Suporte decorativo de mesa com Papai Noel segurando bandeja para servir panetone, bolos natalinos, doces ou velas festivas.",
-    "imagem": "./assets/img/produtos/item11.jpg",
-    "disponivel": true,
-    "destaque": true,
-    "somente_encomenda": false,
-    "estoque": 3
-  },
-  {
-    "id": 12,
     "nome": "Varinha Cinética Creeper (Minecraft)",
     "preco": "R$ 34,90",
     "categoria": "colecionaveis",
@@ -144,7 +12,7 @@
     "estoque": 4
   },
   {
-    "id": 13,
+    "id": 2,
     "nome": "Casinha de Gengibre 3D com Vela LED",
     "preco": "R$ 54,90",
     "categoria": "decoracao",
@@ -156,7 +24,7 @@
     "estoque": 3
   },
   {
-    "id": 14,
+    "id": 3,
     "nome": "Enfeite 3D Papai Noel & Rena com Vela LED",
     "preco": "R$ 49,90",
     "categoria": "decoracao",
@@ -168,7 +36,7 @@
     "estoque": 4
   },
   {
-    "id": 15,
+    "id": 4,
     "nome": "Sabre de Luz Retrátil Star Wars",
     "preco": "R$ 59,90",
     "categoria": "colecionaveis",
@@ -180,7 +48,7 @@
     "estoque": 2
   },
   {
-    "id": 16,
+    "id": 5,
     "nome": "Porta Latas Térmico Monster com Canudo",
     "preco": "R$ 49,90",
     "categoria": "setup",
@@ -192,7 +60,7 @@
     "estoque": 3
   },
   {
-    "id": 17,
+    "id": 6,
     "nome": "Action Figure Ghostface (Pânico)",
     "preco": "R$ 69,90",
     "categoria": "colecionaveis",
