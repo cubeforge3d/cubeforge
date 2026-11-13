@@ -130,5 +130,77 @@
     "destaque": true,
     "somente_encomenda": false,
     "estoque": 3
+  },
+  {
+    "id": 12,
+    "nome": "Varinha Cinética Creeper (Minecraft)",
+    "preco": "R$ 34,90",
+    "categoria": "colecionaveis",
+    "descricao": "Fidget toy cinético do Minecraft: a cabeça do Creeper gira suavemente descendo pela haste espiral. Divertido e antiestresse!",
+    "imagem": "./assets/img/produtos/item12.jpg",
+    "disponivel": true,
+    "destaque": true,
+    "somente_encomenda": false,
+    "estoque": 4
+  },
+  {
+    "id": 13,
+    "nome": "Casinha de Gengibre 3D com Vela LED",
+    "preco": "R$ 54,90",
+    "categoria": "decoracao",
+    "descricao": "Luminária natalina 3D que abre para colocar vela de LED (inclusa). Sem fogo, sem sujeira e 100% segura para encantar sua decoração.",
+    "imagem": "./assets/img/produtos/item13.jpg",
+    "disponivel": true,
+    "destaque": true,
+    "somente_encomenda": false,
+    "estoque": 3
+  },
+  {
+    "id": 14,
+    "nome": "Enfeite 3D Papai Noel & Rena com Vela LED",
+    "preco": "R$ 49,90",
+    "categoria": "decoracao",
+    "descricao": "Cenário natalino com Papai Noel e rena se aquecendo na lareira. Acompanha vela de LED segura sem fogo. Pronto para usar!",
+    "imagem": "./assets/img/produtos/item14.jpg",
+    "disponivel": true,
+    "destaque": true,
+    "somente_encomenda": false,
+    "estoque": 4
+  },
+  {
+    "id": 15,
+    "nome": "Sabre de Luz Retrátil Star Wars",
+    "preco": "R$ 59,90",
+    "categoria": "colecionaveis",
+    "descricao": "Sabre de luz retrátil impresso em 3D com lâmina expansível suave e empunhadura ultra detalhada com detalhes mecânicos.",
+    "imagem": "./assets/img/produtos/item15.jpg",
+    "disponivel": true,
+    "destaque": true,
+    "somente_encomenda": false,
+    "estoque": 2
+  },
+  {
+    "id": 16,
+    "nome": "Porta Latas Térmico Monster com Canudo",
+    "preco": "R$ 49,90",
+    "categoria": "setup",
+    "descricao": "Mini cooler porta-latas estilizado Monster Energy. Acompanha canudo de metal e chaveiro abridor de latas exclusivo.",
+    "imagem": "./assets/img/produtos/item16.jpg",
+    "disponivel": true,
+    "destaque": true,
+    "somente_encomenda": false,
+    "estoque": 3
+  },
+  {
+    "id": 17,
+    "nome": "Action Figure Ghostface (Pânico)",
+    "preco": "R$ 69,90",
+    "categoria": "colecionaveis",
+    "descricao": "Colecionável detalhado do vilão Ghostface em pose icônica com faca empunhada e manto esculpido com drapeado realista.",
+    "imagem": "./assets/img/produtos/item17.jpg",
+    "disponivel": true,
+    "destaque": true,
+    "somente_encomenda": false,
+    "estoque": 2
   }
 ]
