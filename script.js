@@ -517,6 +517,7 @@ function renderFilterTabs(preferredCategory = null) {
  * ============================================================================
  */
 let SITE_SETTINGS = {
+  habilitar_compra_online: true,
   modo_manutencao: false,
   titulo_manutencao: "Estamos em Manutenção",
   subtitulo_manutencao: "Voltamos em breve com novidades!",
@@ -524,9 +525,67 @@ let SITE_SETTINGS = {
   previsao_retorno: "Voltamos em breve!"
 };
 
+function isOnlineCheckoutEnabled() {
+  return SITE_SETTINGS.habilitar_compra_online !== false;
+}
+
+function applyOnlineCheckoutMode(isEnabled) {
+  document.body.classList.toggle("online-checkout-disabled", !isEnabled);
+  document.body.classList.toggle("online-checkout-enabled", isEnabled);
+
+  // Ajusta pílula 3 e label da pílula 2 no carrinho
+  const pill2 = document.getElementById("cart-step-pill-2");
+  const pill3 = document.getElementById("cart-step-pill-3");
+  if (pill2) {
+    const label = pill2.querySelector(".step-label");
+    if (label) label.textContent = isEnabled ? "Pagamento" : "Finalizar";
+    pill2.title = isEnabled ? "Escolher forma de pagamento" : "Finalizar pedido no WhatsApp";
+  }
+  if (pill3) {
+    pill3.style.display = isEnabled ? "inline-flex" : "none";
+  }
+
+  // Ajusta notas da etapa 1
+  const installmentsNote = document.querySelector(".summary-installments-note");
+  if (installmentsNote) {
+    if (!isEnabled) {
+      installmentsNote.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Finalização rápida e sem burocracia via WhatsApp';
+    } else {
+      installmentsNote.innerHTML = '<i class="fa-solid fa-credit-card"></i> Em até 12x no cartão ou Pix na próxima etapa';
+    }
+  }
+
+  const shippingLabel = document.getElementById("step1-shipping-label");
+  if (shippingLabel) {
+    if (!isEnabled) {
+      shippingLabel.textContent = "A combinar no WhatsApp ›";
+    } else {
+      shippingLabel.textContent = "A calcular na etapa de entrega ›";
+    }
+  }
+
+  // Se os produtos já estiverem carregados, atualiza catálogo e showroom
+  if (typeof renderCatalogProducts === "function" && Array.isArray(ALL_PRODUCTS) && ALL_PRODUCTS.length > 0) {
+    const activeFilter = (typeof currentFilter !== "undefined" && currentFilter) ? currentFilter : "todos";
+    if (typeof filterCatalogProducts === "function") {
+      filterCatalogProducts(activeFilter);
+    }
+  }
+
+  if (typeof initShowroomCarousel === "function" && Array.isArray(ALL_PRODUCTS) && ALL_PRODUCTS.length > 0) {
+    initShowroomCarousel();
+  }
+
+  // Se o carrinho estiver aberto na etapa 3 e compra online foi desativada, recua para a etapa 2
+  if (!isEnabled && currentCartStep === 3) {
+    setCartStep(2);
+  }
+}
+
 async function loadSiteSettings() {
   const urlParams = new URLSearchParams(window.location.search);
   const paramManutencao = urlParams.get("manutencao") || urlParams.get("maintenance");
+  const paramCompraOnline = urlParams.get("compra_online") || urlParams.get("online_checkout");
 
   try {
     const controller = new AbortController();
@@ -537,6 +596,11 @@ async function loadSiteSettings() {
       const data = await res.json();
       if (data && typeof data === "object") {
         SITE_SETTINGS = { ...SITE_SETTINGS, ...data };
+        if (typeof data.habilitar_compra_online === "boolean") {
+          SITE_SETTINGS.habilitar_compra_online = data.habilitar_compra_online;
+        } else if (typeof data.compra_online_ativa === "boolean") {
+          SITE_SETTINGS.habilitar_compra_online = data.compra_online_ativa;
+        }
         if (data.cep_origem) SITE_CONFIG.cepOrigem = data.cep_origem.replace(/\D/g, "");
         if (data.melhorenvio_token) SITE_CONFIG.melhorEnvioToken = data.melhorenvio_token.trim();
         if (typeof data.melhorenvio_sandbox === "boolean") SITE_CONFIG.melhorEnvioSandbox = data.melhorenvio_sandbox;
@@ -553,6 +617,14 @@ async function loadSiteSettings() {
     SITE_SETTINGS.modo_manutencao = false;
   }
 
+  // Permite testar compra online via URL (?compra_online=1 ou ?compra_online=0)
+  if (paramCompraOnline === "0" || paramCompraOnline === "false") {
+    SITE_SETTINGS.habilitar_compra_online = false;
+  } else if (paramCompraOnline === "1" || paramCompraOnline === "true") {
+    SITE_SETTINGS.habilitar_compra_online = true;
+  }
+
+  applyOnlineCheckoutMode(Boolean(SITE_SETTINGS.habilitar_compra_online));
   applyMaintenanceMode(Boolean(SITE_SETTINGS.modo_manutencao));
 }
 
@@ -1218,6 +1290,10 @@ function renderCatalog(filterCategory = "all") {
         </div>
       `;
     } else {
+      const buyOnlineBtn = isOnlineCheckoutEnabled() ? `
+          <button type="button" class="btn-card-buy-online" onclick="buySingleProductOnline(${item.id}, event)" aria-label="Comprar ${item.title} online no Pix ou Cartão em até 12x" title="Comprar no Cartão ou Pix • Até 12x">
+            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online • Até 12x no Cartão</span>
+          </button>` : '';
       actionsHtml = `
         <div class="product-actions-group">
           <button class="btn-card-cart" onclick="addToCart(${item.id}, 1, this)" aria-label="Adicionar ${item.title} ao carrinho">
@@ -1226,9 +1302,7 @@ function renderCatalog(filterCategory = "all") {
           <button class="btn-card-direct" onclick="openProductModal(${item.id})" aria-label="Pedir ${item.title} direto no WhatsApp">
             <i class="fa-brands fa-whatsapp"></i> Pedir Direto
           </button>
-          <button type="button" class="btn-card-buy-online" onclick="buySingleProductOnline(${item.id}, event)" aria-label="Comprar ${item.title} online no Pix ou Cartão em até 12x" title="Comprar no Cartão ou Pix • Até 12x">
-            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online • Até 12x no Cartão</span>
-          </button>
+          ${buyOnlineBtn}
         </div>
       `;
     }
@@ -1746,10 +1820,12 @@ window.openProductModal = function(productId) {
       </button>
     `;
   } else {
-    modalActionsHtml = `
+    const modalBuyOnlineBtn = isOnlineCheckoutEnabled() ? `
       <button type="button" class="modal-buy-online-btn" onclick="buySingleProductOnline(${item.id}, event)">
         <i class="fa-solid fa-credit-card"></i> Comprar Online • Até 12x no Cartão
-      </button>
+      </button>` : '';
+    modalActionsHtml = `
+      ${modalBuyOnlineBtn}
       <button class="modal-cart-btn" onclick="addToCart(${item.id}, 1, this); closeProductModal();">
         <i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho
       </button>
@@ -1880,6 +1956,10 @@ function setupHeroSlider() {
         </div>
       `;
     } else {
+      const showroomBuyOnlineBtn = isOnlineCheckoutEnabled() ? `
+          <button type="button" class="btn-card-buy-online showroom-buy-btn" onclick="event.stopPropagation(); buySingleProductOnline(${item.id}, event)" title="Comprar online no Pix ou Cartão em até 12x">
+            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online • Até 12x no Cartão</span>
+          </button>` : '';
       actionsHtml = `
         <div class="showroom-card-actions">
           <button class="btn-card-cart" onclick="event.stopPropagation(); addToCart(${item.id}, 1, this)" title="Adicionar ao carrinho">
@@ -1888,9 +1968,7 @@ function setupHeroSlider() {
           <button class="btn-card-direct" onclick="event.stopPropagation(); orderDirectFromCard(${item.id})" title="Pedir no WhatsApp">
             <i class="fa-brands fa-whatsapp"></i> <span>Pedir</span>
           </button>
-          <button type="button" class="btn-card-buy-online showroom-buy-btn" onclick="event.stopPropagation(); buySingleProductOnline(${item.id}, event)" title="Comprar online no Pix ou Cartão em até 12x">
-            <i class="fa-solid fa-credit-card"></i> <span>Comprar Online • Até 12x no Cartão</span>
-          </button>
+          ${showroomBuyOnlineBtn}
         </div>
       `;
     }
@@ -2460,6 +2538,9 @@ function updateCartUI() {
 let currentCartStep = 1;
 
 function setCartStep(step) {
+  if (!isOnlineCheckoutEnabled() && step === 3) {
+    step = 2;
+  }
   currentCartStep = step;
   const drawer = document.getElementById("cart-drawer");
   const backBtn = document.getElementById("cart-back-step-btn");
@@ -3169,17 +3250,43 @@ function renderCartStep2() {
       `;
     }
     if (!hasOrderOnly && !hasNotes) {
-      html += `
-        <div class="payment-condition-box alert-ready">
-          <div class="payment-condition-header">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>Pronto para Finalizar</span>
+      if (!isOnlineCheckoutEnabled()) {
+        html += `
+          <div class="payment-condition-box alert-ready">
+            <div class="payment-condition-header">
+              <i class="fa-brands fa-whatsapp"></i>
+              <span>Finalização via WhatsApp</span>
+            </div>
+            <p>Seus itens estão prontos! Clique no botão abaixo para conversar conosco no WhatsApp. Combinamos todos os detalhes da entrega, personalizações e forma de pagamento diretamente com você.</p>
           </div>
-          <p>Você pode pagar online com segurança no <strong>Cartão em até 12x</strong> ou <strong>Pix</strong>, ou se preferir, pode finalizar direto pelo <strong>WhatsApp</strong>.</p>
-        </div>
-      `;
+        `;
+      } else {
+        html += `
+          <div class="payment-condition-box alert-ready">
+            <div class="payment-condition-header">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>Pronto para Finalizar</span>
+            </div>
+            <p>Você pode pagar online com segurança no <strong>Cartão em até 12x</strong> ou <strong>Pix</strong>, ou se preferir, pode finalizar direto pelo <strong>WhatsApp</strong>.</p>
+          </div>
+        `;
+      }
     }
     conditionsBox.innerHTML = html;
+
+    const paymentTitle = document.querySelector(".payment-block-title");
+    if (paymentTitle) {
+      paymentTitle.textContent = isOnlineCheckoutEnabled()
+        ? "Como prefere finalizar seu pedido?"
+        : "Finalize seu pedido diretamente com nossa equipe:";
+    }
+
+    const infoBadge = document.querySelector(".payment-step-info-badge span");
+    if (infoBadge) {
+      infoBadge.textContent = isOnlineCheckoutEnabled()
+        ? "No Cartão/Pix, o frete Correios é calculado na etapa de entrega. No WhatsApp, combinamos tudo com você."
+        : "Finalize seu pedido pelo WhatsApp oficial da Cube Forge. Combinamos entrega, prazos e pagamento com você!";
+    }
   }
 
   updateCartValidation();
@@ -3303,6 +3410,11 @@ function updateCartValidation() {
 
   // 3. Atualiza estado do botão de prosseguir para Cartão (Etapa 2)
   if (btnGotoCard) {
+    if (!isOnlineCheckoutEnabled()) {
+      btnGotoCard.style.display = "none";
+    } else {
+      btnGotoCard.style.display = "";
+    }
     if (hasOrderOnly) {
       btnGotoCard.classList.add("disabled");
       btnGotoCard.setAttribute("aria-disabled", "true");
@@ -3375,6 +3487,14 @@ function openDirectBuyModal(productId, e) {
 
   if (SITE_SETTINGS.modo_manutencao) {
     applyMaintenanceMode(true);
+    return;
+  }
+
+  if (!isOnlineCheckoutEnabled()) {
+    if (typeof showCartToast === "function") {
+      showCartToast("Compra online indisponível", "info", "Finalize pelo WhatsApp");
+    }
+    orderDirectFromCard(productId);
     return;
   }
 

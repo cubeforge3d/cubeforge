@@ -8618,3 +8618,28 @@ body.intro-active {
     gap: 3px;
   }
 }
+
+/* ============================================================================
+ * MODO DE COMPRA ONLINE DESATIVADA (Apenas WhatsApp Ativo)
+ * ============================================================================ */
+body.online-checkout-disabled .btn-card-buy-online,
+body.online-checkout-disabled .showroom-buy-btn,
+body.online-checkout-disabled .modal-buy-online-btn,
+body.online-checkout-disabled #btn-goto-card-checkout,
+body.online-checkout-disabled .cart-unified-badge,
+body.online-checkout-disabled .payment-divider-or,
+body.online-checkout-disabled #cart-step-pill-3,
+body.online-checkout-disabled .summary-installments-badge {
+  display: none !important;
+}
+
+body.online-checkout-disabled .payment-methods-block #btn-checkout-whatsapp {
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 18px rgba(37, 211, 102, 0.35);
+}
+
+body.online-checkout-disabled .product-actions-group {
+  grid-template-columns: 1fr 1fr;
+}

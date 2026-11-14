@@ -22,6 +22,11 @@ content:
         type: boolean
         default: false
         description: "Marque se estiver usando um token do ambiente de testes sandbox do Melhor Envio."
+      - name: habilitar_compra_online
+        label: "💳 Habilitar Compra Online no Site (Pix & Cartão até 12x)"
+        type: boolean
+        default: true
+        description: "Ative este botão para permitir compras online diretas no site (Pix e Cartão até 12x via InfinitePay) junto com o WhatsApp. Se desativar, o site funcionará exclusivamente via WhatsApp (pedidos e encomendas combinados diretamente com você)."
       - name: modo_manutencao
         label: "Ativar Modo de Manutenção (Desativar Site & Vendas)"
         type: boolean
