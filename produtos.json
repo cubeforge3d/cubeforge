@@ -34,7 +34,7 @@
     "disponivel": true,
     "destaque": true,
     "somente_encomenda": false,
-    "estoque": 4
+    "estoque": 1
   },
   {
     "id": 4,
@@ -58,7 +58,7 @@
     "disponivel": true,
     "destaque": true,
     "somente_encomenda": false,
-    "estoque": 3
+    "estoque": 2
   },
   {
     "id": 6,
