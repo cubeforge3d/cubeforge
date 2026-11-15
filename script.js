@@ -55,21 +55,21 @@ const FALLBACK_CATALOG_ITEMS = [
   {
     id: 1,
     nome: "Varinha Cinética Creeper (Minecraft)",
-    preco: "R$ 34,90",
-    categoria: "colecionaveis",
-    categoriaNome: "Colecionáveis",
+    preco: "R$ 19,99",
+    categoria: "fidgets",
+    categoriaNome: "Fidgets",
     descricao: "Fidget toy cinético do Minecraft: a cabeça do Creeper gira suavemente descendo pela haste espiral. Divertido e antiestresse!",
     imagem: "./assets/img/produtos/item12.jpg",
     icon: "fa-solid fa-cube",
     disponivel: true,
     destaque: true,
-    estoque: 4,
+    estoque: 2,
     somente_encomenda: false
   },
   {
     id: 2,
     nome: "Casinha de Gengibre 3D com Vela LED",
-    preco: "R$ 54,90",
+    preco: "R$ 24,99",
     categoria: "decoracao",
     categoriaNome: "Decoração",
     descricao: "Luminária natalina 3D que abre para colocar vela de LED (inclusa). Sem fogo, sem sujeira e 100% segura para encantar sua decoração.",
@@ -77,13 +77,13 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-house-chimney",
     disponivel: true,
     destaque: true,
-    estoque: 3,
+    estoque: 1,
     somente_encomenda: false
   },
   {
     id: 3,
     nome: "Enfeite 3D Papai Noel & Rena com Vela LED",
-    preco: "R$ 49,90",
+    preco: "R$ 44,99",
     categoria: "decoracao",
     categoriaNome: "Decoração",
     descricao: "Cenário natalino com Papai Noel e rena se aquecendo na lareira. Acompanha vela de LED segura sem fogo. Pronto para usar!",
@@ -91,27 +91,27 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-gift",
     disponivel: true,
     destaque: true,
-    estoque: 4,
+    estoque: 1,
     somente_encomenda: false
   },
   {
     id: 4,
     nome: "Sabre de Luz Retrátil Star Wars",
-    preco: "R$ 59,90",
-    categoria: "colecionaveis",
-    categoriaNome: "Colecionáveis",
+    preco: "R$ 49,99",
+    categoria: "geek",
+    categoriaNome: "Geek & Games",
     descricao: "Sabre de luz retrátil impresso em 3D com lâmina expansível suave e empunhadura ultra detalhada com detalhes mecânicos.",
     imagem: "./assets/img/produtos/item15.jpg",
     icon: "fa-solid fa-khanda",
     disponivel: true,
     destaque: true,
-    estoque: 2,
+    estoque: 1,
     somente_encomenda: false
   },
   {
     id: 5,
     nome: "Porta Latas Térmico Monster com Canudo",
-    preco: "R$ 49,90",
+    preco: "R$ 119,99",
     categoria: "setup",
     categoriaNome: "Setup & Suportes",
     descricao: "Mini cooler porta-latas estilizado Monster Energy. Acompanha canudo de metal e chaveiro abridor de latas exclusivo.",
@@ -119,13 +119,13 @@ const FALLBACK_CATALOG_ITEMS = [
     icon: "fa-solid fa-bolt",
     disponivel: true,
     destaque: true,
-    estoque: 3,
+    estoque: 2,
     somente_encomenda: false
   },
   {
     id: 6,
     nome: "Action Figure Ghostface (Pânico)",
-    preco: "R$ 69,90",
+    preco: "R$ 59,99",
     categoria: "colecionaveis",
     categoriaNome: "Colecionáveis",
     descricao: "Colecionável detalhado do vilão Ghostface em pose icônica com faca empunhada e manto esculpido com drapeado realista.",
@@ -872,7 +872,7 @@ async function loadProductsData() {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);
-    const response = await fetch('./produtos.json', { cache: 'default', signal: controller.signal });
+    const response = await fetch('./produtos.json?v=' + Date.now(), { cache: 'no-store', headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }, signal: controller.signal });
     clearTimeout(timeoutId);
     if (!response.ok) {
       throw new Error(`Status ${response.status}`);
@@ -2398,6 +2398,12 @@ function syncCartWithCatalog() {
       }
       if (item.estoque !== (prod.estoque || 0)) {
         item.estoque = prod.estoque || 0;
+        changed = true;
+      }
+      // Sincroniza preços no carrinho para evitar divergências com o CMS
+      if (item.numericPrice !== prod.numericPrice || item.price !== prod.price) {
+        item.numericPrice = prod.numericPrice;
+        item.price = prod.price;
         changed = true;
       }
     }
