@@ -53,6 +53,37 @@ content:
         default: "Voltamos em breve!"
         description: "Ex: 'Voltamos em breve!', 'Retorno hoje às 19h', 'Previsão: amanhã cedo'."
 
+  - name: categorias
+    label: "🏷️ Categorias de Produtos"
+    type: file
+    path: categorias.json
+    list: true
+    fields:
+      - name: id
+        label: "Identificador (slug)"
+        type: string
+        required: true
+        description: "Código da categoria em minúsculas sem espaços (ex: colecionaveis, decoracao, setup, geek, canecas, utilidades)."
+      - name: nome
+        label: "Nome da Categoria"
+        type: string
+        required: true
+        description: "Nome exibido nos botões de filtro e etiquetas (ex: Colecionáveis, Decoração, Setup & Suportes, Canecas Personalizadas)."
+      - name: icone
+        label: "Emoji ou Ícone"
+        type: string
+        description: "Emoji ou classe FontAwesome para o botão de filtro (ex: 🏆, ☕, 🎮, 🌿, 🎧, 🐉). Se vazio, o site escolhe um ícone automaticamente."
+      - name: ordem
+        label: "Ordem de Exibição"
+        type: number
+        default: 1
+        description: "Posição na barra de filtros da vitrine (1 para primeira, 2 para segunda, etc.)."
+      - name: ativo
+        label: "Ativo na Vitrine"
+        type: boolean
+        default: true
+        description: "Ligue para exibir esta categoria nos filtros de produtos do site."
+
   - name: produtos
     label: Catálogo de Produtos
     type: file
@@ -67,9 +98,10 @@ content:
         type: string
         required: true
       - name: preco
-        label: Preço
+        label: "Preço (R$)"
         type: string
         required: true
+        description: "Digite apenas o valor (ex: 50 para R$ 50,00 ou 15,50 para R$ 15,50). Não precisa digitar R$ nem os zeros finais, o site formata automaticamente!"
       - name: categoria
         label: Categoria
         type: select
@@ -97,9 +129,9 @@ content:
             - name: nova
               label: "✨ Criar Nova Categoria (digitar abaixo)"
       - name: nova_categoria
-        label: Criar Nova Categoria (Nome)
+        label: Outra Categoria (se criada na aba Categorias)
         type: string
-        description: "Selecione 'Criar Nova Categoria' acima e digite o nome aqui (ex: Canecas, Vasos, Chaveiros). Ela aparecerá automaticamente nos filtros do site!"
+        description: "Se você criou uma nova categoria na aba '🏷️ Categorias de Produtos', selecione 'Outra Categoria' acima e digite o identificador ou nome aqui (ex: canecas)."
       - name: categoria_icone
         label: Emoji da Categoria (Opcional)
         type: string

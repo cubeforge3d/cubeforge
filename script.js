@@ -230,6 +230,68 @@ function getCategoryIcon(category, categoryName = "") {
 }
 
 /**
+ * Formata qualquer entrada de preço (ex: 50, "50", "15,50", "15.5", 15.50, "R$ 50,00")
+ * garantindo saída padrão visual "R$ 50,00" ou "R$ 15,50".
+ */
+function parseItemPrice(priceStr) {
+  if (typeof priceStr === "number") return priceStr;
+  if (!priceStr) return 0;
+  let clean = String(priceStr).trim();
+  clean = clean.replace(/R\$\s*/gi, "").trim();
+  if (clean.includes(",") && clean.includes(".")) {
+    clean = clean.replace(/\./g, "").replace(",", ".");
+  } else if (clean.includes(",")) {
+    clean = clean.replace(",", ".");
+  }
+  const val = parseFloat(clean);
+  return isNaN(val) ? 0 : val;
+}
+
+window.formatProductPrice = formatProductPrice;
+window.parseItemPrice = parseItemPrice;
+window.normalizeProduct = normalizeProduct;
+window.renderCatalog = renderCatalog;
+
+function formatProductPrice(val) {
+  if (val === undefined || val === null || val === "") return "Consulte";
+  if (typeof val === "string" && val.trim().toLowerCase() === "consulte") return "Consulte";
+  const num = parseItemPrice(val);
+  if (isNaN(num) || (num <= 0 && typeof val === "string" && !val.match(/\d/))) {
+    return val;
+  }
+  return formatBRL(num);
+}
+
+/**
+ * Categorias sincronizadas com a aba exclusiva do Pages CMS (categorias.json)
+ */
+let STORE_CATEGORIES = [];
+
+async function loadStoreCategories() {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const res = await fetch("./categorias.json?v=" + Date.now(), { cache: "no-store", signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        STORE_CATEGORIES = data.filter(c => c && (c.id || c.nome) && c.ativo !== false);
+        window.STORE_CATEGORIES = STORE_CATEGORIES;
+      }
+    }
+  } catch (err) {
+    console.warn("Aviso: fetch de categorias.json não completou, usando padrão:", err);
+  }
+}
+
+window.openDirectWhatsappQuote = function(catName) {
+  const msg = `Olá! Estava navegando na vitrine da Cube Forge na categoria "${catName}" e gostaria de encomendar uma peça personalizada. Como funciona?`;
+  const url = createWhatsappUrl(SITE_CONFIG.whatsappNumber, msg);
+  window.open(url, "_blank");
+};
+
+/**
  * Normaliza os dados vindos de produtos.json ou Pages CMS garantindo
  * compatibilidade total com seleção no dropdown E criação de novas categorias.
  */
@@ -256,8 +318,26 @@ function normalizeProduct(raw, index) {
   }
 
   const title = raw.nome || raw.title || "Peça 3D";
-  const price = raw.preco || raw.price || "Consulte";
+  const rawPrice = raw.preco !== undefined ? raw.preco : (raw.price !== undefined ? raw.price : "Consulte");
+  const formattedPrice = formatProductPrice(rawPrice);
+  const numericPrice = parseItemPrice(rawPrice);
   const desc = raw.descricao || raw.desc || "";
+
+  // Sincroniza com STORE_CATEGORIES (definidas na aba exclusiva do Pages CMS)
+  if (Array.isArray(STORE_CATEGORIES) && STORE_CATEGORIES.length > 0) {
+    const matched = STORE_CATEGORIES.find(c => {
+      const cid = slugifyCategory(c.id);
+      const cname = slugifyCategory(c.nome);
+      return cid === categorySlug || cname === categorySlug;
+    });
+    if (matched) {
+      categorySlug = slugifyCategory(matched.id || matched.nome);
+      categoryLabel = matched.nome || categoryLabel;
+      if (matched.icone) {
+        icon = matched.icone.includes("fa-") ? matched.icone : getCategoryIcon(categorySlug, categoryLabel);
+      }
+    }
+  }
   let image = raw.imagem || raw.image || raw.foto || "";
 
   // Garante caminhos relativos compatíveis com GitHub Pages (subcaminhos como /cubeforge/)
@@ -293,9 +373,9 @@ function normalizeProduct(raw, index) {
     id,
     nome: title,
     title,
-    preco: price,
-    price,
-    numericPrice: parseItemPrice(price),
+    preco: formattedPrice,
+    price: formattedPrice,
+    numericPrice: numericPrice,
     categoria: categorySlug,
     category: categorySlug,
     categoriaNome: categoryLabel,
@@ -335,10 +415,32 @@ function renderFilterTabs(preferredCategory = null) {
     activeCategory = currentActiveBtn ? currentActiveBtn.getAttribute("data-category") : "all";
   }
 
-  // Agrupa categorias únicas a partir dos produtos disponíveis
+  // Agrupa categorias únicas a partir de STORE_CATEGORIES (Pages CMS) e produtos disponíveis
   const categoryMap = new Map();
   const hasReadyStock = CATALOG_ITEMS.some(item => item.estoque > 0);
 
+  // 1. Prioriza as categorias gerenciadas na aba exclusiva do Pages CMS (categorias.json)
+  if (Array.isArray(STORE_CATEGORIES) && STORE_CATEGORIES.length > 0) {
+    const sortedCats = [...STORE_CATEGORIES].sort((a, b) => (Number(a.ordem) || 99) - (Number(b.ordem) || 99));
+    sortedCats.forEach(cat => {
+      if (cat.ativo === false) return;
+      const slug = slugifyCategory(cat.id || cat.nome);
+      let emoji = "";
+      if (cat.icone && cat.icone.length <= 4 && !cat.icone.includes("fa-")) {
+        emoji = cat.icone;
+      } else {
+        emoji = getCategoryEmoji(slug, cat.nome);
+      }
+      categoryMap.set(slug, {
+        slug: slug,
+        name: cat.nome || getCategoryLabel(slug),
+        emoji: emoji,
+        icon: (cat.icone && cat.icone.includes("fa-")) ? cat.icone : getCategoryIcon(slug, cat.nome)
+      });
+    });
+  }
+
+  // 2. Inclui categorias presentes nos produtos se ainda não estiverem no map
   CATALOG_ITEMS.forEach(item => {
     const slug = item.categoria || item.category;
     if (!slug) return;
@@ -764,6 +866,9 @@ function applyMaintenanceMode(isActive) {
 }
 
 async function loadProductsData() {
+  // Carrega categorias gerenciadas na aba exclusiva do Pages CMS
+  await loadStoreCategories();
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);
@@ -1222,6 +1327,21 @@ function renderCatalog(filterCategory = "all") {
   }
 
   grid.innerHTML = "";
+
+  if (filteredItems.length === 0) {
+    const catName = getCategoryLabel(filterCategory);
+    grid.innerHTML = `
+      <div class="catalog-empty-category" style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: 16px; margin: 20px 0;">
+        <div style="font-size: 2.2rem; margin-bottom: 12px;">✨</div>
+        <h4 style="font-size: 1.15rem; color: #f1f5f9; margin-bottom: 8px;">Nenhuma peça pronta em "${catName}" no momento</h4>
+        <p style="font-size: 0.88rem; color: #94a3b8; max-width: 420px; margin: 0 auto 18px;">Podemos imprimir qualquer modelo personalizado desta categoria sob encomenda para você!</p>
+        <button type="button" class="btn-card-order-zap" onclick="openDirectWhatsappQuote('${catName}')" style="display: inline-flex; width: auto; padding: 10px 20px; font-size: 0.88rem; margin: 0 auto;">
+          <i class="fa-brands fa-whatsapp"></i> <span>Pedir Peça Personalizada no WhatsApp</span>
+        </button>
+      </div>
+    `;
+    return;
+  }
 
   filteredItems.forEach((item, index) => {
     const card = document.createElement("div");
@@ -2258,12 +2378,7 @@ function setupFaqAccordion() {
 let cart = [];
 let toastTimeout = null;
 
-function parseItemPrice(priceStr) {
-  if (!priceStr) return 0;
-  const clean = priceStr.replace(/[^\d,]/g, "").replace(",", ".");
-  const val = parseFloat(clean);
-  return isNaN(val) ? 0 : val;
-}
+// parseItemPrice movida para o topo com suporte a números puros e formatProductPrice
 
 function formatBRL(value) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }).replace(/\u00a0/g, " ");

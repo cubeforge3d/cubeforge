@@ -1,0 +1,65 @@
+[
+  {
+    "id": "colecionaveis",
+    "nome": "Colecionáveis",
+    "icone": "🐉",
+    "ordem": 1,
+    "ativo": true
+  },
+  {
+    "id": "decoracao",
+    "nome": "Decoração",
+    "icone": "🌿",
+    "ordem": 2,
+    "ativo": true
+  },
+  {
+    "id": "setup",
+    "nome": "Setup & Suportes",
+    "icone": "🎧",
+    "ordem": 3,
+    "ativo": true
+  },
+  {
+    "id": "geek",
+    "nome": "Geek & Games",
+    "icone": "🎮",
+    "ordem": 4,
+    "ativo": true
+  },
+  {
+    "id": "personalizados",
+    "nome": "Presentes",
+    "icone": "🎁",
+    "ordem": 5,
+    "ativo": true
+  },
+  {
+    "id": "iluminacao",
+    "nome": "Iluminação & Litofanias",
+    "icone": "💡",
+    "ordem": 6,
+    "ativo": true
+  },
+  {
+    "id": "utilidades",
+    "nome": "Utilidades & Casa",
+    "icone": "🛠️",
+    "ordem": 7,
+    "ativo": true
+  },
+  {
+    "id": "cosplay",
+    "nome": "Cosplay & Acessórios",
+    "icone": "🎭",
+    "ordem": 8,
+    "ativo": true
+  },
+  {
+    "id": "miniaturas",
+    "nome": "Miniaturas & RPG",
+    "icone": "🎲",
+    "ordem": 9,
+    "ativo": true
+  }
+]
