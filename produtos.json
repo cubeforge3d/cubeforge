@@ -2,7 +2,7 @@
   {
     "id": 1,
     "nome": "Varinha Cinética Creeper (Minecraft)",
-    "preco": "19,99",
+    "preco": "R$ 19,99",
     "categoria": "nova",
     "nova_categoria": "Fidgets",
     "descricao": "Fidget toy cinético do Minecraft: a cabeça do Creeper gira suavemente descendo pela haste espiral. Divertido e antiestresse!",
@@ -15,7 +15,7 @@
   {
     "id": 2,
     "nome": "Casinha de Gengibre 3D com Vela LED",
-    "preco": "24,99",
+    "preco": "R$ 24,99",
     "categoria": "decoracao",
     "descricao": "Luminária natalina 3D que abre para colocar vela de LED (inclusa). Sem fogo, sem sujeira e 100% segura para encantar sua decoração.",
     "imagem": "./assets/img/produtos/item13.jpg",
@@ -27,7 +27,7 @@
   {
     "id": 3,
     "nome": "Enfeite 3D Papai Noel & Rena com Vela LED",
-    "preco": "44,99",
+    "preco": "R$ 44,99",
     "categoria": "decoracao",
     "descricao": "Cenário natalino com Papai Noel e rena se aquecendo na lareira. Acompanha vela de LED segura sem fogo. Pronto para usar!",
     "imagem": "./assets/img/produtos/item14.jpg",
