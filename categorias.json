@@ -28,6 +28,13 @@
     "ativo": true
   },
   {
+    "id": "fidgets",
+    "nome": "Fidgets",
+    "icone": "🌀",
+    "ordem": 4,
+    "ativo": true
+  },
+  {
     "id": "personalizados",
     "nome": "Presentes",
     "icone": "🎁",
