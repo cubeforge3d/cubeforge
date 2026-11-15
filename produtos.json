@@ -38,14 +38,14 @@
   {
     "id": 4,
     "nome": "Sabre de Luz Retrátil Star Wars",
-    "preco": "R$ 59,90",
-    "categoria": "colecionaveis",
+    "preco": "50",
+    "categoria": "geek",
     "descricao": "Sabre de luz retrátil impresso em 3D com lâmina expansível suave e empunhadura ultra detalhada com detalhes mecânicos.",
     "imagem": "./assets/img/produtos/item15.jpg",
     "disponivel": true,
     "destaque": true,
     "somente_encomenda": false,
-    "estoque": 2
+    "estoque": 1
   },
   {
     "id": 5,
