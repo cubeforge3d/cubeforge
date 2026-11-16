@@ -55,7 +55,7 @@ const FALLBACK_CATALOG_ITEMS = [
   {
     id: 1,
     nome: "Varinha Cinética Creeper (Minecraft)",
-    preco: "R$ 19,99",
+    preco: "R$ 24,99",
     categoria: "fidgets",
     categoriaNome: "Fidgets",
     descricao: "Fidget toy cinético do Minecraft: a cabeça do Creeper gira suavemente descendo pela haste espiral. Divertido e antiestresse!",
@@ -323,6 +323,9 @@ function normalizeProduct(raw, index) {
   const numericPrice = parseItemPrice(rawPrice);
   const desc = raw.descricao || raw.desc || "";
 
+  // Ícone/Emoji customizado ou inteligente (declarado no início para evitar Temporal Dead Zone / ReferenceError)
+  let icon = raw.categoria_icone || raw.icon || "";
+
   // Sincroniza com STORE_CATEGORIES (definidas na aba exclusiva do Pages CMS)
   if (Array.isArray(STORE_CATEGORIES) && STORE_CATEGORIES.length > 0) {
     const matched = STORE_CATEGORIES.find(c => {
@@ -338,6 +341,11 @@ function normalizeProduct(raw, index) {
       }
     }
   }
+
+  if (!icon) {
+    icon = getCategoryIcon(categorySlug, categoryLabel);
+  }
+
   let image = raw.imagem || raw.image || raw.foto || "";
 
   // Garante caminhos relativos compatíveis com GitHub Pages (subcaminhos como /cubeforge/)
@@ -362,12 +370,6 @@ function normalizeProduct(raw, index) {
     : (raw.sob_encomenda !== undefined 
        ? Boolean(raw.sob_encomenda) 
        : false);
-
-  // Ícone/Emoji customizado ou inteligente
-  let icon = raw.categoria_icone || raw.icon || "";
-  if (!icon) {
-    icon = getCategoryIcon(categorySlug, categoryLabel);
-  }
 
   return {
     id,
@@ -879,8 +881,16 @@ async function loadProductsData() {
     }
     const data = await response.json();
     if (Array.isArray(data) && data.length > 0) {
-      ALL_PRODUCTS = data.map((item, idx) => normalizeProduct(item, idx));
+      ALL_PRODUCTS = data.map((item, idx) => {
+        try {
+          return normalizeProduct(item, idx);
+        } catch (normErr) {
+          console.error("Erro ao normalizar produto " + idx + ":", normErr);
+          return null;
+        }
+      }).filter(Boolean);
       CATALOG_ITEMS = ALL_PRODUCTS.filter(item => item.disponivel);
+      console.log(`[Cube Forge] ${CATALOG_ITEMS.length} produtos carregados com sucesso do produtos.json!`);
     }
   } catch (err) {
     console.warn("Aviso: fetch de produtos.json não completou, usando catálogo fallback local:", err);
