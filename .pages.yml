@@ -11,8 +11,8 @@ content:
       - name: cep_origem
         label: "CEP de Origem da Loja (Cálculo de Frete)"
         type: string
-        default: "29101010"
-        description: "CEP de onde saem os envios da Cube Forge (ex: 29101010 - Vila Velha/ES)."
+        default: "29166105"
+        description: "CEP de onde saem os envios da Cube Forge (ex: 29166105)."
       - name: melhorenvio_token
         label: "Token da API do Melhor Envio (Opcional)"
         type: string
@@ -33,22 +33,22 @@ content:
         default: false
         description: "Ligue este interruptor para pausar o site temporariamente. O site exibirá um aviso elegante de manutenção informando que volta em breve, pausando as vendas e oferecendo botões diretos de contato via WhatsApp e Instagram."
       - name: titulo_manutencao
-        label: Título do Aviso
+        label: "Título do Aviso de Manutenção"
         type: string
         default: "Estamos em Manutenção"
         description: "Título principal na tela de manutenção."
       - name: subtitulo_manutencao
-        label: Subtítulo
+        label: "Subtítulo"
         type: string
         default: "Voltamos em breve com novidades!"
         description: "Frase de apoio abaixo do título."
       - name: mensagem_manutencao
-        label: Mensagem para os Clientes
+        label: "Mensagem para os Clientes"
         type: text
         default: "Estamos realizando ajustes em nossos equipamentos, estoque e catálogo para trazer peças exclusivas com a máxima qualidade. Nossas compras online voltam em breve!\n\nEnquanto isso, você pode encomendar, orçar ou tirar dúvidas diretamente pelo nosso WhatsApp ou Instagram."
         description: "Texto explicativo detalhado exibido para os clientes durante a pausa."
       - name: previsao_retorno
-        label: Previsão de Retorno (Tag em Destaque)
+        label: "Previsão de Retorno (Tag em Destaque)"
         type: string
         default: "Voltamos em breve!"
         description: "Ex: 'Voltamos em breve!', 'Retorno hoje às 19h', 'Previsão: amanhã cedo'."
@@ -60,92 +60,98 @@ content:
     list: true
     view:
       primary: nome
+      fields: [icone, id, ordem, ativo]
     fields:
       - name: id
         label: "Identificador (slug)"
         type: string
         required: true
-        description: "Código da categoria em minúsculas sem espaços (ex: colecionaveis, decoracao, setup, geek, canecas, utilidades)."
+        description: "Código da categoria em minúsculas sem espaços (ex: decoracao, colecionaveis, setup, geek, fidgets)."
       - name: nome
         label: "Nome da Categoria"
         type: string
         required: true
-        description: "Nome exibido nos botões de filtro e etiquetas (ex: Colecionáveis, Decoração, Setup & Suportes, Canecas Personalizadas)."
+        description: "Nome exibido nos botões de filtro e etiquetas do site (ex: Decoração, Colecionáveis, Setup & Suportes)."
       - name: icone
         label: "Emoji ou Ícone"
         type: string
-        description: "Emoji ou classe FontAwesome para o botão de filtro (ex: 🏆, ☕, 🎮, 🌿, 🎧, 🐉). Se vazio, o site escolhe um ícone automaticamente."
+        default: "✨"
+        description: "Emoji exibido no botão da vitrine (ex: 🌿, 🐉, 🎧, 🎮, 🌀, 🎁, 💡, 🛠️, 🏆, ☕)."
       - name: ordem
-        label: "Ordem de Exibição"
+        label: "Ordem de Exibição na Vitrine"
         type: number
         default: 1
-        description: "Posição na barra de filtros da vitrine (1 para primeira, 2 para segunda, etc.)."
+        description: "Posição na barra de filtros da loja (1 para primeira, 2 para segunda, etc.)."
       - name: ativo
-        label: "Ativo na Vitrine"
+        label: "Exibir nos Filtros do Site"
         type: boolean
         default: true
         description: "Ligue para exibir esta categoria nos filtros de produtos do site."
 
   - name: produtos
-    label: Catálogo de Produtos
+    label: "📦 Catálogo de Produtos"
     type: file
     path: produtos.json
     list: true
+    view:
+      primary: nome
+      fields: [preco, categoria, estoque]
     fields:
       - name: id
-        label: ID
+        label: "ID do Produto"
         type: number
+        description: "Número identificador único do produto (ex: 1, 2, 3...)."
       - name: nome
-        label: Nome
+        label: "Nome do Produto"
         type: string
         required: true
+        description: "Nome principal da peça exibido na vitrine e nos detalhes."
       - name: preco
         label: "Preço (R$)"
         type: string
         required: true
-        description: "Digite apenas o valor (ex: 50 para R$ 50,00 ou 15,50 para R$ 15,50). Não precisa digitar R$ nem os zeros finais, o site formata automaticamente!"
+        description: "Digite apenas o valor (ex: 50 para R$ 50,00 ou 24,99 para R$ 24,99). Não precisa digitar R$ nem os zeros finais, o site formata automaticamente!"
       - name: categoria
-        label: Categoria
-        type: reference
+        label: "Categoria do Produto"
+        type: select
+        default: "decoracao"
+        description: "Selecione a categoria deste produto no catálogo da loja."
         options:
-          collection: categorias
-          value: "{id}"
-          label: "{icone} {nome}"
-          search: "id,nome"
-        description: "Selecione uma categoria cadastrada na aba '🏷️ Categorias de Produtos'. Ao cadastrar ou remover categorias lá, elas aparecem automaticamente nesta lista!"
+          values:
+            - name: "decoracao"
+              label: "🌿 Decoração"
+            - name: "colecionaveis"
+              label: "🐉 Colecionáveis"
+            - name: "setup"
+              label: "🎧 Setup & Suportes"
+            - name: "geek"
+              label: "🎮 Geek & Games"
+            - name: "fidgets"
+              label: "🌀 Fidgets"
+            - name: "personalizados"
+              label: "🎁 Presentes & Personalizados"
+            - name: "iluminacao"
+              label: "💡 Iluminação & Litofanias"
+            - name: "utilidades"
+              label: "🛠️ Utilidades & Casa"
+            - name: "cosplay"
+              label: "🎭 Cosplay & Acessórios"
+            - name: "miniaturas"
+              label: "🎲 Miniaturas & RPG"
+            - name: "nova"
+              label: "✨ Outra Categoria (digite abaixo)"
       - name: nova_categoria
-        label: "Ou criar Nova Categoria na hora (Opcional)"
+        label: "Ou criar Nova Categoria (se escolheu 'Outra Categoria' acima)"
         type: string
-        description: "Caso queira criar uma categoria rápida sem ir na aba Categorias primeiro, digite o nome aqui (ex: Canecas). Ela aparecerá automaticamente na vitrine do site!"
-      - name: categoria_icone
-        label: Emoji da Categoria (Opcional)
-        type: string
-        description: "Emoji para o botão de filtro (ex: 🏆, ☕, 💎, 🐉). Se vazio, o site escolhe um ícone inteligente."
+        description: "Caso queira criar uma categoria rápida, digite o nome aqui (ex: Canecas, Chaveiros). Ela aparecerá automaticamente na vitrine do site!"
       - name: descricao
-        label: Descrição
+        label: "Descrição da Peça"
         type: text
+        description: "Breve texto explicativo para o cliente sobre o produto."
       - name: imagem
-        label: Foto
+        label: "Foto Principal do Produto"
         type: image
-      - name: disponivel
-        label: Disponível no Catálogo
-        type: boolean
-        default: true
-      - name: destaque
-        label: Exibir nos Destaques (Vitrine do Topo)
-        type: boolean
-        default: true
-        description: "Ative este botão para exibir este produto no carrossel de destaques no topo do site (Showroom). Se desativado, ele continua visível no catálogo abaixo, mas não aparece nos destaques."
-      - name: somente_encomenda
-        label: Somente sob Encomenda
-        type: boolean
-        default: false
-        description: "Ative este botão para produtos que são fabricados exclusivamente sob encomenda. Ele continuará aparecendo no catálogo e no carrinho com o selo '📦 Somente sob Encomenda', a compra online fica desativada e o cliente tem a opção de encomendar diretamente pelo WhatsApp."
-      - name: estoque
-        label: Estoque a Pronta Entrega (Qtd)
-        type: number
-        default: 0
-        description: "Quantidade de peças já impressas prontas para envio imediato. Se for 1 ou mais, o site ativa o selo de urgência '⚡ Pronta Entrega'. Deixe 0 se a peça for apenas sob encomenda."
+        description: "Foto principal exibida no catálogo e no carrossel de destaques."
       - name: cores
         label: "🎨 Variações de Cores & Fotos (Opcional)"
         type: object
@@ -155,7 +161,7 @@ content:
             label: "Nome da Cor"
             type: string
             required: true
-            description: "Nome exibido para o cliente (ex: Azul Ciano, Branco, Preto Fosco, Vermelho Metálico, etc.)."
+            description: "Nome exibido para o cliente (ex: Azul Ciano, Branco Polar, Preto Fosco, etc.)."
           - name: hex
             label: "Selecione a Cor da Bolinha (Sem digitar código!)"
             type: select
@@ -203,3 +209,23 @@ content:
             label: "Foto desta Cor"
             type: image
             description: "Foto do produto nesta cor. Ao clicar na bolinha no site, a imagem principal mudará instantaneamente para esta foto!"
+      - name: destaque
+        label: "⭐ Exibir nos Destaques (Showroom do Topo)"
+        type: boolean
+        default: true
+        description: "Ative este botão para exibir este produto no carrossel de destaques no topo do site (Showroom). Se desativado, ele continua visível no catálogo abaixo, mas não aparece nos destaques."
+      - name: disponivel
+        label: "👁️ Disponível no Catálogo (Visível na Loja)"
+        type: boolean
+        default: true
+        description: "Desative para ocultar temporariamente este produto da loja sem precisar apagá-lo."
+      - name: somente_encomenda
+        label: "📦 Somente sob Encomenda"
+        type: boolean
+        default: false
+        description: "Ative este botão para produtos fabricados exclusivamente sob encomenda. Ele continuará aparecendo no catálogo e no carrinho com o selo '📦 Somente sob Encomenda', a compra online fica desativada e o cliente tem a opção de encomendar diretamente pelo WhatsApp."
+      - name: estoque
+        label: "⚡ Estoque a Pronta Entrega (Qtd)"
+        type: number
+        default: 0
+        description: "Quantidade de peças já impressas prontas para envio imediato. Se for 1 ou mais, o site ativa o selo de urgência '⚡ Pronta Entrega'. Deixe 0 se a peça for apenas sob encomenda."

@@ -29,28 +29,28 @@
   },
   {
     "id": "fidgets",
-    "nome": "Fidgets",
+    "nome": "Fidgets & Antiestresse",
     "icone": "🌀",
     "ordem": 5,
     "ativo": true
   },
   {
     "id": "personalizados",
-    "nome": "Presentes",
+    "nome": "Presentes & Personalizados",
     "icone": "🎁",
     "ordem": 6,
     "ativo": true
   },
   {
     "id": "iluminacao",
-    "nome": "Iluminação & Litofanias",
+    "nome": "Luminárias & Litofanias",
     "icone": "💡",
     "ordem": 7,
     "ativo": true
   },
   {
     "id": "utilidades",
-    "nome": "Utilidades & Casa",
+    "nome": "Casa & Utilidades",
     "icone": "🛠️",
     "ordem": 8,
     "ativo": true
