@@ -58,6 +58,8 @@ content:
     type: file
     path: categorias.json
     list: true
+    view:
+      primary: nome
     fields:
       - name: id
         label: "Identificador (slug)"
@@ -104,34 +106,17 @@ content:
         description: "Digite apenas o valor (ex: 50 para R$ 50,00 ou 15,50 para R$ 15,50). Não precisa digitar R$ nem os zeros finais, o site formata automaticamente!"
       - name: categoria
         label: Categoria
-        type: select
+        type: reference
         options:
-          placeholder: "Selecione uma categoria..."
-          values:
-            - name: colecionaveis
-              label: "🐉 Colecionáveis"
-            - name: decoracao
-              label: "🌿 Decoração"
-            - name: setup
-              label: "🎧 Setup & Suportes"
-            - name: personalizados
-              label: "🎁 Presentes"
-            - name: geek
-              label: "🎮 Geek & Games"
-            - name: iluminacao
-              label: "💡 Iluminação & Litofanias"
-            - name: utilidades
-              label: "🛠️ Utilidades & Casa"
-            - name: cosplay
-              label: "🎭 Cosplay & Acessórios"
-            - name: miniaturas
-              label: "🎲 Miniaturas & RPG"
-            - name: nova
-              label: "✨ Criar Nova Categoria (digitar abaixo)"
+          collection: categorias
+          value: "{id}"
+          label: "{icone} {nome}"
+          search: "id,nome"
+        description: "Selecione uma categoria cadastrada na aba '🏷️ Categorias de Produtos'. Ao cadastrar ou remover categorias lá, elas aparecem automaticamente nesta lista!"
       - name: nova_categoria
-        label: Outra Categoria (se criada na aba Categorias)
+        label: "Ou criar Nova Categoria na hora (Opcional)"
         type: string
-        description: "Se você criou uma nova categoria na aba '🏷️ Categorias de Produtos', selecione 'Outra Categoria' acima e digite o identificador ou nome aqui (ex: canecas)."
+        description: "Caso queira criar uma categoria rápida sem ir na aba Categorias primeiro, digite o nome aqui (ex: Canecas). Ela aparecerá automaticamente na vitrine do site!"
       - name: categoria_icone
         label: Emoji da Categoria (Opcional)
         type: string

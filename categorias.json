@@ -31,42 +31,42 @@
     "id": "fidgets",
     "nome": "Fidgets",
     "icone": "🌀",
-    "ordem": 4,
+    "ordem": 5,
     "ativo": true
   },
   {
     "id": "personalizados",
     "nome": "Presentes",
     "icone": "🎁",
-    "ordem": 5,
+    "ordem": 6,
     "ativo": true
   },
   {
     "id": "iluminacao",
     "nome": "Iluminação & Litofanias",
     "icone": "💡",
-    "ordem": 6,
+    "ordem": 7,
     "ativo": true
   },
   {
     "id": "utilidades",
     "nome": "Utilidades & Casa",
     "icone": "🛠️",
-    "ordem": 7,
+    "ordem": 8,
     "ativo": true
   },
   {
     "id": "cosplay",
     "nome": "Cosplay & Acessórios",
     "icone": "🎭",
-    "ordem": 8,
+    "ordem": 9,
     "ativo": true
   },
   {
     "id": "miniaturas",
     "nome": "Miniaturas & RPG",
     "icone": "🎲",
-    "ordem": 9,
+    "ordem": 10,
     "ativo": true
   }
 ]

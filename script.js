@@ -297,7 +297,12 @@ window.openDirectWhatsappQuote = function(catName) {
  */
 function normalizeProduct(raw, index) {
   const customCat = (raw.nova_categoria || raw.categoria_personalizada || "").toString().trim();
-  const rawCat = (raw.categoria || raw.category || "").toString().trim();
+  let rawCat = "";
+  if (typeof raw.categoria === "object" && raw.categoria !== null) {
+    rawCat = (raw.categoria.id || raw.categoria.nome || raw.categoria.name || "").toString().trim();
+  } else {
+    rawCat = (raw.categoria || raw.category || "").toString().trim();
+  }
 
   let categorySlug = "outros";
   let categoryLabel = "";
