@@ -1,4 +1,64 @@
 
+// Função inteligente para detectar a cor em Hex a partir do nome ou seleção
+function inferColorHex(name = "", hexVal = "") {
+  if (hexVal && hexVal !== "auto") {
+    let clean = hexVal.trim();
+    if (clean.startsWith("#") || clean.startsWith("rgb")) return clean;
+    if (clean.length === 6 && /^[0-9a-fA-F]{6}$/.test(clean)) return "#" + clean;
+    if (clean.length === 3 && /^[0-9a-fA-F]{3}$/.test(clean)) return "#" + clean;
+  }
+  const n = (name || "").toLowerCase();
+  const mapping = [
+    ["ciano", "#00d2ff"],
+    ["cyan", "#00d2ff"],
+    ["turquesa", "#06b6d4"],
+    ["branco", "#ffffff"],
+    ["polar", "#ffffff"],
+    ["white", "#ffffff"],
+    ["preto", "#111827"],
+    ["black", "#111827"],
+    ["onix", "#111827"],
+    ["ônix", "#111827"],
+    ["grafite", "#374151"],
+    ["roxo", "#a855f7"],
+    ["púrpura", "#a855f7"],
+    ["purpura", "#a855f7"],
+    ["purple", "#a855f7"],
+    ["violeta", "#8b5cf6"],
+    ["amarelo", "#fbbf24"],
+    ["yellow", "#fbbf24"],
+    ["vermelho", "#ef4444"],
+    ["red", "#ef4444"],
+    ["verde", "#22c55e"],
+    ["green", "#22c55e"],
+    ["laranja", "#ff6a00"],
+    ["orange", "#ff6a00"],
+    ["dourado", "#eab308"],
+    ["ouro", "#eab308"],
+    ["gold", "#eab308"],
+    ["prata", "#94a3b8"],
+    ["cinza", "#94a3b8"],
+    ["silver", "#94a3b8"],
+    ["gray", "#94a3b8"],
+    ["grey", "#94a3b8"],
+    ["rosa", "#ec4899"],
+    ["pink", "#ec4899"],
+    ["azul", "#2563eb"],
+    ["blue", "#2563eb"],
+    ["cobre", "#b45309"],
+    ["bronze", "#b45309"],
+    ["marrom", "#854d0e"],
+    ["brown", "#854d0e"]
+  ];
+  for (let i = 0; i < mapping.length; i++) {
+    if (n.includes(mapping[i][0])) {
+      return mapping[i][1];
+    }
+  }
+  return "#00d2ff";
+}
+
+
 // ============================================================================
 // SISTEMA DE SELEÇÃO E TROCA DINÂMICA DE CORES & FOTOS
 // ============================================================================
@@ -523,10 +583,10 @@ function normalizeProduct(raw, index) {
     cores: (function() {
       if (Array.isArray(raw.cores) && raw.cores.length > 0) {
         return raw.cores.map(c => {
-          if (typeof c === "string") return { nome: c.trim(), hex: "#00d2ff", imagem: image };
+          if (typeof c === "string") return { nome: c.trim(), hex: inferColorHex(c.trim()), imagem: image };
           const nome = (c.nome || c.name || "Cor").trim();
-          let hex = (c.hex || c.cor || "#00d2ff").trim();
-          if (!hex.startsWith("#") && !hex.startsWith("rgb")) hex = "#" + hex;
+          const rawHex = (c.hex_personalizado || c.hex || c.cor || "").toString().trim();
+          const hex = inferColorHex(nome, rawHex);
           const img = c.imagem || c.image || image;
           return { nome, hex, imagem: img };
         });

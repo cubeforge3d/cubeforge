@@ -155,13 +155,51 @@ content:
             label: "Nome da Cor"
             type: string
             required: true
-            description: "Nome exibido para o cliente (ex: Azul Ciano e Amarelo, Branco e Roxo, Preto Fosco, Vermelho Metálico)."
+            description: "Nome exibido para o cliente (ex: Azul Ciano, Branco, Preto Fosco, Vermelho Metálico, etc.)."
           - name: hex
-            label: "Cor Hex / Código da Bolinha"
-            type: string
+            label: "Selecione a Cor da Bolinha (Sem digitar código!)"
+            type: select
             default: "#00d2ff"
-            description: "Código da cor em Hexadecimal para preencher a bolinha de seleção (ex: #00d2ff para Azul Ciano, #ffffff para Branco, #111827 para Preto, #a855f7 para Roxo)."
+            description: "Basta clicar e escolher a cor nesta lista com emojis. Você não precisa saber nem digitar nenhum código!"
+            options:
+              values:
+                - name: "#00d2ff"
+                  label: "🔵 Azul Ciano"
+                - name: "#ffffff"
+                  label: "⚪ Branco Polar"
+                - name: "#111827"
+                  label: "⚫ Preto / Ônix"
+                - name: "#a855f7"
+                  label: "🟣 Roxo / Púrpura"
+                - name: "#fbbf24"
+                  label: "🟡 Amarelo Sol"
+                - name: "#ef4444"
+                  label: "🔴 Vermelho Rubi"
+                - name: "#22c55e"
+                  label: "🟢 Verde Neon / Lima"
+                - name: "#ff6a00"
+                  label: "🟠 Laranja Cítrico"
+                - name: "#eab308"
+                  label: "🪙 Dourado / Ouro Metálico"
+                - name: "#94a3b8"
+                  label: "🥈 Prata / Cinza Metálico"
+                - name: "#ec4899"
+                  label: "🌸 Rosa Pastel / Pink"
+                - name: "#2563eb"
+                  label: "🔷 Azul Royal / Escuro"
+                - name: "#06b6d4"
+                  label: "🩵 Turquesa / Aqua"
+                - name: "#b45309"
+                  label: "🤎 Bronze / Cobre"
+                - name: "#374151"
+                  label: "🔘 Grafite Escuro"
+                - name: "auto"
+                  label: "✨ Automático (Detectar pela cor escrita no nome)"
+          - name: hex_personalizado
+            label: "Ou código Hex customizado (Opcional)"
+            type: string
+            description: "Deixe em branco para usar a cor selecionada na lista acima! Preencha apenas se quiser um tom específico que não esteja na lista."
           - name: imagem
             label: "Foto desta Cor"
             type: image
-            description: "Foto específica desta cor do produto. Ao clicar na bolinha no site, a imagem principal mudará instantaneamente para esta foto!"
+            description: "Foto do produto nesta cor. Ao clicar na bolinha no site, a imagem principal mudará instantaneamente para esta foto!"
