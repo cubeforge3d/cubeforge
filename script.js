@@ -1,3 +1,111 @@
+
+// ============================================================================
+// SISTEMA DE SELEÇÃO E TROCA DINÂMICA DE CORES & FOTOS
+// ============================================================================
+window.__cardSelectedColor = window.__cardSelectedColor || {};
+window.__modalCurrentColor = window.__modalCurrentColor || null;
+window.__modalCurrentProductId = window.__modalCurrentProductId || null;
+
+window.changeProductCardColor = function(productId, colorIdx, dotBtn, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const item = (CATALOG_ITEMS && CATALOG_ITEMS.find(p => p.id === productId)) || (ALL_PRODUCTS && ALL_PRODUCTS.find(p => p.id === productId));
+  if (!item || !Array.isArray(item.cores) || !item.cores[colorIdx]) return;
+
+  const color = item.cores[colorIdx];
+  window.__cardSelectedColor[productId] = color;
+
+  // Atualiza classes dos botões no card
+  const card = dotBtn ? dotBtn.closest(".product-card") : document.querySelector(`.product-card[data-id="${productId}"]`);
+  if (card) {
+    const dots = card.querySelectorAll(".card-color-dot");
+    dots.forEach((d, i) => {
+      d.classList.toggle("active", i === colorIdx);
+    });
+    const imgEl = card.querySelector(".product-img-box img");
+    if (imgEl && color.imagem) {
+      imgEl.classList.add("img-swapping");
+      setTimeout(() => {
+        imgEl.src = color.imagem;
+        imgEl.onload = () => imgEl.classList.remove("img-swapping");
+        setTimeout(() => imgEl.classList.remove("img-swapping"), 250);
+      }, 100);
+    }
+  }
+};
+
+window.selectModalColor = function(productId, colorIdx) {
+  const item = (CATALOG_ITEMS && CATALOG_ITEMS.find(p => p.id === productId)) || (ALL_PRODUCTS && ALL_PRODUCTS.find(p => p.id === productId));
+  if (!item || !Array.isArray(item.cores) || !item.cores[colorIdx]) return;
+
+  const color = item.cores[colorIdx];
+  window.__modalCurrentColor = color;
+  window.__modalCurrentProductId = productId;
+  window.__cardSelectedColor[productId] = color;
+
+  // Atualiza texto do label da cor
+  const nameLabel = document.getElementById("modal-active-color-name");
+  if (nameLabel) nameLabel.textContent = color.nome;
+
+  const modal = document.getElementById("product-modal");
+  if (modal) {
+    // Atualiza botões de cor
+    const swatches = modal.querySelectorAll(".modal-color-dot-btn");
+    swatches.forEach((btn, idx) => {
+      const isActive = idx === colorIdx;
+      btn.classList.toggle("active", isActive);
+      btn.setAttribute("aria-checked", isActive ? "true" : "false");
+    });
+
+    // Troca dinâmica e fluida da foto no modal
+    const imgEl = document.getElementById("modal-product-img");
+    if (imgEl && color.imagem) {
+      imgEl.classList.add("img-swapping");
+      setTimeout(() => {
+        imgEl.src = color.imagem;
+        imgEl.onload = () => imgEl.classList.remove("img-swapping");
+        setTimeout(() => imgEl.classList.remove("img-swapping"), 250);
+      }, 100);
+    }
+
+    // Atualiza botão de pedido direto no WhatsApp com a cor selecionada
+    const zapBtn = modal.querySelector(".modal-direct-btn");
+    if (zapBtn) {
+      const isOrderOnly = Boolean(item.somente_encomenda);
+      const quoteMsg = isOrderOnly
+        ? `Olá! Vi o produto sob encomenda "${item.title} (Cor: ${color.nome})" (${item.price}) no site da Cube Forge e gostaria de encomendar! Poderia me passar prazos e detalhes?`
+        : `Olá! Gostaria de pedir "${item.title} (Cor: ${color.nome})" (${item.price}) que vi no site da Cube Forge!`;
+      zapBtn.href = createWhatsappUrl(SITE_CONFIG.whatsappNumber, quoteMsg);
+    }
+  }
+};
+
+window.updateCartQuantityByIndex = function(index, delta) {
+  if (!Array.isArray(cart) || !cart[index]) return;
+  if (cart[index].quantity + delta <= 0) {
+    const itemTitle = cart[index].title;
+    cart.splice(index, 1);
+    saveCart();
+    showCartToast(itemTitle, "remove", "Item removido do carrinho");
+    return;
+  }
+  cart[index].quantity += delta;
+  saveCart();
+};
+
+window.removeFromCartByIndex = function(index) {
+  if (!Array.isArray(cart) || !cart[index]) return;
+  const itemTitle = cart[index].title;
+  cart.splice(index, 1);
+  saveCart();
+  showCartToast(itemTitle, "remove", "Item removido do carrinho");
+};
+
+window.__cardSelectedColor = {};
+window.__modalCurrentColor = null;
+window.__modalCurrentProductId = null;
 /**
  * ============================================================================
  * CONFIGURAÇÃO DA SUA LOJA DE IMPRESSÃO 3D
@@ -120,7 +228,19 @@ const FALLBACK_CATALOG_ITEMS = [
     disponivel: true,
     destaque: true,
     estoque: 2,
-    somente_encomenda: false
+    somente_encomenda: false,
+    cores: [
+      {
+        nome: "Azul Ciano e Amarelo",
+        hex: "#00d2ff",
+        imagem: "./assets/img/produtos/item16_azul.jpg"
+      },
+      {
+        nome: "Branco e Roxo",
+        hex: "#ffffff",
+        imagem: "./assets/img/produtos/item16_branco.jpg"
+      }
+    ]
   },
   {
     id: 6,
@@ -399,7 +519,20 @@ function normalizeProduct(raw, index) {
     somente_encomenda: isOrderOnly,
     sob_encomenda: isOrderOnly,
     estoque: stock,
-    prontaEntrega: !isOrderOnly && stock > 0
+    prontaEntrega: !isOrderOnly && stock > 0,
+    cores: (function() {
+      if (Array.isArray(raw.cores) && raw.cores.length > 0) {
+        return raw.cores.map(c => {
+          if (typeof c === "string") return { nome: c.trim(), hex: "#00d2ff", imagem: image };
+          const nome = (c.nome || c.name || "Cor").trim();
+          let hex = (c.hex || c.cor || "#00d2ff").trim();
+          if (!hex.startsWith("#") && !hex.startsWith("rgb")) hex = "#" + hex;
+          const img = c.imagem || c.image || image;
+          return { nome, hex, imagem: img };
+        });
+      }
+      return [];
+    })()
   };
 }
 
@@ -1442,6 +1575,27 @@ function renderCatalog(filterCategory = "all") {
       `;
     }
 
+    let colorsBarHtml = "";
+    if (Array.isArray(item.cores) && item.cores.length > 0) {
+      const activeColor = window.__cardSelectedColor[item.id] || item.cores[0];
+      colorsBarHtml = `
+        <div class="card-colors-row" onclick="event.stopPropagation();">
+          <span class="card-colors-label"><i class="fa-solid fa-palette"></i> ${item.cores.length} cores:</span>
+          <div class="card-colors-dots" role="radiogroup" aria-label="Cores do produto ${item.title}">
+            ${item.cores.map((c, cIdx) => `
+              <button type="button" 
+                class="card-color-dot ${c.nome === activeColor.nome ? 'active' : ''}" 
+                style="background-color: ${c.hex};" 
+                title="${c.nome}" 
+                aria-label="${c.nome}"
+                onclick="changeProductCardColor(${item.id}, ${cIdx}, this, event)">
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     card.innerHTML = `
       <div class="product-img-box" onclick="openProductModal(${item.id})" style="cursor: pointer;" title="Clique para ver detalhes de ${item.title}">
         <div class="card-media-badges">
@@ -1456,6 +1610,7 @@ function renderCatalog(filterCategory = "all") {
           <span class="product-price-badge">${item.price}</span>
         </div>
         <p class="product-desc">${item.desc}</p>
+        ${colorsBarHtml}
         ${stockBar}
         ${actionsHtml}
       </div>
@@ -1879,22 +2034,42 @@ window.closeProductModal = function() {
 /**
  * Abre o modal preenchendo as informações da peça e ações (Carrinho ou Direto)
  */
-window.openProductModal = function(productId) {
-  const item = CATALOG_ITEMS.find(p => p.id === productId) || ALL_PRODUCTS.find(p => p.id === productId);
+window.openProductModal = function(productId, defaultColorIndex = null) {
+  const item = (CATALOG_ITEMS && CATALOG_ITEMS.find(p => p.id === productId)) || (ALL_PRODUCTS && ALL_PRODUCTS.find(p => p.id === productId));
   if (!item) return;
 
   const modal = document.getElementById("product-modal");
   const modalBody = document.getElementById("modal-body-content");
 
-  // Mensagem customizada para a peça com nome e preço
+  // Determina a cor inicial ativa (se o produto possuir variações)
+  let initialColor = null;
+  let hasColors = Array.isArray(item.cores) && item.cores.length > 0;
+  if (hasColors) {
+    if (defaultColorIndex !== null && item.cores[defaultColorIndex]) {
+      initialColor = item.cores[defaultColorIndex];
+    } else if (window.__cardSelectedColor && window.__cardSelectedColor[item.id]) {
+      initialColor = window.__cardSelectedColor[item.id];
+    } else {
+      initialColor = item.cores[0];
+    }
+    window.__modalCurrentColor = initialColor;
+    window.__modalCurrentProductId = item.id;
+  } else {
+    window.__modalCurrentColor = null;
+    window.__modalCurrentProductId = item.id;
+  }
+
+  // Mensagem customizada para a peça com nome, cor e preço
+  const colorText = initialColor ? ` (Cor: ${initialColor.nome})` : "";
   const quoteMsg = SITE_CONFIG.catalogWhatsappMsg
-    .replace("{item}", item.title)
+    .replace("{item}", item.title + colorText)
     .replace("{price}", item.price);
   const whatsappUrl = createWhatsappUrl(SITE_CONFIG.whatsappNumber, quoteMsg);
 
-  // Imagem real ou ícone estilizado
-  const modalImageContent = item.image 
-    ? `<img src="${item.image}" alt="${item.title}">` 
+  // Imagem exibida (foto da cor escolhida se houver, ou imagem padrão da peça)
+  const displayImage = (initialColor && initialColor.imagem) ? initialColor.imagem : item.image;
+  const modalImageContent = displayImage 
+    ? `<img id="modal-product-img" src="${displayImage}" alt="${item.title}">` 
     : `<div class="product-art-preview">
         <i class="${item.icon}" style="font-size: 3.5rem;"></i>
         <span>${item.categoryName}</span>
@@ -1942,26 +2117,58 @@ window.openProductModal = function(productId) {
     `;
   }
 
+  // Bloco interativo de Cores
+  let colorSelectorHtml = "";
+  if (hasColors) {
+    colorSelectorHtml = `
+      <div class="modal-color-picker-box">
+        <div class="modal-color-picker-header">
+          <span class="color-picker-title"><i class="fa-solid fa-palette"></i> Escolha a Cor:</span>
+          <span class="color-picker-name" id="modal-active-color-name">${initialColor.nome}</span>
+        </div>
+        <div class="modal-color-swatches" role="radiogroup" aria-label="Selecione a cor do produto">
+          ${item.cores.map((c, idx) => {
+            const isActive = c.nome === initialColor.nome;
+            return `
+              <button type="button" 
+                class="modal-color-dot-btn ${isActive ? 'active' : ''}" 
+                data-color-index="${idx}" 
+                onclick="selectModalColor(${item.id}, ${idx})"
+                title="${c.nome}"
+                aria-label="${c.nome}"
+                aria-checked="${isActive ? 'true' : 'false'}">
+                <span class="color-dot-circle" style="background-color: ${c.hex};">
+                  <i class="fa-solid fa-check dot-check-icon"></i>
+                </span>
+                <span class="color-dot-text">${c.nome}</span>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   let modalActionsHtml = "";
   if (isOrderOnly) {
-    const orderMsg = `Olá! Vi o produto sob encomenda "${item.title}" (${item.price}) no site da Cube Forge e gostaria de encomendar! Poderia me passar prazos e opções de personalização?`;
+    const orderMsg = `Olá! Vi o produto sob encomenda "${item.title}${colorText}" (${item.price}) no site da Cube Forge e gostaria de encomendar! Poderia me passar prazos e opções de personalização?`;
     const orderZapUrl = createWhatsappUrl(SITE_CONFIG.whatsappNumber, orderMsg);
     modalActionsHtml = `
       <a href="${orderZapUrl}" class="modal-direct-btn modal-encomenda-main-btn" target="_blank" rel="noopener noreferrer">
         <i class="fa-brands fa-whatsapp"></i> Encomendar esta Peça no WhatsApp
       </a>
-      <button class="modal-cart-btn" onclick="addToCart(${item.id}, 1, this); closeProductModal();">
+      <button class="modal-cart-btn" onclick="addToCart(${item.id}, 1, this, window.__modalCurrentColor); closeProductModal();">
         <i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho
       </button>
     `;
   } else {
     const modalBuyOnlineBtn = isOnlineCheckoutEnabled() ? `
-      <button type="button" class="modal-buy-online-btn" onclick="buySingleProductOnline(${item.id}, event)">
+      <button type="button" class="modal-buy-online-btn" onclick="buySingleProductOnline(${item.id}, event, window.__modalCurrentColor)">
         <i class="fa-solid fa-credit-card"></i> Comprar Online • Até 12x no Cartão
       </button>` : '';
     modalActionsHtml = `
       ${modalBuyOnlineBtn}
-      <button class="modal-cart-btn" onclick="addToCart(${item.id}, 1, this); closeProductModal();">
+      <button class="modal-cart-btn" onclick="addToCart(${item.id}, 1, this, window.__modalCurrentColor); closeProductModal();">
         <i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho
       </button>
       <a href="${whatsappUrl}" class="modal-direct-btn" target="_blank" rel="noopener noreferrer">
@@ -1981,11 +2188,13 @@ window.openProductModal = function(productId) {
       </div>
       <p class="modal-desc">${item.desc}</p>
       
+      ${colorSelectorHtml}
+
       ${stockAlert}
 
       <div class="modal-note-box">
         <i class="fa-solid fa-palette"></i>
-        <span>Peça personalizada sob demanda na cor que você preferir!</span>
+        <span>Peça fabricada com máxima precisão e acabamento impecável!</span>
       </div>
 
       <div class="modal-actions-container">
@@ -2454,8 +2663,8 @@ function saveCart() {
   updateCartUI();
 }
 
-window.addToCart = function(productId, quantity = 1, triggerBtn = null) {
-  const product = CATALOG_ITEMS.find(p => p.id === productId) || ALL_PRODUCTS.find(p => p.id === productId);
+window.addToCart = function(productId, quantity = 1, triggerBtn = null, chosenColor = null) {
+  const product = (CATALOG_ITEMS && CATALOG_ITEMS.find(p => p.id === productId)) || (ALL_PRODUCTS && ALL_PRODUCTS.find(p => p.id === productId));
   if (!product) return;
 
   // Animação imediata no botão clicado (+ Carrinho)
@@ -2466,7 +2675,19 @@ window.addToCart = function(productId, quantity = 1, triggerBtn = null) {
     setTimeout(() => triggerBtn.classList.remove("btn-added-pulse"), 450);
   }
 
-  const existing = cart.find(item => item.id === productId);
+  // Determina cor selecionada
+  let selectedColor = chosenColor;
+  if (!selectedColor && window.__modalCurrentColor && window.__modalCurrentProductId === productId) {
+    selectedColor = window.__modalCurrentColor;
+  } else if (!selectedColor && window.__cardSelectedColor && window.__cardSelectedColor[productId]) {
+    selectedColor = window.__cardSelectedColor[productId];
+  } else if (!selectedColor && Array.isArray(product.cores) && product.cores.length > 0) {
+    selectedColor = product.cores[0];
+  }
+
+  const colorName = selectedColor ? selectedColor.nome : null;
+  const existing = cart.find(item => item.id === productId && ((item.selectedColor ? item.selectedColor.nome : null) === colorName));
+
   if (existing) {
     existing.quantity += quantity;
     existing.estoque = product.estoque || 0;
@@ -2474,20 +2695,27 @@ window.addToCart = function(productId, quantity = 1, triggerBtn = null) {
   } else {
     cart.push({
       id: product.id,
+      cartItemId: `${product.id}_${colorName ? encodeURIComponent(colorName) : 'default'}`,
       title: product.title,
       price: product.price,
       numericPrice: parseItemPrice(product.price),
-      image: product.image,
+      image: (selectedColor && selectedColor.imagem) ? selectedColor.imagem : product.image,
       icon: product.icon,
       categoryName: product.categoryName,
       estoque: product.estoque || 0,
       somente_encomenda: Boolean(product.somente_encomenda),
-      quantity: quantity
+      quantity: quantity,
+      selectedColor: selectedColor ? {
+        nome: selectedColor.nome,
+        hex: selectedColor.hex,
+        imagem: selectedColor.imagem
+      } : null
     });
   }
 
   saveCart();
-  showCartToast(product.title, "add", "Adicionado ao carrinho!");
+  const toastSuffix = selectedColor ? ` (${selectedColor.nome})` : "";
+  showCartToast(product.title + toastSuffix, "add", "Adicionado ao carrinho!");
   animateCartBadges();
 };
 
@@ -2617,7 +2845,7 @@ function updateCartUI() {
       btnHeaderClean.style.display = (currentCartStep === 1) ? "inline-block" : "none";
     }
 
-    container.innerHTML = cart.map(item => {
+    container.innerHTML = cart.map((item, cIndex) => {
       const imgContent = item.image 
         ? `<img src="${item.image}" alt="${item.title}">` 
         : `<i class="${item.icon}"></i>`;
@@ -2630,6 +2858,13 @@ function updateCartUI() {
         stockTagHtml = `<span class="cart-item-stock-tag">⚡ Pronta Entrega (${item.estoque} disp.)</span>`;
       }
 
+      const colorPillHtml = item.selectedColor ? `
+        <div class="cart-item-color-pill">
+          <span class="color-dot-mini" style="background-color: ${item.selectedColor.hex};"></span>
+          <span>Cor: <strong>${item.selectedColor.nome}</strong></span>
+        </div>
+      ` : '';
+
       return `
         <div class="cart-item-card">
           <div class="cart-item-img">
@@ -2637,22 +2872,23 @@ function updateCartUI() {
           </div>
           <div class="cart-item-details">
             <h4 class="cart-item-title">${item.title}</h4>
+            ${colorPillHtml}
             <div class="cart-item-unit-price">${item.price} cada</div>
             ${stockTagHtml}
             <div class="cart-item-actions-row">
               <div class="qty-control-box">
-                <button class="qty-btn" onclick="updateCartQuantity(${item.id}, -1)" aria-label="Diminuir quantidade">
+                <button class="qty-btn" onclick="updateCartQuantityByIndex(${cIndex}, -1)" aria-label="Diminuir quantidade">
                   <i class="fa-solid fa-minus"></i>
                 </button>
                 <span class="qty-number">${item.quantity}</span>
-                <button class="qty-btn" onclick="updateCartQuantity(${item.id}, 1)" aria-label="Aumentar quantidade">
+                <button class="qty-btn" onclick="updateCartQuantityByIndex(${cIndex}, 1)" aria-label="Aumentar quantidade">
                   <i class="fa-solid fa-plus"></i>
                 </button>
               </div>
               <span class="cart-item-subtotal">${itemSubtotal}</span>
             </div>
           </div>
-          <button class="cart-item-remove-btn" onclick="removeFromCart(${item.id})" title="Remover item">
+          <button class="cart-item-remove-btn" onclick="removeFromCartByIndex(${cIndex})" title="Remover item">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         </div>
@@ -3615,7 +3851,7 @@ let isCalculatingDirectShipping = false;
 /**
  * Abre a tela exclusiva de Compra Direta para o produto clicado
  */
-function openDirectBuyModal(productId, e) {
+function openDirectBuyModal(productId, e, chosenColor = null) {
   if (e) {
     e.preventDefault();
     e.stopPropagation();
@@ -3634,7 +3870,7 @@ function openDirectBuyModal(productId, e) {
     return;
   }
 
-  const product = CATALOG_ITEMS.find(p => p.id === productId) || ALL_PRODUCTS.find(p => p.id === productId);
+  const product = (CATALOG_ITEMS && CATALOG_ITEMS.find(p => p.id === productId)) || (ALL_PRODUCTS && ALL_PRODUCTS.find(p => p.id === productId));
   if (!product) return;
 
   // Se o item for sob encomenda, redireciona para o WhatsApp de encomendas
@@ -3647,7 +3883,20 @@ function openDirectBuyModal(productId, e) {
   if (typeof closeProductModal === "function") closeProductModal();
   if (typeof closeCart === "function") closeCart();
 
-  currentDirectProduct = product;
+  let selectedColor = chosenColor;
+  if (!selectedColor && window.__modalCurrentColor && window.__modalCurrentProductId === productId) {
+    selectedColor = window.__modalCurrentColor;
+  } else if (!selectedColor && window.__cardSelectedColor && window.__cardSelectedColor[productId]) {
+    selectedColor = window.__cardSelectedColor[productId];
+  } else if (!selectedColor && Array.isArray(product.cores) && product.cores.length > 0) {
+    selectedColor = product.cores[0];
+  }
+
+  currentDirectProduct = {
+    ...product,
+    selectedColor: selectedColor,
+    image: (selectedColor && selectedColor.imagem) ? selectedColor.imagem : product.image
+  };
   directBuyQuantity = 1;
   directSelectedShipping = null;
   directCalculatedQuotes = [];
@@ -3752,6 +4001,13 @@ function renderDirectProductCard() {
     ? `<img src="${item.image}" alt="${item.title}" class="direct-product-img">`
     : `<div class="direct-product-icon-fallback"><i class="${item.icon || 'fa-solid fa-cube'}"></i></div>`;
 
+  const directColorHtml = item.selectedColor ? `
+    <div class="cart-item-color-pill" style="margin-top: 2px; margin-bottom: 3px;">
+      <span class="color-dot-mini" style="background-color: ${item.selectedColor.hex};"></span>
+      <span>Cor: <strong>${item.selectedColor.nome}</strong></span>
+    </div>
+  ` : '';
+
   container.innerHTML = `
     <div class="direct-product-img-box">
       ${imageHtml}
@@ -3759,6 +4015,7 @@ function renderDirectProductCard() {
     <div class="direct-product-details">
       <span class="direct-product-tag">${item.categoryName || 'Colecionável'}</span>
       <h4 class="direct-product-title" title="${item.title}">${item.title}</h4>
+      ${directColorHtml}
       <span class="direct-product-unit-price">${formatBRL(unitPrice)} un.</span>
     </div>
     <div class="direct-product-right">
@@ -4468,7 +4725,7 @@ async function checkoutCartOnlineInfinitePay(e) {
       return {
         quantity: Math.max(1, parseInt(item.quantity, 10) || 1),
         price: unitCents > 0 ? unitCents : 1000,
-        description: item.title
+        description: `${item.title}${item.selectedColor ? ` [${item.selectedColor.nome}]` : ""}`.slice(0, 120)
       };
     });
 
@@ -4585,7 +4842,8 @@ function checkoutCartWhatsApp() {
 
   cart.forEach(item => {
     const subtotal = formatBRL(item.numericPrice * item.quantity);
-    message += `• ${item.quantity}x ${item.title} - ${subtotal}\n`;
+    const colorPart = item.selectedColor ? ` (Cor: ${item.selectedColor.nome})` : "";
+    message += `• ${item.quantity}x ${item.title}${colorPart} - ${subtotal}\n`;
   });
 
   message += `\n📦 *Subtotal dos Itens:* ${formatBRL(itemsPrice)}\n`;

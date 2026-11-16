@@ -146,3 +146,22 @@ content:
         type: number
         default: 0
         description: "Quantidade de peças já impressas prontas para envio imediato. Se for 1 ou mais, o site ativa o selo de urgência '⚡ Pronta Entrega'. Deixe 0 se a peça for apenas sob encomenda."
+      - name: cores
+        label: "🎨 Variações de Cores & Fotos (Opcional)"
+        type: object
+        list: true
+        fields:
+          - name: nome
+            label: "Nome da Cor"
+            type: string
+            required: true
+            description: "Nome exibido para o cliente (ex: Azul Ciano e Amarelo, Branco e Roxo, Preto Fosco, Vermelho Metálico)."
+          - name: hex
+            label: "Cor Hex / Código da Bolinha"
+            type: string
+            default: "#00d2ff"
+            description: "Código da cor em Hexadecimal para preencher a bolinha de seleção (ex: #00d2ff para Azul Ciano, #ffffff para Branco, #111827 para Preto, #a855f7 para Roxo)."
+          - name: imagem
+            label: "Foto desta Cor"
+            type: image
+            description: "Foto específica desta cor do produto. Ao clicar na bolinha no site, a imagem principal mudará instantaneamente para esta foto!"

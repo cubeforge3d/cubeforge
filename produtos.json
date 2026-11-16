@@ -58,7 +58,19 @@
     "disponivel": true,
     "destaque": true,
     "somente_encomenda": false,
-    "estoque": 2
+    "estoque": 2,
+    "cores": [
+      {
+        "nome": "Azul Ciano e Amarelo",
+        "hex": "#00d2ff",
+        "imagem": "./assets/img/produtos/item16_azul.jpg"
+      },
+      {
+        "nome": "Branco e Roxo",
+        "hex": "#ffffff",
+        "imagem": "./assets/img/produtos/item16_branco.jpg"
+      }
+    ]
   },
   {
     "id": 6,
