@@ -60,11 +60,199 @@ function inferColorHex(name = "", hexVal = "") {
 
 
 // ============================================================================
-// SISTEMA DE SELEÇÃO E TROCA DINÂMICA DE CORES & FOTOS
+// SISTEMA DE SELEÇÃO DE CORES + GALERIA MULTIMÍDIA (FOTOS, GIFS & VÍDEOS)
 // ============================================================================
 window.__cardSelectedColor = window.__cardSelectedColor || {};
-window.__modalCurrentColor = window.__modalCurrentColor || null;
-window.__modalCurrentProductId = window.__modalCurrentProductId || null;
+window.__cardMediaIndex = window.__cardMediaIndex || {};
+window.__modalCurrentColor = null;
+window.__modalCurrentProductId = null;
+window.__modalMediaList = [];
+window.__modalMediaIndex = 0;
+
+function normalizeMediaPath(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== "string") return "";
+  const url = rawUrl.trim();
+  if (!url) return "";
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:") ||
+    url.startsWith("./")
+  ) {
+    return url;
+  }
+  if (url.startsWith("/")) {
+    return "." + url;
+  }
+  return "./" + url;
+}
+
+function getMediaType(url) {
+  if (!url || typeof url !== "string") return "image";
+  const clean = url.split("?")[0].split("#")[0].toLowerCase().trim();
+  if (/\.(mp4|webm|mov|m4v|ogv|ogg)$/i.test(clean)) return "video";
+  if (/\.gif$/i.test(clean)) return "gif";
+  return "image";
+}
+
+function isVideoMedia(url) {
+  return getMediaType(url) === "video";
+}
+
+function renderCardMediaElement(url, altText, className = "") {
+  const safeUrl = normalizeMediaPath(url);
+  if (!safeUrl) return "";
+  const clsAttr = className ? ` class="${className}"` : "";
+  if (isVideoMedia(safeUrl)) {
+    return `<video${clsAttr} src="${safeUrl}" autoplay loop muted playsinline preload="metadata" aria-label="${altText}"></video>`;
+  }
+  return `<img${clsAttr} src="${safeUrl}" alt="${altText}" loading="lazy">`;
+}
+
+function renderModalMediaElement(url, altText) {
+  const safeUrl = normalizeMediaPath(url);
+  if (!safeUrl) return "";
+  if (isVideoMedia(safeUrl)) {
+    return `<video id="modal-product-video" src="${safeUrl}" controls autoplay loop muted playsinline preload="metadata" aria-label="${altText}"></video>`;
+  }
+  return `<img id="modal-product-img" src="${safeUrl}" alt="${altText}">`;
+}
+
+function buildProductMediaList(item, activeColor = null) {
+  const list = [];
+  const pushUnique = (u) => {
+    const clean = normalizeMediaPath(u);
+    if (clean && !list.includes(clean)) {
+      list.push(clean);
+    }
+  };
+  if (activeColor && activeColor.imagem) {
+    pushUnique(activeColor.imagem);
+  } else if (item && item.image) {
+    pushUnique(item.image);
+  }
+  if (item && Array.isArray(item.midias)) {
+    item.midias.forEach(pushUnique);
+  }
+  if (list.length === 0 && item && item.image) {
+    pushUnique(item.image);
+  }
+  return list;
+}
+
+function formatMediaPillData(list, activeIdx = 0) {
+  const safeList = Array.isArray(list) ? list : [];
+  const currentUrl = safeList[activeIdx] || safeList[0] || "";
+  const currentType = getMediaType(currentUrl);
+  const total = safeList.length;
+  const hasAnyVideo = safeList.some(u => getMediaType(u) === "video");
+  const hasAnyGif = safeList.some(u => getMediaType(u) === "gif");
+
+  let pillClass = "card-media-type-pill";
+  if (currentType === "video" || hasAnyVideo) pillClass += " has-video";
+  else if (currentType === "gif" || hasAnyGif) pillClass += " has-gif";
+
+  let icon = '<i class="fa-solid fa-images"></i>';
+  let label = "";
+  if (total > 1) {
+    if (currentType === "video") {
+      icon = '<i class="fa-solid fa-play"></i>';
+      label = `${activeIdx + 1}/${total} • Vídeo`;
+    } else if (currentType === "gif") {
+      icon = '<i class="fa-solid fa-film"></i>';
+      label = `${activeIdx + 1}/${total} • GIF`;
+    } else if (hasAnyVideo) {
+      icon = '<i class="fa-solid fa-play"></i>';
+      label = `${activeIdx + 1}/${total} • Vídeo`;
+    } else if (hasAnyGif) {
+      icon = '<i class="fa-solid fa-film"></i>';
+      label = `${activeIdx + 1}/${total} • GIF`;
+    } else {
+      label = `${activeIdx + 1}/${total}`;
+    }
+  } else {
+    if (currentType === "video") {
+      icon = '<i class="fa-solid fa-play"></i>';
+      label = "Vídeo";
+    } else if (currentType === "gif") {
+      icon = '<i class="fa-solid fa-film"></i>';
+      label = "GIF";
+    }
+  }
+
+  return { pillClass, html: label ? `${icon} <span>${label}</span>` : "" };
+}
+
+function getModalCounterHtml(list, idx) {
+  const safeList = Array.isArray(list) ? list : [];
+  if (safeList.length === 0) return "";
+  const url = safeList[idx] || safeList[0];
+  const mType = getMediaType(url);
+  if (safeList.length === 1) {
+    if (mType === "video") return `<i class="fa-solid fa-play"></i> Vídeo`;
+    if (mType === "gif") return `<i class="fa-solid fa-film"></i> GIF Animado`;
+    return "";
+  }
+  const typeLabel = mType === "video" ? "Vídeo" : (mType === "gif" ? "GIF" : "Foto");
+  const iconHtml = mType === "video"
+    ? `<i class="fa-solid fa-play"></i>`
+    : (mType === "gif" ? `<i class="fa-solid fa-film"></i>` : `<i class="fa-solid fa-images"></i>`);
+  return `${iconHtml} <span>${idx + 1} / ${safeList.length} • ${typeLabel}</span>`;
+}
+
+function pauseVideosInElement(rootEl) {
+  if (!rootEl) return;
+  rootEl.querySelectorAll("video").forEach(v => {
+    try {
+      v.pause();
+    } catch (_) {}
+  });
+}
+
+function triggerStageEnterAnim(stage) {
+  if (!stage) return;
+  stage.classList.remove("media-entering");
+  void stage.offsetWidth;
+  stage.classList.add("media-entering");
+  if (stage._animTimer) clearTimeout(stage._animTimer);
+  stage._animTimer = setTimeout(() => {
+    stage.classList.remove("media-entering");
+    stage._animTimer = null;
+  }, 260);
+}
+
+window.cycleCardMedia = function(productId, delta, btnEl, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const item = (CATALOG_ITEMS && CATALOG_ITEMS.find(p => p.id === productId)) || (ALL_PRODUCTS && ALL_PRODUCTS.find(p => p.id === productId));
+  if (!item) return;
+
+  const activeColor = window.__cardSelectedColor ? window.__cardSelectedColor[productId] : null;
+  const mediaList = buildProductMediaList(item, activeColor);
+  if (mediaList.length <= 1) return;
+
+  const currentIdx = window.__cardMediaIndex[productId] || 0;
+  const nextIdx = (currentIdx + delta + mediaList.length) % mediaList.length;
+  window.__cardMediaIndex[productId] = nextIdx;
+
+  const nextUrl = mediaList[nextIdx];
+  const stage = document.getElementById(`card-media-stage-${productId}`);
+  if (stage && nextUrl) {
+    pauseVideosInElement(stage);
+    stage.innerHTML = renderCardMediaElement(nextUrl, item.title);
+    triggerStageEnterAnim(stage);
+  }
+
+  const pillEl = document.getElementById(`card-media-pill-${productId}`);
+  if (pillEl) {
+    const pillData = formatMediaPillData(mediaList, nextIdx);
+    pillEl.className = pillData.pillClass;
+    pillEl.innerHTML = pillData.html;
+  }
+};
 
 window.changeProductCardColor = function(productId, colorIdx, dotBtn, event) {
   if (event) {
@@ -76,24 +264,89 @@ window.changeProductCardColor = function(productId, colorIdx, dotBtn, event) {
 
   const color = item.cores[colorIdx];
   window.__cardSelectedColor[productId] = color;
+  window.__cardMediaIndex[productId] = 0;
 
-  // Atualiza classes dos botões no card
   const card = dotBtn ? dotBtn.closest(".product-card") : document.querySelector(`.product-card[data-id="${productId}"]`);
   if (card) {
     const dots = card.querySelectorAll(".card-color-dot");
     dots.forEach((d, i) => {
       d.classList.toggle("active", i === colorIdx);
     });
-    const imgEl = card.querySelector(".product-img-box img");
-    if (imgEl && color.imagem) {
-      imgEl.classList.add("img-swapping");
-      setTimeout(() => {
-        imgEl.src = color.imagem;
-        imgEl.onload = () => imgEl.classList.remove("img-swapping");
-        setTimeout(() => imgEl.classList.remove("img-swapping"), 250);
-      }, 100);
+    const stage = card.querySelector(".product-card-media-stage");
+    if (stage && color.imagem) {
+      pauseVideosInElement(stage);
+      stage.innerHTML = renderCardMediaElement(color.imagem, item.title);
+      triggerStageEnterAnim(stage);
+    }
+    const pillEl = document.getElementById(`card-media-pill-${productId}`);
+    if (pillEl) {
+      const mediaList = buildProductMediaList(item, color);
+      const pillData = formatMediaPillData(mediaList, 0);
+      pillEl.className = pillData.pillClass;
+      pillEl.innerHTML = pillData.html;
     }
   }
+};
+
+window.goToModalMedia = function(targetIdx) {
+  const list = window.__modalMediaList;
+  if (!Array.isArray(list) || list.length === 0) return;
+
+  const len = list.length;
+  const nextIdx = ((targetIdx % len) + len) % len;
+  window.__modalMediaIndex = nextIdx;
+
+  const item = (CATALOG_ITEMS && CATALOG_ITEMS.find(p => p.id === window.__modalCurrentProductId)) ||
+               (ALL_PRODUCTS && ALL_PRODUCTS.find(p => p.id === window.__modalCurrentProductId));
+  const titleText = item ? item.title : "Produto Cube Forge";
+  const nextUrl = list[nextIdx];
+
+  const stage = document.getElementById("modal-media-stage");
+  if (stage && nextUrl) {
+    pauseVideosInElement(stage);
+    stage.innerHTML = renderModalMediaElement(nextUrl, titleText);
+    triggerStageEnterAnim(stage);
+  }
+
+  const counterEl = document.getElementById("modal-media-counter");
+  if (counterEl) {
+    const counterHtml = getModalCounterHtml(list, nextIdx);
+    if (counterHtml) {
+      counterEl.innerHTML = counterHtml;
+      counterEl.style.display = "inline-flex";
+    } else {
+      counterEl.style.display = "none";
+    }
+  }
+
+  const thumbsBar = document.getElementById("modal-media-thumbs-bar");
+  if (thumbsBar) {
+    const thumbs = thumbsBar.querySelectorAll(".modal-thumb-btn");
+    thumbs.forEach((btn, idx) => {
+      btn.classList.toggle("active", idx === nextIdx);
+      if (idx === nextIdx && typeof btn.scrollIntoView === "function") {
+        try {
+          btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+        } catch (_) {}
+      }
+    });
+  }
+};
+
+window.prevModalMedia = function(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  goToModalMedia((window.__modalMediaIndex || 0) - 1);
+};
+
+window.nextModalMedia = function(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  goToModalMedia((window.__modalMediaIndex || 0) + 1);
 };
 
 window.selectModalColor = function(productId, colorIdx) {
@@ -105,13 +358,11 @@ window.selectModalColor = function(productId, colorIdx) {
   window.__modalCurrentProductId = productId;
   window.__cardSelectedColor[productId] = color;
 
-  // Atualiza texto do label da cor
   const nameLabel = document.getElementById("modal-active-color-name");
   if (nameLabel) nameLabel.textContent = color.nome;
 
   const modal = document.getElementById("product-modal");
   if (modal) {
-    // Atualiza botões de cor
     const swatches = modal.querySelectorAll(".modal-color-dot-btn");
     swatches.forEach((btn, idx) => {
       const isActive = idx === colorIdx;
@@ -119,16 +370,13 @@ window.selectModalColor = function(productId, colorIdx) {
       btn.setAttribute("aria-checked", isActive ? "true" : "false");
     });
 
-    // Troca dinâmica e fluida da foto no modal
-    const imgEl = document.getElementById("modal-product-img");
-    if (imgEl && color.imagem) {
-      imgEl.classList.add("img-swapping");
-      setTimeout(() => {
-        imgEl.src = color.imagem;
-        imgEl.onload = () => imgEl.classList.remove("img-swapping");
-        setTimeout(() => imgEl.classList.remove("img-swapping"), 250);
-      }, 100);
+    // Atualiza lista de mídias mantendo as fotos/vídeos extras após a foto da cor escolhida
+    window.__modalMediaList = buildProductMediaList(item, color);
+    const firstThumbImg = modal.querySelector("#modal-media-thumbs-bar .modal-thumb-btn[data-media-index='0'] img, #modal-media-thumbs-bar .modal-thumb-btn[data-media-index='0'] video");
+    if (firstThumbImg && color.imagem) {
+      firstThumbImg.src = normalizeMediaPath(color.imagem);
     }
+    goToModalMedia(0);
 
     // Atualiza botão de pedido direto no WhatsApp com a cor selecionada
     const zapBtn = modal.querySelector(".modal-direct-btn");
@@ -162,10 +410,6 @@ window.removeFromCartByIndex = function(index) {
   saveCart();
   showCartToast(itemTitle, "remove", "Item removido do carrinho");
 };
-
-window.__cardSelectedColor = {};
-window.__modalCurrentColor = null;
-window.__modalCurrentProductId = null;
 /**
  * ============================================================================
  * CONFIGURAÇÃO DA SUA LOJA DE IMPRESSÃO 3D
@@ -293,12 +537,12 @@ const FALLBACK_CATALOG_ITEMS = [
       {
         nome: "Azul Ciano e Amarelo",
         hex: "#00d2ff",
-        imagem: "./assets/img/produtos/item16_azul.jpg"
+        imagem: "./assets/img/produtos/IMG-20261116-WA0032.jpg"
       },
       {
         nome: "Branco e Roxo",
         hex: "#ffffff",
-        imagem: "./assets/img/produtos/item16_branco.jpg"
+        imagem: "./assets/img/produtos/1794847551516.jpg"
       }
     ]
   },
@@ -531,14 +775,50 @@ function normalizeProduct(raw, index) {
     icon = getCategoryIcon(categorySlug, categoryLabel);
   }
 
-  let image = raw.imagem || raw.image || raw.foto || "";
+  let image = normalizeMediaPath(raw.imagem || raw.image || raw.foto || "");
 
-  // Garante caminhos relativos compatíveis com GitHub Pages (subcaminhos como /cubeforge/)
-  if (image && !image.startsWith("http") && !image.startsWith("./") && !image.startsWith("/")) {
-    image = "./" + image;
-  } else if (image.startsWith("/")) {
-    image = "." + image;
+  // Extrai vídeos, GIFs e fotos extras do Pages CMS (raw.midias, raw.galeria, raw.videos, etc.)
+  const extraRaw = raw.midias ?? raw.galeria ?? raw.midias_extras ?? raw.videos ?? raw.video ?? raw.gifs ?? raw.gif ?? [];
+  const rawExtraArray = Array.isArray(extraRaw) ? extraRaw : (extraRaw ? [extraRaw] : []);
+  const midias = [];
+  rawExtraArray.forEach(entry => {
+    const val = typeof entry === "string"
+      ? entry
+      : (entry && typeof entry === "object" ? (entry.url || entry.src || entry.arquivo || entry.imagem || entry.video || "") : "");
+    const normalized = normalizeMediaPath(val);
+    if (normalized && normalized !== image && !midias.includes(normalized)) {
+      midias.push(normalized);
+    }
+  });
+
+  // Se não houver foto principal, usa a primeira foto/GIF extra ou o primeiro vídeo da galeria
+  if (!image && midias.length > 0) {
+    const firstNonVideo = midias.find(m => !isVideoMedia(m));
+    image = firstNonVideo || midias[0];
   }
+
+  const gallery = [];
+  if (image) gallery.push(image);
+  midias.forEach(m => {
+    if (!gallery.includes(m)) gallery.push(m);
+  });
+
+  const coresNormalized = (function() {
+    if (Array.isArray(raw.cores) && raw.cores.length > 0) {
+      return raw.cores.map(c => {
+        if (typeof c === "string") return { nome: c.trim(), hex: inferColorHex(c.trim()), imagem: image };
+        const nome = (c.nome || c.name || "Cor").trim();
+        const rawHex = (c.hex_personalizado || c.hex || c.cor || "").toString().trim();
+        const hex = inferColorHex(nome, rawHex);
+        const img = normalizeMediaPath(c.imagem || c.image || c.midia || "") || image;
+        return { nome, hex, imagem: img };
+      });
+    }
+    return [];
+  })();
+
+  const hasVideo = gallery.some(u => getMediaType(u) === "video") || coresNormalized.some(c => isVideoMedia(c.imagem));
+  const hasGif = gallery.some(u => getMediaType(u) === "gif") || coresNormalized.some(c => getMediaType(c.imagem) === "gif");
 
   const id = raw.id !== undefined && raw.id !== null ? Number(raw.id) : (index + 1);
   const isAvailable = raw.disponivel !== undefined ? Boolean(raw.disponivel) : (raw.available !== undefined ? Boolean(raw.available) : true);
@@ -571,6 +851,10 @@ function normalizeProduct(raw, index) {
     desc,
     imagem: image,
     image,
+    midias,
+    gallery,
+    hasVideo,
+    hasGif,
     icon: icon,
     categoria_icone: raw.categoria_icone || "",
     nova_categoria: raw.nova_categoria || "",
@@ -580,19 +864,7 @@ function normalizeProduct(raw, index) {
     sob_encomenda: isOrderOnly,
     estoque: stock,
     prontaEntrega: !isOrderOnly && stock > 0,
-    cores: (function() {
-      if (Array.isArray(raw.cores) && raw.cores.length > 0) {
-        return raw.cores.map(c => {
-          if (typeof c === "string") return { nome: c.trim(), hex: inferColorHex(c.trim()), imagem: image };
-          const nome = (c.nome || c.name || "Cor").trim();
-          const rawHex = (c.hex_personalizado || c.hex || c.cor || "").toString().trim();
-          const hex = inferColorHex(nome, rawHex);
-          const img = c.imagem || c.image || image;
-          return { nome, hex, imagem: img };
-        });
-      }
-      return [];
-    })()
+    cores: coresNormalized
   };
 }
 
@@ -1554,15 +1826,35 @@ function renderCatalog(filterCategory = "all") {
   filteredItems.forEach((item, index) => {
     const card = document.createElement("div");
     card.className = "product-card animate-card";
+    card.setAttribute("data-id", item.id);
     card.style.animationDelay = `${index * 0.05}s`;
 
-    // Imagem ou ícone estilizado 3D
-    const imageContent = item.image 
-      ? `<img src="${item.image}" alt="${item.title}" loading="lazy">` 
+    window.__cardMediaIndex[item.id] = 0;
+    const activeCardColor = window.__cardSelectedColor ? window.__cardSelectedColor[item.id] : null;
+    const cardGallery = buildProductMediaList(item, activeCardColor);
+    const initialCardMedia = cardGallery[0] || item.image;
+
+    // Foto, GIF ou Vídeo ou ícone estilizado 3D
+    const stageInner = initialCardMedia
+      ? renderCardMediaElement(initialCardMedia, item.title)
       : `<div class="product-art-preview">
           <i class="${item.icon}"></i>
           <span>${item.categoryName}</span>
          </div>`;
+    const imageContent = `<div class="product-card-media-stage" id="card-media-stage-${item.id}">${stageInner}</div>`;
+
+    const cardMediaPillData = formatMediaPillData(cardGallery, 0);
+    const cardMediaPillHtml = cardMediaPillData.html
+      ? `<span class="${cardMediaPillData.pillClass}" id="card-media-pill-${item.id}">${cardMediaPillData.html}</span>`
+      : "";
+    const cardMediaArrowsHtml = cardGallery.length > 1 ? `
+      <button type="button" class="card-media-nav card-media-prev" onclick="cycleCardMedia(${item.id}, -1, this, event)" aria-label="Mídia anterior de ${item.title}" title="Anterior">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button type="button" class="card-media-nav card-media-next" onclick="cycleCardMedia(${item.id}, 1, this, event)" aria-label="Próxima mídia de ${item.title}" title="Próxima">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    ` : "";
 
     // Selo de Pronta Entrega / Urgência / Somente sob Encomenda
     const isOrderOnly = Boolean(item.somente_encomenda);
@@ -1657,11 +1949,13 @@ function renderCatalog(filterCategory = "all") {
     }
 
     card.innerHTML = `
-      <div class="product-img-box" onclick="openProductModal(${item.id})" style="cursor: pointer;" title="Clique para ver detalhes de ${item.title}">
+      <div class="product-img-box" onclick="openProductModal(${item.id}, null, window.__cardMediaIndex[${item.id}] || 0)" style="cursor: pointer;" title="Clique para ver detalhes de ${item.title}">
         <div class="card-media-badges">
           <span class="product-category-tag">${item.categoryName}</span>
           ${stockPill}
         </div>
+        ${cardMediaArrowsHtml}
+        ${cardMediaPillHtml}
         ${imageContent}
       </div>
       <div class="product-info">
@@ -2075,10 +2369,17 @@ function setupModal() {
     }
   });
 
-  // Fecha com tecla ESC
+  // Fecha com ESC e navega entre fotos/vídeos com setas do teclado
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.classList.contains("active")) {
+    if (!modal.classList.contains("active")) return;
+    if (e.key === "Escape") {
       closeProductModal();
+    } else if (e.key === "ArrowLeft" && Array.isArray(window.__modalMediaList) && window.__modalMediaList.length > 1) {
+      e.preventDefault();
+      prevModalMedia();
+    } else if (e.key === "ArrowRight" && Array.isArray(window.__modalMediaList) && window.__modalMediaList.length > 1) {
+      e.preventDefault();
+      nextModalMedia();
     }
   });
 }
@@ -2086,15 +2387,16 @@ function setupModal() {
 window.closeProductModal = function() {
   const modal = document.getElementById("product-modal");
   if (modal) {
+    pauseVideosInElement(modal);
     modal.classList.remove("active");
     document.body.style.overflow = "";
   }
 };
 
 /**
- * Abre o modal preenchendo as informações da peça e ações (Carrinho ou Direto)
+ * Abre o modal preenchendo as informações da peça, galeria (fotos/GIFs/vídeos) e ações
  */
-window.openProductModal = function(productId, defaultColorIndex = null) {
+window.openProductModal = function(productId, defaultColorIndex = null, defaultMediaIndex = 0) {
   const item = (CATALOG_ITEMS && CATALOG_ITEMS.find(p => p.id === productId)) || (ALL_PRODUCTS && ALL_PRODUCTS.find(p => p.id === productId));
   if (!item) return;
 
@@ -2119,6 +2421,12 @@ window.openProductModal = function(productId, defaultColorIndex = null) {
     window.__modalCurrentProductId = item.id;
   }
 
+  // Lista completa de mídias do produto (foto principal/cor + fotos extras, GIFs e vídeos)
+  const mediaList = buildProductMediaList(item, initialColor);
+  window.__modalMediaList = mediaList;
+  const startMediaIdx = Math.max(0, Math.min(parseInt(defaultMediaIndex, 10) || 0, Math.max(0, mediaList.length - 1)));
+  window.__modalMediaIndex = startMediaIdx;
+
   // Mensagem customizada para a peça com nome, cor e preço
   const colorText = initialColor ? ` (Cor: ${initialColor.nome})` : "";
   const quoteMsg = SITE_CONFIG.catalogWhatsappMsg
@@ -2126,14 +2434,57 @@ window.openProductModal = function(productId, defaultColorIndex = null) {
     .replace("{price}", item.price);
   const whatsappUrl = createWhatsappUrl(SITE_CONFIG.whatsappNumber, quoteMsg);
 
-  // Imagem exibida (foto da cor escolhida se houver, ou imagem padrão da peça)
-  const displayImage = (initialColor && initialColor.imagem) ? initialColor.imagem : item.image;
-  const modalImageContent = displayImage 
-    ? `<img id="modal-product-img" src="${displayImage}" alt="${item.title}">` 
+  // Mídia exibida no palco (foto, GIF ou vídeo)
+  const displayMedia = mediaList[startMediaIdx] || item.image;
+  const stageMediaContent = displayMedia
+    ? renderModalMediaElement(displayMedia, item.title)
     : `<div class="product-art-preview">
         <i class="${item.icon}" style="font-size: 3.5rem;"></i>
         <span>${item.categoryName}</span>
        </div>`;
+
+  const counterHtml = getModalCounterHtml(mediaList, startMediaIdx);
+  const modalCounterHtml = counterHtml
+    ? `<div class="modal-media-counter" id="modal-media-counter">${counterHtml}</div>`
+    : `<div class="modal-media-counter" id="modal-media-counter" style="display: none;"></div>`;
+
+  const modalArrowsHtml = mediaList.length > 1 ? `
+    <button type="button" class="modal-media-nav modal-media-prev" onclick="prevModalMedia(event)" aria-label="Mídia anterior" title="Mídia anterior">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <button type="button" class="modal-media-nav modal-media-next" onclick="nextModalMedia(event)" aria-label="Próxima mídia" title="Próxima mídia">
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+  ` : "";
+
+  const modalThumbsHtml = mediaList.length > 1 ? `
+    <div class="modal-media-thumbs-bar" id="modal-media-thumbs-bar" aria-label="Galeria de fotos e vídeos do produto">
+      ${mediaList.map((mUrl, mIdx) => {
+        const mType = getMediaType(mUrl);
+        const isActive = mIdx === startMediaIdx;
+        const thumbInner = mType === "video"
+          ? `<video src="${mUrl}#t=0.1" muted playsinline preload="metadata"></video><span class="thumb-play-badge"><i class="fa-solid fa-play"></i></span>`
+          : `<img src="${mUrl}" alt="${item.title} - mídia ${mIdx + 1}">${mType === "gif" ? '<span class="thumb-gif-badge">GIF</span>' : ''}`;
+        return `
+          <button type="button"
+            class="modal-thumb-btn ${isActive ? 'active' : ''}"
+            data-media-index="${mIdx}"
+            onclick="goToModalMedia(${mIdx})"
+            aria-label="Ver ${mType === 'video' ? 'vídeo' : (mType === 'gif' ? 'GIF' : 'foto')} ${mIdx + 1}">
+            ${thumbInner}
+          </button>
+        `;
+      }).join('')}
+    </div>
+  ` : "";
+
+  const modalImageContent = `
+    ${modalCounterHtml}
+    ${modalArrowsHtml}
+    <div class="modal-media-stage" id="modal-media-stage">
+      ${stageMediaContent}
+    </div>
+  `;
 
   const isOrderOnly = Boolean(item.somente_encomenda);
   const isReady = !isOrderOnly && item.estoque > 0;
@@ -2238,9 +2589,10 @@ window.openProductModal = function(productId, defaultColorIndex = null) {
   }
 
   modalBody.innerHTML = `
-    <div class="modal-image-area">
+    <div class="modal-image-area" id="modal-image-area">
       ${modalImageContent}
     </div>
+    ${modalThumbsHtml}
     <div class="modal-inner-content">
       <div class="modal-header-row">
         <h3 class="modal-title">${item.title}</h3>
@@ -2262,6 +2614,28 @@ window.openProductModal = function(productId, defaultColorIndex = null) {
       </div>
     </div>
   `;
+
+  // Suporte a gesto swipe horizontal no mobile para passar fotos e vídeos
+  const mediaArea = document.getElementById("modal-image-area");
+  if (mediaArea && mediaList.length > 1) {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    mediaArea.addEventListener("touchstart", (ev) => {
+      if (ev.touches && ev.touches.length === 1) {
+        touchStartX = ev.touches[0].clientX;
+        touchStartY = ev.touches[0].clientY;
+      }
+    }, { passive: true });
+    mediaArea.addEventListener("touchend", (ev) => {
+      if (!ev.changedTouches || ev.changedTouches.length !== 1) return;
+      const dx = ev.changedTouches[0].clientX - touchStartX;
+      const dy = ev.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) nextModalMedia();
+        else prevModalMedia();
+      }
+    }, { passive: true });
+  }
 
   modal.classList.add("active");
   document.body.style.overflow = "hidden";
@@ -2377,14 +2751,24 @@ function setupHeroSlider() {
       `;
     }
 
+    const showroomGallery = buildProductMediaList(item);
+    const showroomPillData = formatMediaPillData(showroomGallery, 0);
+    const showroomMediaBadge = showroomPillData.html
+      ? `<span class="${showroomPillData.pillClass}">${showroomPillData.html}</span>`
+      : "";
+    const showroomMediaEl = item.image
+      ? renderCardMediaElement(item.image, item.title)
+      : `<div class="product-art-preview"><i class="${item.icon}"></i><span>${item.categoryName}</span></div>`;
+
     return `
     <div class="showroom-product-card" data-id="${item.id}">
       <div class="showroom-card-media" onclick="openProductModal(${item.id})" title="Clique para ver detalhes de ${item.title}">
-        <img src="${item.image}" alt="${item.title}" loading="lazy">
+        ${showroomMediaEl}
         <div class="card-media-badges">
           <span class="card-category-pill"><i class="${item.icon}"></i> ${item.categoryName}</span>
           ${stockPill}
         </div>
+        ${showroomMediaBadge}
         <span class="card-price-pill">${item.price}</span>
       </div>
       <div class="showroom-card-info">
@@ -2907,7 +3291,7 @@ function updateCartUI() {
 
     container.innerHTML = cart.map((item, cIndex) => {
       const imgContent = item.image 
-        ? `<img src="${item.image}" alt="${item.title}">` 
+        ? renderCardMediaElement(item.image, item.title)
         : `<i class="${item.icon}"></i>`;
       const itemSubtotal = formatBRL(item.numericPrice * item.quantity);
 
@@ -4058,7 +4442,7 @@ function renderDirectProductCard() {
   const maxStock = item.estoque || 10;
 
   const imageHtml = item.image
-    ? `<img src="${item.image}" alt="${item.title}" class="direct-product-img">`
+    ? renderCardMediaElement(item.image, item.title, "direct-product-img")
     : `<div class="direct-product-icon-fallback"><i class="${item.icon || 'fa-solid fa-cube'}"></i></div>`;
 
   const directColorHtml = item.selectedColor ? `

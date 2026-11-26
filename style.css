@@ -3997,10 +3997,10 @@ button {
   position: absolute;
   top: 14px;
   right: 14px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(11, 17, 32, 0.78);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   width: 36px;
   height: 36px;
   border-radius: var(--radius-pill);
@@ -4012,7 +4012,7 @@ button {
   color: #ffffff;
   z-index: 10;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   transition: background var(--transition-smooth), border-color var(--transition-smooth);
 }
 
@@ -8821,4 +8821,299 @@ body.online-checkout-disabled .product-actions-group {
   border: 1px solid rgba(255, 255, 255, 0.75);
   display: inline-block;
   flex-shrink: 0;
+}
+
+/* ==========================================================================
+   GALERIA DE MÍDIAS (FOTOS, GIFS & VÍDEOS + SETAS < > NO MODAL E CARDS)
+   ========================================================================== */
+.product-card-media-stage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.product-card-media-stage.media-entering > *,
+.modal-media-stage.media-entering > * {
+  animation: mediaFadeIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes mediaFadeIn {
+  from {
+    opacity: 0.25;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.product-img-box video,
+.showroom-card-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-card:hover .product-img-box video,
+.showroom-product-card:hover .showroom-card-media video {
+  transform: scale(1.06);
+}
+
+.cart-item-img video,
+.direct-product-img-box video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Badge discreto no canto inferior esquerdo da foto/card indicando vídeo, GIF ou +mídias */
+.card-media-type-pill {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(7, 10, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #f8fafc;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+  z-index: 4;
+  pointer-events: none;
+}
+
+.card-media-type-pill.has-video i {
+  color: var(--accent-orange-bright);
+}
+
+.card-media-type-pill.has-gif i {
+  color: var(--accent-cyan);
+}
+
+/* Setas compactas nos cards do catálogo quando há mais de 1 mídia */
+.card-media-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(8, 13, 24, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+}
+
+.card-media-nav:hover {
+  background: rgba(255, 106, 0, 0.9);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.card-media-nav:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.card-media-prev {
+  left: 8px;
+}
+
+.card-media-next {
+  right: 8px;
+}
+
+/* Palco e Setas principais no Modal de Detalhes do Produto */
+.modal-media-stage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.modal-image-area video {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  background: #050914;
+  display: block;
+}
+
+.modal-media-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(11, 17, 32, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  cursor: pointer;
+  z-index: 6;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+}
+
+.modal-media-nav:hover {
+  background: var(--accent-orange);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 18px rgba(255, 106, 0, 0.55);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.modal-media-nav:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.modal-media-prev {
+  left: 10px;
+}
+
+.modal-media-next {
+  right: 10px;
+}
+
+.modal-media-counter {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(11, 17, 32, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f8fafc;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  z-index: 6;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+
+.modal-media-counter i {
+  color: var(--accent-orange-bright);
+  font-size: 0.7rem;
+}
+
+/* Barra de Miniaturas abaixo da Mídia no Modal (Sem sobrepor controles de vídeo) */
+.modal-media-thumbs-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(8, 13, 24, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.modal-thumb-btn {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  background: rgba(15, 23, 42, 0.9);
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-thumb-btn:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+.modal-thumb-btn.active {
+  border-color: var(--accent-orange-bright);
+  box-shadow: 0 0 12px rgba(255, 106, 0, 0.45);
+}
+
+.modal-thumb-btn img,
+.modal-thumb-btn video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.thumb-play-badge,
+.thumb-gif-badge {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 9, 20, 0.45);
+  color: #ffffff;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.thumb-play-badge i {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 106, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  padding-left: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.thumb-gif-badge {
+  inset: auto 3px 3px auto;
+  background: rgba(0, 210, 255, 0.9);
+  color: #050914;
+  font-size: 0.58rem;
+  font-weight: 900;
+  padding: 1px 4px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
 }

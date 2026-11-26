@@ -1,6 +1,7 @@
 media:
   input: assets/img/produtos
   output: ./assets/img/produtos
+  categories: [image, video]
 
 content:
   - name: configuracoes
@@ -149,9 +150,16 @@ content:
         type: text
         description: "Breve texto explicativo para o cliente sobre o produto."
       - name: imagem
-        label: "Foto Principal do Produto"
+        label: "Foto Principal ou GIF de Capa"
         type: image
-        description: "Foto principal exibida no catálogo e no carrossel de destaques."
+        description: "Foto ou GIF principal exibido no catálogo, nos destaques e como primeira mídia ao abrir o produto."
+      - name: midias
+        label: "🎬 Vídeos, GIFs e Fotos Extras do Produto (Galeria)"
+        type: file
+        options:
+          multiple: true
+          categories: [image, video]
+        description: "Adicione um ou mais vídeos (MP4, WebM, MOV), GIFs animados ou fotos extras deste produto! Ao abrir o produto no site, o cliente verá setinhas (< >) para passar entre todas as imagens, GIFs e vídeos."
       - name: cores
         label: "🎨 Variações de Cores & Fotos (Opcional)"
         type: object
@@ -206,9 +214,9 @@ content:
             type: string
             description: "Deixe em branco para usar a cor selecionada na lista acima! Preencha apenas se quiser um tom específico que não esteja na lista."
           - name: imagem
-            label: "Foto desta Cor"
+            label: "Foto ou GIF desta Cor"
             type: image
-            description: "Foto do produto nesta cor. Ao clicar na bolinha no site, a imagem principal mudará instantaneamente para esta foto!"
+            description: "Foto ou GIF animado do produto nesta cor. Ao clicar na bolinha no site, a imagem principal mudará instantaneamente para ela!"
       - name: destaque
         label: "⭐ Exibir nos Destaques (Showroom do Topo)"
         type: boolean
